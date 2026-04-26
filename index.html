@@ -180,6 +180,13 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 /* Route */
 .route-row { margin-bottom: 12px; }
 .route-row:last-child { margin-bottom: 0; }
+.route-row.is-private {
+  opacity: 0.85;
+}
+.route-row.is-private .route-address {
+  color: var(--text-4);
+  font-style: italic;
+}
 .route-label {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   font-size: 10px; font-weight: 800;
@@ -188,6 +195,68 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 }
 .route-label.dest { color: var(--success); }
 .route-label.next { color: var(--accent); }
+.route-label-actions {
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* Céges/Magán toggle next to each partner row */
+.cm-toggle {
+  display: inline-flex; align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px;
+  height: 22px;
+}
+.cm-toggle button {
+  background: transparent;
+  color: var(--text-3);
+  border: none;
+  padding: 1px 9px;
+  font-size: 9px; font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 18px; line-height: 1;
+  transition: all 0.15s ease;
+}
+.cm-toggle button.active.cm-business {
+  background: var(--accent); color: #18181b;
+}
+.cm-toggle button.active.cm-private {
+  background: #6b7280; color: white;
+}
+
+/* Custom partner inputs */
+.custom-partner-fields {
+  display: grid; gap: 8px;
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--bg);
+  border: 1px dashed var(--border-2);
+  border-radius: 11px;
+}
+.custom-partner-fields input {
+  font-size: 14px; padding: 9px 11px;
+  border-radius: 9px;
+}
+.custom-partner-fields .geocode-status {
+  font-size: 10px; color: var(--text-4);
+  font-style: italic; margin: 0; padding-left: 4px;
+}
+.custom-partner-fields .geocode-status.ok { color: var(--success); font-style: normal; }
+.custom-partner-fields .geocode-status.err { color: var(--danger); font-style: normal; }
+.cm-toggle-wrap {
+  display: flex; align-items: center; gap: 8px;
+  padding-top: 4px;
+}
+.cm-toggle-label {
+  font-size: 9px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-4);
+  padding-left: 4px;
+}
+
 .route-address {
   font-size: 11px; color: var(--text-3);
   margin: 6px 4px 0; font-weight: 500;
@@ -387,6 +456,21 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 .trip-list-table tr.empty-row td {
   text-align: center; color: var(--text-4);
   font-style: italic; padding: 16px 6px;
+}
+.trip-list-table tr.private-row td {
+  color: var(--text-3);
+  font-style: italic;
+}
+.private-tag {
+  display: inline-block;
+  font-size: 9px; font-weight: 800;
+  padding: 2px 6px;
+  background: rgba(160,160,160,0.18);
+  color: var(--text-2);
+  border-radius: 4px;
+  margin-left: 6px;
+  letter-spacing: 0.06em;
+  font-style: normal;
 }
 .trip-rm-btn {
   background: transparent; color: var(--text-4);
@@ -609,7 +693,7 @@ footer {
         <input type="date" id="tripDate">
       </div>
       <div class="trip-field">
-        <label>Utazás célja</label>
+        <label>Üzleti utak célja</label>
         <select id="tripPurpose">
           <option value="Főépítészi feladatok ellátása">Főépítészi feladatok ellátása</option>
           <option value="Juhhé partneri megbeszélés">Juhhé partneri megbeszélés</option>
@@ -633,6 +717,9 @@ footer {
       <input type="text" id="tripNotes" placeholder="—">
     </div>
     <button class="btn success" id="saveTrip">💾 Út rögzítése</button>
+    <p class="hint" style="margin-top:0;font-size:10px">
+      Minden partner egy külön út-rekordba kerül a megtett km arányában. Magán partnerhez vezető szakasz "Magán" céllal lesz rögzítve.
+    </p>
   </div>
 
   <!-- Trip list -->
@@ -746,8 +833,36 @@ let lastLegDistances = []; // km per leg, in order: [origin→stop1, stop1→sto
 // =============================================================
 // HELPERS
 // =============================================================
+const CUSTOM_PARTNER_VALUE = '__custom__';
+
 function findPartner(name) {
   return PARTNERS.find(p => p.name === name) || null;
+}
+
+// Returns unified partner data for a stop, or null if not selectable.
+// Works for both standard PARTNERS and custom user-entered ones.
+function getStopData(stop) {
+  if (!stop) return null;
+  if (stop.custom) {
+    if (!stop.customName && !stop.customAddress) return null;
+    if (stop.customLat == null || stop.customLng == null) {
+      // Custom partner without geocoded coords — cannot be routed; still valid for display
+      return {
+        name: stop.customName || '(egyéni)',
+        address: stop.customAddress || '',
+        lat: null, lng: null, custom: true, missingCoords: true,
+      };
+    }
+    return {
+      name: stop.customName,
+      address: stop.customAddress,
+      lat: stop.customLat,
+      lng: stop.customLng,
+      custom: true,
+    };
+  }
+  const p = findPartner(stop.name);
+  return p ? { ...p, custom: false } : null;
 }
 
 function escapeHtml(s) {
@@ -756,12 +871,19 @@ function escapeHtml(s) {
   );
 }
 
-function populateSelect(sel, defaultValue) {
+function populateSelect(sel, defaultValue, includeCustom) {
   sel.innerHTML = '';
   const empty = document.createElement('option');
   empty.value = '';
   empty.textContent = '— válassz partnert —';
   sel.appendChild(empty);
+  if (includeCustom) {
+    const custom = document.createElement('option');
+    custom.value = CUSTOM_PARTNER_VALUE;
+    custom.textContent = '➕ Egyéni partner (saját megadás)';
+    if (defaultValue === CUSTOM_PARTNER_VALUE) custom.selected = true;
+    sel.appendChild(custom);
+  }
   for (const p of PARTNERS) {
     const opt = document.createElement('option');
     opt.value = p.name;
@@ -852,6 +974,76 @@ async function reverseGeocode(lat, lng) {
   }
 }
 
+// Forward geocoding: address string → { lat, lng } via Nominatim.
+// Tries multiple variants (original, with-space, expanded, structured) before giving up.
+// Also accepts direct "lat,lng" input as escape hatch.
+async function forwardGeocode(address) {
+  if (!address) return null;
+  const trimmed = address.trim();
+
+  // Escape hatch: direct lat,lng input (must be in roughly Hungarian bounds)
+  const directMatch = trimmed.match(/^\s*(-?\d{1,3}(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:[.,]\d+)?)\s*$/);
+  if (directMatch) {
+    const lat = parseFloat(directMatch[1].replace(',', '.'));
+    const lng = parseFloat(directMatch[2].replace(',', '.'));
+    if (!isNaN(lat) && !isNaN(lng) && lat >= 45 && lat <= 49 && lng >= 16 && lng <= 23) {
+      return { lat, lng };
+    }
+  }
+
+  // Build variants
+  const variants = [];
+  variants.push(trimmed);
+
+  // Add space after street-type abbreviations and strip trailing dots from numbers
+  // e.g. "Meggyesalja u.6." → "Meggyesalja u. 6"
+  let normalized = trimmed.replace(/\b(u|út|tér|krt|sgt|park|köz|fasor|sor|sétány|hrsz)\.(\d)/gi, '$1. $2');
+  normalized = normalized.replace(/(\d)\.(\s|$|,)/g, '$1$2');
+  if (normalized !== trimmed) variants.push(normalized);
+
+  // Expand "u." → "utca"
+  let expanded = normalized.replace(/\bu\./gi, 'utca');
+  if (expanded !== normalized) variants.push(expanded);
+
+  // Try each variant in order, with rate limiting between (Nominatim is 1 req/sec)
+  for (let i = 0; i < variants.length; i++) {
+    if (i > 0) await new Promise(r => setTimeout(r, 1100));
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(variants[i] + ', Magyarország')}&limit=1&accept-language=hu&countrycodes=hu`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) continue;
+      const data = await res.json();
+      if (data && data.length > 0) {
+        return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      }
+    } catch (e) { /* try next */ }
+  }
+
+  // Last resort: structured query (postcode + city + street separately)
+  const m = trimmed.match(/^(\d{4})\s+([^,]+?)\s*,\s*(.+?)\s+(\d+\S*)$/);
+  if (m) {
+    await new Promise(r => setTimeout(r, 1100));
+    const street = (m[3].trim() + ' ' + m[4].trim().replace(/\.$/, ''))
+                     .replace(/\bu\.\s*/gi, 'utca ');
+    const params = new URLSearchParams({
+      street, city: m[2].trim(), postalcode: m[1].trim(),
+      format: 'json', countrycodes: 'hu', limit: '1',
+      'accept-language': 'hu',
+    });
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, { headers: { 'Accept': 'application/json' } });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length > 0) {
+          return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+        }
+      }
+    } catch (e) {}
+  }
+
+  return null;
+}
+
 async function refreshGpsAndUpdate() {
   const pos = await getGps();
   if (!pos) {
@@ -925,26 +1117,155 @@ function renderIntermediates() {
   const container = document.getElementById('intermediates');
   container.innerHTML = '';
   stops.forEach((stop, idx) => {
+    if (stop.isPrivate === undefined) stop.isPrivate = false;
+    if (stop.custom === undefined) stop.custom = false;
+    // Non-custom partners are always business — force isPrivate=false
+    if (!stop.custom) stop.isPrivate = false;
+
     const div = document.createElement('div');
     div.className = 'route-row fade-in';
+    if (stop.custom && stop.isPrivate) div.classList.add('is-private');
+
+    const customFields = stop.custom ? `
+      <div class="custom-partner-fields" data-stop-custom="${idx}">
+        <input type="text" placeholder="Partner neve (pl. XY Kft.)" data-stop-custom-name="${idx}" value="${escapeHtml(stop.customName || '')}">
+        <input type="text" placeholder="Cím vagy GPS koordináták (pl. 48.0613, 20.7575)" data-stop-custom-addr="${idx}" value="${escapeHtml(stop.customAddress || '')}">
+        <p class="geocode-status${stop.customLat != null ? ' ok' : ''}" data-stop-geocode="${idx}">${
+          stop.customLat != null ? '✓ Cím megtalálva' : 'Cím vagy GPS koordináták (47.x, 20.x) megadása'
+        }</p>
+        <div class="cm-toggle-wrap">
+          <span class="cm-toggle-label">Útcél:</span>
+          <div class="cm-toggle" data-stop-toggle="${idx}">
+            <button type="button" class="cm-business${!stop.isPrivate ? ' active' : ''}" data-cm="business">CÉGES</button>
+            <button type="button" class="cm-private${stop.isPrivate ? ' active' : ''}" data-cm="private">MAGÁN</button>
+          </div>
+        </div>
+      </div>
+    ` : '';
+
     div.innerHTML = `
       <div class="route-label">
         <span>📍 Partner ${idx+1}</span>
         <button class="rm-btn" type="button" title="Eltávolítás">×</button>
       </div>
       <select data-stop-sel="${idx}"></select>
+      ${customFields}
       <p class="route-address" data-stop-addr="${idx}">—</p>
       <p class="leg-distance computing" data-stop-leg="${idx}"></p>
     `;
     container.appendChild(div);
 
+    // Populate select (with custom option at top)
     const sel = div.querySelector(`select[data-stop-sel="${idx}"]`);
-    populateSelect(sel, stop.name);
+    populateSelect(sel, stop.custom ? CUSTOM_PARTNER_VALUE : stop.name, true);
     sel.addEventListener('change', () => {
-      stop.name = sel.value;
+      if (sel.value === CUSTOM_PARTNER_VALUE) {
+        stop.custom = true;
+        stop.name = '';
+      } else {
+        stop.custom = false;
+        stop.customName = '';
+        stop.customAddress = '';
+        stop.customLat = null;
+        stop.customLng = null;
+        stop.isPrivate = false;
+        stop.name = sel.value;
+      }
+      renderIntermediates();
       updateAll();
     });
 
+    // Custom partner inputs
+    if (stop.custom) {
+      const nameInput = div.querySelector(`input[data-stop-custom-name="${idx}"]`);
+      const addrInput = div.querySelector(`input[data-stop-custom-addr="${idx}"]`);
+      const statusEl = div.querySelector(`p[data-stop-geocode="${idx}"]`);
+      let geocodeTimer = null;
+
+      nameInput.addEventListener('input', () => {
+        stop.customName = nameInput.value;
+        if (typeof updateTripSummary === 'function') updateTripSummary();
+      });
+
+      async function triggerGeocode() {
+        const newAddr = stop.customAddress;
+        if (!newAddr) {
+          stop.customLat = null;
+          stop.customLng = null;
+          statusEl.textContent = 'Cím vagy GPS koordináták (47.x, 20.x) megadása';
+          statusEl.classList.remove('ok', 'err');
+          updateAll();
+          return;
+        }
+        // Skip if already geocoded for this exact address
+        if (stop.customLastGeocoded === newAddr && stop.customLat != null) return;
+        statusEl.textContent = '⏳ Cím keresése (több formátumban próbálom)...';
+        statusEl.classList.remove('ok', 'err');
+        const coords = await forwardGeocode(newAddr);
+        // Verify the address hasn't changed during the network call
+        if (stop.customAddress !== newAddr) return;
+        if (coords) {
+          stop.customLat = coords.lat;
+          stop.customLng = coords.lng;
+          stop.customLastGeocoded = newAddr;
+          statusEl.textContent = `✓ Megtalálva: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
+          statusEl.classList.add('ok');
+          updateAll();
+        } else {
+          stop.customLat = null;
+          stop.customLng = null;
+          stop.customLastGeocoded = null;
+          statusEl.innerHTML = '✗ Nem található. Próbáld pontosabban (pl. <em>3530 Miskolc, Meggyesalja utca 6</em>) — vagy illessz be GPS koordinátákat (pl. <em>48.0613, 20.7575</em>).';
+          statusEl.classList.add('err');
+        }
+      }
+
+      addrInput.addEventListener('input', () => {
+        const v = addrInput.value.trim();
+        stop.customAddress = v;
+        clearTimeout(geocodeTimer);
+        if (!v) {
+          stop.customLat = null; stop.customLng = null;
+          statusEl.textContent = 'Cím vagy GPS koordináták (47.x, 20.x) megadása';
+          statusEl.classList.remove('ok', 'err');
+          updateAll();
+          return;
+        }
+        statusEl.textContent = '⏳ Várakozás a beírásra...';
+        statusEl.classList.remove('ok', 'err');
+        // Debounced auto-search after user stops typing
+        geocodeTimer = setTimeout(triggerGeocode, 1500);
+      });
+      addrInput.addEventListener('blur', () => {
+        clearTimeout(geocodeTimer);
+        triggerGeocode();
+      });
+      addrInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          clearTimeout(geocodeTimer);
+          triggerGeocode();
+          addrInput.blur();
+        }
+      });
+
+      // Céges/Magán toggle — update visually without re-rendering
+      // (re-rendering would destroy the in-progress address input and break geocoding)
+      const toggleEl = div.querySelector(`.cm-toggle[data-stop-toggle="${idx}"]`);
+      if (toggleEl) {
+        toggleEl.querySelectorAll('button').forEach(btn => {
+          btn.addEventListener('click', () => {
+            stop.isPrivate = btn.dataset.cm === 'private';
+            toggleEl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            div.classList.toggle('is-private', stop.isPrivate);
+            if (typeof updateTripSummary === 'function') updateTripSummary();
+          });
+        });
+      }
+    }
+
+    // Remove button
     div.querySelector('.rm-btn').addEventListener('click', () => {
       stops.splice(idx, 1);
       renderIntermediates();
@@ -962,18 +1283,28 @@ function updateStopCount() {
 // MAIN UPDATE
 // =============================================================
 async function updateAll() {
-  // The DESTINATION is the last partner with a valid name; intermediate stops are the ones before it.
-  // Build list of valid (filled) partners with their data
-  const validPartners = stops.map(s => findPartner(s.name)).filter(p => p);
+  // The DESTINATION is the last partner with a valid (routable) entry; intermediate stops are the ones before it.
+  // Build list of valid partners with their data
+  const validPartners = stops
+    .map(s => getStopData(s))
+    .filter(p => p && p.lat != null && p.lng != null);
   const dest = validPartners.length > 0 ? validPartners[validPartners.length - 1] : null;
 
   // Update partner addresses
   stops.forEach((stop, idx) => {
-    const p = findPartner(stop.name);
+    const data = getStopData(stop);
     const addrEl = document.querySelector(`p[data-stop-addr="${idx}"]`);
     if (addrEl) {
-      addrEl.textContent = p ? p.address : '—';
-      addrEl.classList.toggle('empty', !p);
+      if (!data) {
+        addrEl.textContent = '—';
+        addrEl.classList.add('empty');
+      } else if (data.missingCoords) {
+        addrEl.textContent = data.address || '— add meg a címet —';
+        addrEl.classList.add('empty');
+      } else {
+        addrEl.textContent = data.address;
+        addrEl.classList.remove('empty');
+      }
     }
   });
 
@@ -1033,13 +1364,12 @@ async function updateAll() {
   document.getElementById('totalKm').classList.remove('empty');
   document.getElementById('totalKmUnit').textContent = ' km';
 
-  // Display per-leg distances on each partner row
-  // Each VALID partner row → corresponding leg km
+  // Display per-leg distances on each VALID partner row
   let validStopIdx = 0;
   stops.forEach((s, idx) => {
-    const p = findPartner(s.name);
+    const data = getStopData(s);
     const legEl = document.querySelector(`p[data-stop-leg="${idx}"]`);
-    if (!p || !legEl) return;
+    if (!data || data.lat == null || !legEl) return;
     const km = route.legs[validStopIdx];
     const fromLabel = validStopIdx === 0
       ? (currentLocation.source === 'gps' ? 'GPS-ből' : 'Kiindulóponttól')
@@ -1144,9 +1474,7 @@ function saveTripsToStorage() {
 }
 
 function buildCurrentTripContext() {
-  const validPartners = stops.map(s => findPartner(s.name)).filter(p => p);
-  const dest = validPartners.length > 0 ? validPartners[validPartners.length - 1] : null;
-  const intermediates = validPartners.slice(0, -1).map(p => p.name);
+  // Build origin info
   let fromName = '', fromAddr = '';
   if (currentLocation) {
     if (currentLocation.source === 'gps') {
@@ -1157,29 +1485,53 @@ function buildCurrentTripContext() {
       fromAddr = currentLocation.address || '';
     }
   }
+
+  // Build legs from valid stops with their per-leg km
+  const legs = [];
+  let validIdx = 0;
+  stops.forEach(s => {
+    const data = getStopData(s);
+    if (!data || data.lat == null) return;
+    const legKm = (lastLegDistances && lastLegDistances[validIdx] != null)
+      ? lastLegDistances[validIdx] : null;
+    legs.push({
+      name: data.name,
+      address: data.address,
+      isPrivate: !!s.isPrivate,
+      custom: !!data.custom,
+      legKm,
+    });
+    validIdx++;
+  });
+
   return {
     fromName, fromAddr,
-    destName: dest ? dest.name : '',
-    destAddr: dest ? dest.address : '',
-    intermediates,
-    totalKm: lastLegDistances && lastLegDistances.length
-      ? lastLegDistances.reduce((a,b)=>a+b,0).toFixed(1)
-      : null,
+    legs,
+    totalKm: legs.reduce((a,l) => a + (l.legKm || 0), 0),
     highway: useHighway,
   };
 }
 
 function updateTripSummary() {
   const ctx = buildCurrentTripContext();
-  document.getElementById('summaryFrom').textContent = ctx.fromName
+  const summaryFromEl = document.getElementById('summaryFrom');
+  const summaryToEl = document.getElementById('summaryTo');
+  const summaryDistEl = document.getElementById('summaryDist');
+  if (!summaryFromEl) return;
+  summaryFromEl.textContent = ctx.fromName
     ? (ctx.fromName + (ctx.fromAddr ? ' — ' + ctx.fromAddr : ''))
     : '—';
-  const toDisplay = [];
-  if (ctx.intermediates.length) toDisplay.push('via ' + ctx.intermediates.join(', '));
-  toDisplay.push(ctx.destName ? (ctx.destName + (ctx.destAddr ? ' — ' + ctx.destAddr : '')) : '—');
-  document.getElementById('summaryTo').textContent = toDisplay.join(' → ');
-  document.getElementById('summaryDist').textContent = ctx.totalKm
-    ? `${ctx.totalKm} km (${ctx.highway ? 'autópályával' : 'autópálya nélkül'})`
+  if (ctx.legs.length === 0) {
+    summaryToEl.textContent = '—';
+  } else {
+    const parts = ctx.legs.map(l => {
+      const tag = l.isPrivate ? ' [M]' : '';
+      return l.name + tag;
+    });
+    summaryToEl.textContent = parts.join(' → ');
+  }
+  summaryDistEl.textContent = ctx.totalKm > 0
+    ? `${ctx.totalKm.toFixed(1)} km (${ctx.highway ? 'autópályával' : 'autópálya nélkül'})`
     : '—';
 }
 
@@ -1196,15 +1548,20 @@ function renderTripList() {
     return;
   }
   tbody.innerHTML = '';
-  // Sort by date desc
-  const sorted = [...trips].sort((a, b) =>
-    (b.date + (b.id || '')).localeCompare(a.date + (a.id || ''))
-  );
+  // Sort by date desc, then by id asc within same date
+  const sorted = [...trips].sort((a, b) => {
+    const dc = (b.date || '').localeCompare(a.date || '');
+    if (dc !== 0) return dc;
+    return (a.id || '').localeCompare(b.id || '');
+  });
   for (const t of sorted) {
     const tr = document.createElement('tr');
     const dateStr = t.date ? t.date.split('-').reverse().join('.') + '.' : '—';
-    const partnerStr = escapeHtml(t.destName || '—');
+    const isPrivate = t.purpose === 'Magán';
+    const partnerStr = escapeHtml(t.destName || '—')
+      + (isPrivate ? ' <span class="private-tag">MAGÁN</span>' : '');
     const kmStr = t.distance != null ? Math.round(t.distance) : '—';
+    if (isPrivate) tr.classList.add('private-row');
     tr.innerHTML = `
       <td>${dateStr}</td>
       <td>${partnerStr}</td>
@@ -1227,15 +1584,15 @@ function renderTripList() {
 function saveCurrentTrip() {
   const ctx = buildCurrentTripContext();
   const date = document.getElementById('tripDate').value;
-  const purpose = document.getElementById('tripPurpose').value;
+  const businessPurpose = document.getElementById('tripPurpose').value;
   const kmStartEl = document.getElementById('kmStart');
   const kmEndEl = document.getElementById('kmEnd');
   const kmStart = parseInt(kmStartEl.value, 10);
   const kmEnd = parseInt(kmEndEl.value, 10);
   const notes = document.getElementById('tripNotes').value.trim();
 
-  if (!ctx.destName) {
-    showToast('Válassz érkező partnert!', 'error');
+  if (ctx.legs.length === 0) {
+    showToast('Adj hozzá legalább egy partnert!', 'error');
     return;
   }
   if (!date) {
@@ -1250,26 +1607,56 @@ function saveCurrentTrip() {
     showToast('Az érkezési km nagyobb legyen, mint az indulási!', 'error');
     return;
   }
+  // Verify all legs have routed km
+  if (ctx.legs.some(l => l.legKm == null)) {
+    showToast('Várj amíg a km számolás befejeződik!', 'error');
+    return;
+  }
 
-  const trip = {
-    id: Date.now().toString(),
-    date,
-    purpose,
-    fromName: ctx.fromName,
-    fromAddr: ctx.fromAddr,
-    destName: ctx.destName,
-    destAddr: ctx.destAddr,
-    intermediates: ctx.intermediates.map(name => {
-      const p = findPartner(name);
-      return p ? { name: p.name, address: p.address } : null;
-    }).filter(Boolean),
-    kmStart,
-    kmEnd,
-    distance: kmEnd - kmStart,
-    notes,
-    highway: ctx.highway,
-  };
-  trips.push(trip);
+  // Distribute total km diff across legs proportionally to OSRM leg distances.
+  // Last leg gets the remainder so the sum exactly matches the user-entered diff.
+  const totalDiff = kmEnd - kmStart;
+  const sumOsrm = ctx.legs.reduce((a, l) => a + l.legKm, 0);
+  const baseId = Date.now();
+  let cumulativeKm = kmStart;
+  let prevName = ctx.fromName;
+  let prevAddr = ctx.fromAddr;
+
+  const newTrips = [];
+  ctx.legs.forEach((leg, i) => {
+    let legKmReal;
+    if (i === ctx.legs.length - 1) {
+      // last leg: take the remainder
+      legKmReal = kmEnd - cumulativeKm;
+    } else {
+      const ratio = sumOsrm > 0 ? (leg.legKm / sumOsrm) : (1 / ctx.legs.length);
+      legKmReal = Math.round(totalDiff * ratio);
+    }
+    const legStart = cumulativeKm;
+    const legEnd = cumulativeKm + legKmReal;
+
+    newTrips.push({
+      id: String(baseId + i),
+      date,
+      purpose: leg.isPrivate ? 'Magán' : businessPurpose,
+      fromName: prevName,
+      fromAddr: prevAddr,
+      destName: leg.name,
+      destAddr: leg.address,
+      intermediates: [],
+      kmStart: legStart,
+      kmEnd: legEnd,
+      distance: legKmReal,
+      notes: i === ctx.legs.length - 1 ? notes : '', // notes only on the last leg
+      highway: ctx.highway,
+    });
+
+    cumulativeKm = legEnd;
+    prevName = leg.name;
+    prevAddr = leg.address;
+  });
+
+  trips.push(...newTrips);
   saveTripsToStorage();
   renderTripList();
 
@@ -1278,7 +1665,10 @@ function saveCurrentTrip() {
   kmEndEl.value = '';
   document.getElementById('tripNotes').value = '';
 
-  showToast('✓ Út rögzítve', 'success');
+  const msg = newTrips.length === 1
+    ? '✓ Út rögzítve'
+    : `✓ ${newTrips.length} út rögzítve (legenként)`;
+  showToast(msg, 'success');
 }
 
 // =============================================================
@@ -1536,10 +1926,18 @@ async function buildExcelBuffer() {
     r.getCell(11).value = t.notes || '';
     r.getCell(11).fill = inputFill;
 
+    // If trip is Magán, override fills with gray + italicize
+    const isPrivateRow = t.purpose === 'Magán';
+    const privateFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFEFEF' } };
+
     // Borders + base font
     for (let c = 1; c <= 11; c++) {
       const cell = r.getCell(c);
       if (!cell.font) cell.font = { name: 'Arial', size: 10 };
+      if (isPrivateRow) {
+        cell.fill = privateFill;
+        cell.font = { ...cell.font, italic: true, color: { argb: 'FF595959' } };
+      }
       cell.border = thinBorder();
     }
     row++;
@@ -1592,28 +1990,39 @@ async function buildExcelBuffer() {
     row++;
   }
 
-  // Total row
-  const totalRow = row + 1;
-  ws.mergeCells(totalRow, 1, totalRow, 9);
-  const tc = ws.getCell(totalRow, 1);
-  tc.value = 'ÖSSZESEN:';
-  tc.font = { name: 'Arial', size: 11, bold: true };
-  tc.fill = labelStyle.fill;
-  tc.alignment = { horizontal: 'right', vertical: 'middle' };
-  for (let c = 1; c <= 9; c++) {
-    ws.getCell(totalRow, c).border = mediumBorder();
-    if (!ws.getCell(totalRow, c).fill) ws.getCell(totalRow, c).fill = labelStyle.fill;
+  // Three total rows: ÜZLETI, MAGÁN, MINDÖSSZESEN
+  const lastDataRow_total = row - 1;
+  const totalRowStart = row + 1;
+  const totalsConfig = [
+    { label: 'ÜZLETI ÖSSZESEN:',  formula: `SUMIFS(J15:J${lastDataRow_total},C15:C${lastDataRow_total},"<>Magán")`, color: 'FF305496' },
+    { label: 'MAGÁN ÖSSZESEN:',   formula: `SUMIF(C15:C${lastDataRow_total},"Magán",J15:J${lastDataRow_total})`,    color: 'FF7F7F7F' },
+    { label: 'MINDÖSSZESEN:',     formula: `SUM(J15:J${lastDataRow_total})`,                                          color: 'FF1F4E78' },
+  ];
+
+  for (let i = 0; i < totalsConfig.length; i++) {
+    const trow = totalRowStart + i;
+    const cfg = totalsConfig[i];
+    ws.mergeCells(trow, 1, trow, 9);
+    const tc = ws.getCell(trow, 1);
+    tc.value = cfg.label;
+    tc.font = { name: 'Arial', size: 11, bold: true };
+    tc.fill = labelStyle.fill;
+    tc.alignment = { horizontal: 'right', vertical: 'middle' };
+    for (let c = 1; c <= 9; c++) {
+      ws.getCell(trow, c).border = mediumBorder();
+      if (!ws.getCell(trow, c).fill) ws.getCell(trow, c).fill = labelStyle.fill;
+    }
+    const tj = ws.getCell(trow, 10);
+    tj.value = { formula: cfg.formula };
+    tj.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+    tj.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cfg.color } };
+    tj.alignment = { horizontal: 'right', vertical: 'middle' };
+    tj.numFmt = '#,##0" km"';
+    tj.border = mediumBorder();
+    ws.getCell(trow, 11).fill = labelStyle.fill;
+    ws.getCell(trow, 11).border = mediumBorder();
+    ws.getRow(trow).height = 24;
   }
-  const tj = ws.getCell(totalRow, 10);
-  tj.value = { formula: `SUM(J15:J${row-1})` };
-  tj.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
-  tj.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF305496' } };
-  tj.alignment = { horizontal: 'right', vertical: 'middle' };
-  tj.numFmt = '#,##0" km"';
-  tj.border = mediumBorder();
-  ws.getCell(totalRow, 11).fill = labelStyle.fill;
-  ws.getCell(totalRow, 11).border = mediumBorder();
-  ws.getRow(totalRow).height = 26;
 
   // Data validations
   const lastDataRow = 14 + totalRows;
@@ -1687,7 +2096,7 @@ async function buildExcelBuffer() {
   Object.assign(wsM.getCell('A3'), sectionStyle, { value: 'HAVI BONTÁS' });
   wsM.getRow(3).height = 22;
 
-  ['Hónap', 'Utak száma', 'Megtett km', 'Átlag km/út'].forEach((h, i) => {
+  ['Hónap', 'Utak száma', 'Üzleti km', 'Magán km', 'Összesen km'].forEach((h, i) => {
     const c = wsM.getCell(4, i + 1);
     c.value = h;
     c.font = headerStyle.font;
@@ -1695,7 +2104,7 @@ async function buildExcelBuffer() {
     c.alignment = headerStyle.alignment;
     c.border = mediumBorder();
   });
-  [18, 14, 18, 14].forEach((w, i) => wsM.getColumn(i + 1).width = w);
+  [16, 12, 16, 16, 16].forEach((w, i) => wsM.getColumn(i + 1).width = w);
   wsM.getRow(4).height = 24;
 
   const months = ['Január','Február','Március','Április','Május','Június',
@@ -1706,26 +2115,35 @@ async function buildExcelBuffer() {
     c1.value = months[i]; c1.font = labelStyle.font; c1.fill = labelStyle.fill;
     c1.alignment = { horizontal: 'left', vertical: 'middle' }; c1.border = thinBorder();
 
-    const cntFormula = `COUNTIFS(Útnyilvántartás!$B$15:$B$${lastDataRow},">="&DATE($B$2,${i+1},1),Útnyilvántartás!$B$15:$B$${lastDataRow},"<"&DATE($B$2,${i+2},1))`;
-    const sumFormula = `SUMIFS(Útnyilvántartás!$J$15:$J$${lastDataRow},Útnyilvántartás!$B$15:$B$${lastDataRow},">="&DATE($B$2,${i+1},1),Útnyilvántartás!$B$15:$B$${lastDataRow},"<"&DATE($B$2,${i+2},1))`;
+    const dateRange = `Útnyilvántartás!$B$15:$B$${lastDataRow}`;
+    const purposeRange = `Útnyilvántartás!$C$15:$C$${lastDataRow}`;
+    const kmRange = `Útnyilvántartás!$J$15:$J$${lastDataRow}`;
+    const dStart = `DATE($B$2,${i+1},1)`;
+    const dEnd = `DATE($B$2,${i+2},1)`;
 
-    const c2 = wsM.getCell(r, 2);
-    c2.value = { formula: cntFormula }; c2.fill = calcFill;
-    c2.alignment = { horizontal: 'center', vertical: 'middle' };
-    c2.numFmt = '0'; c2.border = thinBorder();
-    c2.font = { name: 'Arial', size: 10 };
+    // Utak száma (összes, magán+üzleti)
+    const cntFormula = `COUNTIFS(${dateRange},">="&${dStart},${dateRange},"<"&${dEnd})`;
+    // Üzleti km (purpose != "Magán")
+    const bizFormula = `SUMIFS(${kmRange},${dateRange},">="&${dStart},${dateRange},"<"&${dEnd},${purposeRange},"<>Magán")`;
+    // Magán km (purpose == "Magán")
+    const privFormula = `SUMIFS(${kmRange},${dateRange},">="&${dStart},${dateRange},"<"&${dEnd},${purposeRange},"Magán")`;
+    // Összesen km
+    const totFormula = `SUMIFS(${kmRange},${dateRange},">="&${dStart},${dateRange},"<"&${dEnd})`;
 
-    const c3 = wsM.getCell(r, 3);
-    c3.value = { formula: sumFormula }; c3.fill = calcFill;
-    c3.alignment = { horizontal: 'right', vertical: 'middle' };
-    c3.numFmt = '#,##0" km"'; c3.border = thinBorder();
-    c3.font = { name: 'Arial', size: 10 };
-
-    const c4 = wsM.getCell(r, 4);
-    c4.value = { formula: `IFERROR(C${r}/B${r},"")` }; c4.fill = calcFill;
-    c4.alignment = { horizontal: 'right', vertical: 'middle' };
-    c4.numFmt = '0.0" km"'; c4.border = thinBorder();
-    c4.font = { name: 'Arial', size: 10 };
+    for (const [col, formula, fmt, halign] of [
+      [2, cntFormula,  '0',           'center'],
+      [3, bizFormula,  '#,##0" km"',  'right'],
+      [4, privFormula, '#,##0" km"',  'right'],
+      [5, totFormula,  '#,##0" km"',  'right'],
+    ]) {
+      const cc = wsM.getCell(r, col);
+      cc.value = { formula };
+      cc.fill = calcFill;
+      cc.alignment = { horizontal: halign, vertical: 'middle' };
+      cc.numFmt = fmt;
+      cc.border = thinBorder();
+      cc.font = { name: 'Arial', size: 10 };
+    }
   }
   // Yearly total
   const yt = 17;
@@ -1734,16 +2152,17 @@ async function buildExcelBuffer() {
   wsM.getCell(yt, 1).fill = labelStyle.fill;
   wsM.getCell(yt, 1).alignment = { horizontal: 'right', vertical: 'middle' };
   wsM.getCell(yt, 1).border = mediumBorder();
-  for (const [c, f, fmt] of [
-    [2, 'SUM(B5:B16)', '0'],
-    [3, 'SUM(C5:C16)', '#,##0" km"'],
-    [4, 'IFERROR(C17/B17,"")', '0.0" km"'],
+  for (const [c, f, fmt, halign] of [
+    [2, 'SUM(B5:B16)', '0', 'center'],
+    [3, 'SUM(C5:C16)', '#,##0" km"', 'right'],
+    [4, 'SUM(D5:D16)', '#,##0" km"', 'right'],
+    [5, 'SUM(E5:E16)', '#,##0" km"', 'right'],
   ]) {
     const cell = wsM.getCell(yt, c);
     cell.value = { formula: f };
     cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF305496' } };
-    cell.alignment = { horizontal: c === 2 ? 'center' : 'right', vertical: 'middle' };
+    cell.alignment = { horizontal: halign, vertical: 'middle' };
     cell.numFmt = fmt;
     cell.border = mediumBorder();
   }
