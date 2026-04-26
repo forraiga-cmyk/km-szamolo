@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KM Számoló">
+<meta name="theme-color" content="#09090b">
+<meta name="format-detection" content="telephone=no">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Apple touch icon (SVG inline, ~180×180) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20180%20180%22%3E%3Crect%20width%3D%22180%22%20height%3D%22180%22%20fill%3D%22%2309090b%22%20rx%3D%2238%22%2F%3E%3Ctext%20x%3D%2290%22%20y%3D%22118%22%20font-family%3D%22-apple-system%2Csystem-ui%2Csans-serif%22%20font-size%3D%2272%22%20font-weight%3D%22800%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fbbf24%22%20letter-spacing%3D%22-2%22%3EKM%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2309090b%22%20rx%3D%2220%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2266%22%20font-family%3D%22-apple-system%2Csans-serif%22%20font-size%3D%2244%22%20font-weight%3D%22800%22%20text-anchor%3D%22middle%22%20fill%3D%22%23fbbf24%22%3EKM%3C%2Ftext%3E%3C%2Fsvg%3E">
+<title>KM Számoló · Élő útvonal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>
+:root {
+  --bg: #09090b;
+  --surface: #18181b;
+  --surface-2: #27272a;
+  --border: #27272a;
+  --border-2: #3f3f46;
+  --text: #f4f4f5;
+  --text-2: #a1a1aa;
+  --text-3: #71717a;
+  --text-4: #52525b;
+  --accent: #fbbf24;
+  --accent-dark: #f59e0b;
+  --accent-soft: rgba(251,191,36,0.12);
+  --danger: #ef4444;
+  --success: #34d399;
+  --info: #60a5fa;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg); color: var(--text);
+  font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -webkit-overflow-scrolling: touch;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  max-width: 480px; margin: 0 auto;
+  min-height: 100vh; min-height: 100dvh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+.font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+input, select {
+  font-family: inherit;
+  -webkit-appearance: none; appearance: none;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 14px;
+  font-size: 16px; /* iOS: 16px+ otherwise auto-zooms on focus */
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+  cursor: pointer;
+}
+input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
+
+.view { padding: 18px 16px 20px; }
+
+.header {
+  display: flex; flex-direction: column;
+  margin-bottom: 18px; padding: 8px 4px 0;
+}
+.header h1 { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
+.header p { font-size: 12px; color: var(--text-3); margin: 4px 0 0; font-weight: 500; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-header {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-3); margin: 0 0 12px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+/* GPS card */
+.gps-card { position: relative; }
+.gps-status {
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.gps-icon-wrap {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(251,191,36,0.3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+.gps-icon-wrap.error {
+  background: rgba(239,68,68,0.1);
+  border-color: rgba(239,68,68,0.3);
+}
+.gps-icon-wrap.loading {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+.gps-info { flex: 1; min-width: 0; }
+.gps-label {
+  font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-3); margin: 0 0 2px;
+}
+.gps-address {
+  font-size: 13px; font-weight: 600;
+  color: var(--text); margin: 0;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.gps-coords {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-4);
+  margin: 4px 0 0; font-weight: 500;
+}
+.gps-error { color: var(--danger); font-size: 12px; font-weight: 600; margin: 0; }
+.gps-actions {
+  display: flex; gap: 6px; margin-top: 12px;
+}
+.gps-btn {
+  flex: 1;
+  padding: 9px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text-2);
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: all 0.15s ease;
+}
+.gps-btn:hover { border-color: var(--accent); color: var(--accent); }
+.gps-btn.active { background: var(--accent); color: #18181b; border-color: var(--accent); }
+
+.fallback-select { margin-top: 12px; display: none; }
+.fallback-select.show { display: block; }
+
+/* Toggle */
+.toggle {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+  background: var(--bg); padding: 4px; border-radius: 12px;
+}
+.toggle button {
+  padding: 10px 8px; font-size: 13px; font-weight: 700;
+  border-radius: 9px; color: var(--text-3);
+  transition: all 0.15s ease;
+}
+.toggle button.active { background: var(--accent); color: #18181b; }
+.toggle-status {
+  text-align: center; margin: 10px 0 0;
+  font-size: 11px; color: var(--text-3); font-weight: 600;
+}
+
+/* Route */
+.route-row { margin-bottom: 12px; }
+.route-row:last-child { margin-bottom: 0; }
+.route-label {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-3); margin-bottom: 6px;
+}
+.route-label.dest { color: var(--success); }
+.route-label.next { color: var(--accent); }
+.route-address {
+  font-size: 11px; color: var(--text-3);
+  margin: 6px 4px 0; font-weight: 500;
+}
+.route-address.empty { color: var(--text-4); font-style: italic; }
+.leg-distance {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700;
+  color: var(--accent); margin: 4px 0 0;
+}
+.leg-distance.computing { color: var(--text-4); font-style: italic; }
+.leg-distance .from-label { color: var(--text-4); font-weight: 500; }
+
+.rm-btn {
+  background: var(--surface-2); color: var(--text-3);
+  width: 22px; height: 22px;
+  border-radius: 50%; font-size: 14px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.rm-btn:hover { background: var(--danger); color: white; }
+
+.add-stop-btn {
+  width: 100%;
+  background: var(--bg);
+  border: 1px dashed var(--border-2);
+  color: var(--text-3);
+  padding: 11px;
+  border-radius: 12px;
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin: 12px 0;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  transition: all 0.15s ease;
+}
+.add-stop-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.add-stop-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Stats */
+.next-stat {
+  background: linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.04) 100%);
+  border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.next-stat .stat-label { color: var(--accent); }
+.next-stat .stat-value { font-size: 32px; color: var(--accent); }
+.next-stat .stat-target {
+  font-size: 12px; color: var(--text-2); font-weight: 600;
+  margin-top: 2px;
+}
+
+.stat {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.stat-label {
+  font-size: 9px; font-weight: 800;
+  text-transform: uppercase; color: var(--text-3);
+  letter-spacing: 0.08em; margin: 0 0 4px;
+}
+.stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px; font-weight: 700; margin: 0;
+  color: var(--text);
+}
+.stat-value .unit {
+  font-size: 11px; color: var(--text-3);
+  margin-left: 2px; font-weight: 600;
+}
+.stat-value .empty { color: var(--text-4); }
+
+/* Map */
+.map-container {
+  border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--border);
+  height: 280px;
+  background: var(--surface-2);
+  position: relative;
+}
+.map-container iframe { width: 100%; height: 100%; border: 0; display: block; }
+.map-empty {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-4); font-size: 12px;
+  text-align: center; padding: 20px; font-weight: 500;
+}
+
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px;
+  background: var(--accent); color: #18181b;
+  border-radius: 13px;
+  font-weight: 800; font-size: 13px;
+  text-decoration: none; margin-top: 10px;
+  transition: background 0.15s ease;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.btn:hover { background: var(--accent-dark); }
+.btn:active { transform: scale(0.98); }
+.btn[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+
+.btn.waze {
+  background: #33CCFF;
+  color: #003D5C;
+}
+.btn.waze:hover { background: #00B8E6; }
+
+.btn.success {
+  background: var(--success);
+  color: #052e1c;
+}
+.btn.success:hover { background: #2bb583; }
+
+.btn.danger-outline {
+  background: transparent;
+  border: 1px solid rgba(239,68,68,0.4);
+  color: var(--danger);
+}
+.btn.danger-outline:hover { background: rgba(239,68,68,0.1); }
+
+.btn.secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Trip logger */
+.trip-form { display: grid; gap: 8px; margin-bottom: 12px; }
+.trip-form-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.trip-field { display: flex; flex-direction: column; gap: 4px; }
+.trip-field label {
+  font-size: 9px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-3);
+  margin-left: 4px;
+}
+.trip-field input, .trip-field select {
+  padding: 12px 14px; font-size: 16px;
+  border-radius: 11px;
+}
+.trip-field input.km-input {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  text-align: center;
+}
+
+.trip-summary {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  font-size: 11px;
+  background: var(--bg);
+  border-radius: 11px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.trip-summary .key { color: var(--text-3); font-weight: 600; }
+.trip-summary .val { color: var(--text); font-weight: 600; word-break: break-word; }
+
+.badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px;
+  padding: 0 6px;
+  background: var(--accent); color: #18181b;
+  border-radius: 10px;
+  font-size: 10px; font-weight: 800;
+  margin-left: 6px;
+}
+
+.trip-list-table {
+  width: 100%; border-collapse: collapse;
+  margin-top: 12px; font-size: 11px;
+}
+.trip-list-table th, .trip-list-table td {
+  padding: 7px 6px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.trip-list-table th {
+  font-size: 9px; font-weight: 800;
+  text-transform: uppercase; color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+.trip-list-table td.km {
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right; font-weight: 700;
+  color: var(--text);
+}
+.trip-list-table td.act { text-align: center; width: 30px; }
+.trip-list-table tr.empty-row td {
+  text-align: center; color: var(--text-4);
+  font-style: italic; padding: 16px 6px;
+}
+.trip-rm-btn {
+  background: transparent; color: var(--text-4);
+  width: 22px; height: 22px;
+  border-radius: 50%; font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.trip-rm-btn:hover { background: var(--danger); color: white; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 32px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--accent); color: #18181b;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 700; font-size: 13px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  opacity: 0; pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  max-width: 90vw; text-align: center;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.toast.error { background: var(--danger); color: white; }
+.toast.success { background: var(--success); color: #052e1c; }
+
+.btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.btn-grid .btn {
+  margin-top: 0;
+  padding: 13px 8px;
+  font-size: 12px;
+}
+
+.hint {
+  font-size: 10px; color: var(--text-4);
+  text-align: center; margin: 8px 4px 0;
+  font-weight: 500; line-height: 1.5;
+}
+
+/* Reference */
+details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+details summary {
+  cursor: pointer;
+  font-weight: 800; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-2);
+  list-style: none;
+  display: flex; justify-content: space-between; align-items: center;
+  outline: none;
+}
+details summary::after {
+  content: '+'; font-weight: 400; font-size: 18px;
+  color: var(--text-3); font-family: monospace;
+}
+details[open] summary::after { content: '−'; }
+details summary::-webkit-details-marker { display: none; }
+
+.ref-table {
+  width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 11px;
+}
+.ref-table th, .ref-table td {
+  padding: 8px 6px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.ref-table th {
+  font-size: 9px; font-weight: 800;
+  text-transform: uppercase; color: var(--text-3);
+  letter-spacing: 0.06em;
+}
+.ref-table td.km {
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right; font-weight: 700;
+  color: var(--text); width: 50px;
+}
+.ref-table td:first-child { font-weight: 700; }
+.ref-table td:nth-child(2) { color: var(--text-3); font-size: 10px; }
+.ref-table tr:hover td { background: var(--surface-2); }
+
+footer {
+  text-align: center; font-size: 10px; color: var(--text-4);
+  padding: 16px 8px; font-weight: 500; line-height: 1.6;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.2s ease-out; }
+
+.spin { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+<div class="view">
+
+<header class="header">
+  <h1>KM Számoló</h1>
+  <p>Élő útvonaltervező · GPS-alapú km</p>
+</header>
+
+<!-- GPS / Kiindulópont -->
+<section class="card gps-card">
+  <p class="card-header">
+    <span>Kiindulópont</span>
+    <button id="refreshGps" class="rm-btn" title="GPS frissítés" style="background:transparent;color:var(--text-3);width:auto;height:auto;font-size:12px;padding:4px 8px;border-radius:6px">🔄</button>
+  </p>
+  <div class="gps-status">
+    <div class="gps-icon-wrap loading" id="gpsIcon">📍</div>
+    <div class="gps-info">
+      <p class="gps-label" id="gpsLabel">GPS lekérése...</p>
+      <p class="gps-address" id="gpsAddress">Engedély megadása szükséges</p>
+      <p class="gps-coords" id="gpsCoords"></p>
+    </div>
+  </div>
+  <div class="gps-actions">
+    <button class="gps-btn active" data-mode="gps" id="modeGps">📍 Aktuális helyzet</button>
+    <button class="gps-btn" data-mode="partner" id="modePartner">🏢 Partner</button>
+  </div>
+  <div class="fallback-select" id="fallbackWrap">
+    <select id="fallbackSelect"></select>
+  </div>
+</section>
+
+<!-- TOGGLE -->
+<section class="card">
+  <p class="card-header">Autópálya használat</p>
+  <div class="toggle" id="toggleHighway">
+    <button data-value="igen" class="active">🛣️ Autópályával</button>
+    <button data-value="nem">🚙 Anélkül</button>
+  </div>
+  <p class="toggle-status" id="toggleStatus">Autópályás útvonal — gyorsabb, díjköteles</p>
+</section>
+
+<!-- ROUTE -->
+<section class="card">
+  <p class="card-header">Útvonal</p>
+
+  <div id="intermediates"></div>
+
+  <button class="add-stop-btn" id="addStop">
+    <span style="font-size:14px">+</span> Partner hozzáadása
+    <span id="stopCount" style="opacity:0.5;font-weight:600">(0/5)</span>
+  </button>
+</section>
+
+<!-- STATS -->
+<section class="card">
+  <p class="card-header">
+    <span>Számolás</span>
+    <span id="calcStatus" style="font-size:9px;color:var(--text-4);font-weight:600">—</span>
+  </p>
+  <div class="next-stat">
+    <p class="stat-label">➡️ Következő partnerig</p>
+    <p class="stat-value"><span id="nextKm" class="empty">—</span><span class="unit" id="nextKmUnit"></span></p>
+    <p class="stat-target" id="nextTarget">—</p>
+  </div>
+  <div class="stat">
+    <p class="stat-label">📏 Teljes útvonal (egyirányú)</p>
+    <p class="stat-value"><span id="totalKm" class="empty">—</span><span class="unit" id="totalKmUnit"></span></p>
+  </div>
+</section>
+
+<!-- MAP -->
+<section class="card">
+  <p class="card-header">Útvonal és navigáció</p>
+  <div class="map-container" id="mapContainer">
+    <div class="map-empty" id="mapEmpty">Válassz érkező partnert.</div>
+    <iframe id="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" style="display:none"></iframe>
+  </div>
+  <div class="btn-grid">
+    <a class="btn" id="openInMaps" href="#" target="_blank" rel="noopener" aria-disabled="true">
+      🗺️ Google Maps
+    </a>
+    <a class="btn waze" id="openInWaze" href="#" target="_blank" rel="noopener" aria-disabled="true">
+      🚦 Waze
+    </a>
+  </div>
+  <p class="hint">
+    <strong>Google Maps:</strong> teljes útvonal megállókkal, autópálya beállítással.<br>
+    <strong>Waze:</strong> azonnali navigáció a <em>következő</em> partnerhez (élő forgalom).
+  </p>
+</section>
+
+<!-- ÚTNYILVÁNTARTÁS -->
+<section class="card">
+  <p class="card-header">
+    <span>Útnyilvántartás <span class="badge" id="tripBadge">0</span></span>
+    <span style="font-size:9px;color:var(--text-4);font-weight:600">Honda NC 750 XD</span>
+  </p>
+
+  <!-- Current trip summary -->
+  <div class="trip-summary" id="tripSummary">
+    <span class="key">Honnan:</span><span class="val" id="summaryFrom">—</span>
+    <span class="key">Hová:</span><span class="val" id="summaryTo">—</span>
+    <span class="key">Távolság:</span><span class="val" id="summaryDist">—</span>
+  </div>
+
+  <!-- Trip entry form -->
+  <div class="trip-form">
+    <div class="trip-form-row">
+      <div class="trip-field">
+        <label>Dátum</label>
+        <input type="date" id="tripDate">
+      </div>
+      <div class="trip-field">
+        <label>Utazás célja</label>
+        <select id="tripPurpose">
+          <option value="Főépítészi feladatok ellátása">Főépítészi feladatok ellátása</option>
+          <option value="Juhhé partneri megbeszélés">Juhhé partneri megbeszélés</option>
+          <option value="Építészeti egyeztetés">Építészeti egyeztetés</option>
+          <option value="Magán">Magán</option>
+        </select>
+      </div>
+    </div>
+    <div class="trip-form-row">
+      <div class="trip-field">
+        <label>Km óra induláskor</label>
+        <input type="number" id="kmStart" class="km-input" inputmode="numeric" placeholder="—">
+      </div>
+      <div class="trip-field">
+        <label>Km óra érkezéskor</label>
+        <input type="number" id="kmEnd" class="km-input" inputmode="numeric" placeholder="—">
+      </div>
+    </div>
+    <div class="trip-field">
+      <label>Megjegyzés (opcionális)</label>
+      <input type="text" id="tripNotes" placeholder="—">
+    </div>
+    <button class="btn success" id="saveTrip">💾 Út rögzítése</button>
+  </div>
+
+  <!-- Trip list -->
+  <details id="tripListDetails" style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+    <summary style="font-size:10px">Rögzített utak <span id="tripListCount" style="color:var(--text-4);margin-left:6px">(0)</span></summary>
+    <table class="trip-list-table">
+      <thead>
+        <tr>
+          <th>Dátum</th>
+          <th>Partner</th>
+          <th class="km">Km</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tripList">
+        <tr class="empty-row"><td colspan="4">Még nincs rögzített út</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <!-- Actions -->
+  <div class="btn-grid">
+    <button class="btn" id="exportExcel">📊 Excel mentés</button>
+    <button class="btn danger-outline" id="clearTrips">🗑️ Mind törlése</button>
+  </div>
+  <p class="hint">
+    A rögzített utak a böngésző helyi tárolójában vannak. Az Excel mentés a <strong>menetlevel.xlsx</strong>-t generálja a Szja tv. szerinti formátumban.
+  </p>
+</section>
+
+<!-- REFERENCE -->
+<details>
+  <summary>📋 Partnerek listája (36)</summary>
+  <table class="ref-table">
+    <thead>
+      <tr>
+        <th>Partner</th>
+        <th>Cím</th>
+      </tr>
+    </thead>
+    <tbody id="refTable"></tbody>
+  </table>
+</details>
+
+<footer>
+  ⚙️ Routing: OSRM (open-source) · Térkép: Google Maps<br>
+  A km értékek tényleges közúti távolságot mutatnak a routing algoritmus szerint.
+</footer>
+
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================================
+// PARTNER ADATOK (lat/lng pre-geocoded)
+// =============================================================
+const PARTNERS = [
+  { name: 'Szász Motor Kft.',         address: '4400 Nyíregyháza, Vasgyár u. 2.',                lat: 47.9516164, lng: 21.7051886 },
+  { name: 'Gift Energy Kft. — Iroda', address: '3530 Miskolc, Mindszent tér 12.',                lat: 48.0983460, lng: 20.7846350 },
+  { name: 'Lakás',                    address: '3519 Miskolc, Thaly Kálmán u. 45.',              lat: 48.0615801, lng: 20.7574641 },
+  { name: 'Ágasvár',                  address: '3235 Mátraszentimre, Rákóczi Ferenc utca 16.',   lat: 47.9088026, lng: 19.8789588 },
+  { name: 'Alsóvadász',               address: '3811 Alsóvadász, Fő út 63.',                     lat: 48.2392697, lng: 20.9040147 },
+  { name: 'Átány',                    address: '3371 Átány, II. Rákóczi F. út 60.',              lat: 47.6154401, lng: 20.3610319 },
+  { name: 'Bagolyirtás',              address: '3235 Mátraszentimre, Rákóczi Ferenc utca 16.',   lat: 47.9088026, lng: 19.8789588 },
+  { name: 'Balaton',                  address: '3347 Balaton, Köztársaság tér 5.',               lat: 48.0924168, lng: 20.3077471 },
+  { name: 'Becskeháza',               address: '3768 Becskeháza, Fő út 52.',                     lat: 48.5314913, lng: 20.8355183 },
+  { name: 'Bekölce',                  address: '3343 Bekölce, Béke út 43.',                      lat: 48.0796593, lng: 20.2711033 },
+  { name: 'Bódvalenke',               address: '3768 Bódvalenke, Szabadság utca 65.',            lat: 48.5419833, lng: 20.8063416 },
+  { name: 'Bódvaszilas',              address: '3763 Bódvaszilas, Kossuth Lajos út 21.',         lat: 48.5377929, lng: 20.7350293 },
+  { name: 'Fallóskút',                address: '3235 Mátraszentimre, Rákóczi Ferenc utca 16.',   lat: 47.9088026, lng: 19.8789588 },
+  { name: 'Forró',                    address: '3849 Forró, Fő út 62.',                          lat: 48.3205984, lng: 21.0859034 },
+  { name: 'Galyatető',                address: '3235 Mátraszentimre, Rákóczi Ferenc utca 16.',   lat: 47.9088026, lng: 19.8789588 },
+  { name: 'Girincs',                  address: '3578 Girincs, Petőfi Sándor u. 1/A.',            lat: 47.9684777, lng: 20.9848377 },
+  { name: 'Hevesvezekény',            address: '3383 Hevesvezekény, Alkotmány út 2.',            lat: 47.5573328, lng: 20.3554046 },
+  { name: 'Kesznyéten',               address: '3579 Kesznyéten, Béke tér 17.',                  lat: 47.9666277, lng: 21.0471995 },
+  { name: 'Kiscsécs',                 address: '3578 Kiscsécs, Dózsa György utca 17.',           lat: 47.9675404, lng: 21.0110031 },
+  { name: 'Komjáti',                  address: '3765 Komjáti, Petőfi Sándor u. 13.',             lat: 48.5456270, lng: 20.7610253 },
+  { name: 'Mátraszentimre',           address: '3235 Mátraszentimre, Rákóczi Ferenc utca 16.',   lat: 47.9088026, lng: 19.8789588 },
+  { name: 'Mátraszentistván',         address: '3235 Mátraszentimre, Rákóczi Ferenc utca 16.',   lat: 47.9088026, lng: 19.8789588 },
+  { name: 'Mátraszentlászló',         address: '3235 Mátraszentimre, Rákóczi Ferenc utca 16.',   lat: 47.9088026, lng: 19.8789588 },
+  { name: 'Mikófalva',                address: '3344 Mikófalva, Lipót utca 1.',                  lat: 48.0575124, lng: 20.3171147 },
+  { name: 'Muhi',                     address: '3552 Muhi, Rákóczi út 2.',                       lat: 47.9774751, lng: 20.9308503 },
+  { name: 'Nagyvisnyó',               address: '3349 Nagyvisnyó, Fő út 12.',                     lat: 48.1389562, lng: 20.4232028 },
+  { name: 'Nyékládháza',              address: '3433 Nyékládháza, Vasút u. 16.',                 lat: 47.9921684, lng: 20.8389892 },
+  { name: 'Sarud',                    address: '3386 Sarud, Kossuth Lajos út 93.',               lat: 47.5875022, lng: 20.5975550 },
+  { name: 'Szentistvánbaksa',         address: '3844 Szentistvánbaksa, Petőfi u. 111.',          lat: 48.2217427, lng: 21.0249470 },
+  { name: 'Szikszó',                  address: '3800 Szikszó, Kálvin tér 1.',                    lat: 48.2007133, lng: 20.9280941 },
+  { name: 'Szilvásvárad',             address: '3348 Szilvásvárad, Miskolci út 1.',              lat: 48.1037153, lng: 20.3886579 },
+  { name: 'Szin',                     address: '3761 Szin, Szabadság út 18.',                    lat: 48.4979074, lng: 20.6658753 },
+  { name: 'Szinpetri',                address: '3761 Szinpetri, Dózsa György út 58.',            lat: 48.4836416, lng: 20.6240108 },
+  { name: 'Tornanádaska',             address: '3767 Tornanádaska, Kossuth út 44.',              lat: 48.5600769, lng: 20.7869613 },
+  { name: 'Tornaszentandrás',         address: '3765 Tornaszentandrás, Hunyadi János út 4.',     lat: 48.5204644, lng: 20.7750199 },
+  { name: 'Tornaszentjakab',          address: '3769 Tornaszentjakab, Rákóczi Ferenc út 23.',    lat: 48.5228247, lng: 20.8700478 },
+];
+
+const DEFAULT_PARTNER = 'Szikszó';
+const FALLBACK_PARTNER = 'Gift Energy Kft. — Iroda';
+const MAX_STOPS = 5;
+
+// =============================================================
+// STATE
+// =============================================================
+let currentLocation = null; // { lat, lng, address?, source: 'gps'|'partner' }
+let stops = []; // [{ name }]
+let useHighway = true;
+let routeCalcId = 0; // increments to cancel stale OSRM responses
+let lastLegDistances = []; // km per leg, in order: [origin→stop1, stop1→stop2, ..., lastStop→dest]
+
+// =============================================================
+// HELPERS
+// =============================================================
+function findPartner(name) {
+  return PARTNERS.find(p => p.name === name) || null;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])
+  );
+}
+
+function populateSelect(sel, defaultValue) {
+  sel.innerHTML = '';
+  const empty = document.createElement('option');
+  empty.value = '';
+  empty.textContent = '— válassz partnert —';
+  sel.appendChild(empty);
+  for (const p of PARTNERS) {
+    const opt = document.createElement('option');
+    opt.value = p.name;
+    opt.textContent = p.name;
+    if (p.name === defaultValue) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function haversine(a, b) {
+  const R = 6371;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const x = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+}
+
+// =============================================================
+// GPS
+// =============================================================
+function setGpsState(state, label, address, coords) {
+  const icon = document.getElementById('gpsIcon');
+  const lab  = document.getElementById('gpsLabel');
+  const addr = document.getElementById('gpsAddress');
+  const co   = document.getElementById('gpsCoords');
+
+  icon.classList.remove('loading','error');
+  if (state === 'loading') icon.classList.add('loading');
+  if (state === 'error')   icon.classList.add('error');
+
+  icon.textContent = state === 'error' ? '❌' : '📍';
+  lab.textContent  = label;
+  addr.textContent = address || '';
+  co.textContent   = coords  || '';
+}
+
+async function getGps() {
+  if (!navigator.geolocation) {
+    setGpsState('error', 'Nem támogatott', 'A böngésző nem támogatja a GPS-t');
+    return null;
+  }
+  // iOS/Safari requires HTTPS for geolocation (except localhost)
+  if (!window.isSecureContext) {
+    setGpsState('error', 'HTTPS szükséges',
+      'GPS csak HTTPS-en érhető el. Tölts fel a fájlt egy HTTPS-szerverre (pl. Netlify, GitHub Pages) — vagy kapcsolj át "Partner" módba.');
+    return null;
+  }
+  setGpsState('loading', 'GPS lekérése...', 'Engedély megadása szükséges', '');
+  return new Promise(resolve => {
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+      err => {
+        const msg = err.code === 1 ? 'GPS engedély megtagadva — engedélyezd a Beállítások → Safari → Helymeghatározás alatt'
+                  : err.code === 2 ? 'GPS pozíció nem elérhető'
+                  : err.code === 3 ? 'GPS időtúllépés — próbáld újra szabad ég alatt'
+                  : 'GPS hiba';
+        setGpsState('error', 'GPS hiba', msg, '');
+        resolve(null);
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
+    );
+  });
+}
+
+async function reverseGeocode(lat, lng) {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&accept-language=hu`;
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data && data.address) {
+      const a = data.address;
+      const parts = [];
+      if (a.postcode) parts.push(a.postcode);
+      const town = a.city || a.town || a.village || a.municipality || a.county;
+      if (town) parts[parts.length ? parts.length-1 : 0] = (parts[0] || '') + ' ' + town;
+      const street = a.road || a.pedestrian || '';
+      const number = a.house_number || '';
+      if (street) parts.push(street + (number ? ' ' + number : ''));
+      return parts.join(', ').trim();
+    }
+    return data && data.display_name ? data.display_name : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function refreshGpsAndUpdate() {
+  const pos = await getGps();
+  if (!pos) {
+    // GPS failed, set fallback
+    currentLocation = null;
+    updateAll();
+    return;
+  }
+  currentLocation = { lat: pos.lat, lng: pos.lng, source: 'gps', accuracy: pos.accuracy };
+  setGpsState('ok', 'Aktuális helyzet (GPS)', 'Cím lekérése...',
+    `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)} · ±${Math.round(pos.accuracy)}m`);
+  updateAll();
+  // Reverse geocode (asynchronously, doesn't block)
+  const addr = await reverseGeocode(pos.lat, pos.lng);
+  if (addr && currentLocation && currentLocation.source === 'gps') {
+    currentLocation.address = addr;
+    setGpsState('ok', 'Aktuális helyzet (GPS)', addr,
+      `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)} · ±${Math.round(pos.accuracy)}m`);
+  }
+}
+
+function setPartnerAsOrigin(partnerName) {
+  const p = findPartner(partnerName);
+  if (!p) {
+    currentLocation = null;
+    return;
+  }
+  currentLocation = { lat: p.lat, lng: p.lng, address: p.address, source: 'partner', name: p.name };
+  setGpsState('ok', 'Partner kiindulóponttal', p.name + ' — ' + p.address, `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`);
+  updateAll();
+}
+
+// =============================================================
+// OSRM ROUTING
+// =============================================================
+async function calculateRoute(coords) {
+  // coords: array of {lat, lng}, at least 2
+  if (!coords || coords.length < 2) return null;
+  const myId = ++routeCalcId;
+  const coordStr = coords.map(c => `${c.lng},${c.lat}`).join(';');
+  const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=false&alternatives=false`;
+  document.getElementById('calcStatus').textContent = 'OSRM számolás...';
+  try {
+    const res = await fetch(url);
+    if (myId !== routeCalcId) return null; // stale response
+    if (!res.ok) throw new Error('OSRM nem elérhető');
+    const data = await res.json();
+    if (data.code !== 'Ok' || !data.routes || !data.routes[0]) throw new Error('Nincs útvonal');
+    document.getElementById('calcStatus').textContent = '✓ OSRM (valós közúti km)';
+    return {
+      total: data.routes[0].distance / 1000,
+      legs: data.routes[0].legs.map(l => l.distance / 1000),
+    };
+  } catch (e) {
+    if (myId !== routeCalcId) return null;
+    // Fallback: haversine × 1.3
+    document.getElementById('calcStatus').textContent = '⚠ Becslés (OSRM nem elérhető)';
+    const legs = [];
+    for (let i = 0; i < coords.length - 1; i++) {
+      legs.push(haversine(coords[i], coords[i+1]) * 1.3);
+    }
+    const total = legs.reduce((a,b) => a+b, 0);
+    return { total, legs, fallback: true };
+  }
+}
+
+// =============================================================
+// INTERMEDIATE STOPS
+// =============================================================
+function renderIntermediates() {
+  const container = document.getElementById('intermediates');
+  container.innerHTML = '';
+  stops.forEach((stop, idx) => {
+    const div = document.createElement('div');
+    div.className = 'route-row fade-in';
+    div.innerHTML = `
+      <div class="route-label">
+        <span>📍 Partner ${idx+1}</span>
+        <button class="rm-btn" type="button" title="Eltávolítás">×</button>
+      </div>
+      <select data-stop-sel="${idx}"></select>
+      <p class="route-address" data-stop-addr="${idx}">—</p>
+      <p class="leg-distance computing" data-stop-leg="${idx}"></p>
+    `;
+    container.appendChild(div);
+
+    const sel = div.querySelector(`select[data-stop-sel="${idx}"]`);
+    populateSelect(sel, stop.name);
+    sel.addEventListener('change', () => {
+      stop.name = sel.value;
+      updateAll();
+    });
+
+    div.querySelector('.rm-btn').addEventListener('click', () => {
+      stops.splice(idx, 1);
+      renderIntermediates();
+      updateStopCount();
+      updateAll();
+    });
+  });
+}
+function updateStopCount() {
+  document.getElementById('stopCount').textContent = `(${stops.length}/${MAX_STOPS})`;
+  document.getElementById('addStop').disabled = stops.length >= MAX_STOPS;
+}
+
+// =============================================================
+// MAIN UPDATE
+// =============================================================
+async function updateAll() {
+  // The DESTINATION is the last partner with a valid name; intermediate stops are the ones before it.
+  // Build list of valid (filled) partners with their data
+  const validPartners = stops.map(s => findPartner(s.name)).filter(p => p);
+  const dest = validPartners.length > 0 ? validPartners[validPartners.length - 1] : null;
+
+  // Update partner addresses
+  stops.forEach((stop, idx) => {
+    const p = findPartner(stop.name);
+    const addrEl = document.querySelector(`p[data-stop-addr="${idx}"]`);
+    if (addrEl) {
+      addrEl.textContent = p ? p.address : '—';
+      addrEl.classList.toggle('empty', !p);
+    }
+  });
+
+  // Reset leg displays
+  stops.forEach((_, idx) => {
+    const legEl = document.querySelector(`p[data-stop-leg="${idx}"]`);
+    if (legEl) { legEl.textContent = ''; legEl.classList.add('computing'); }
+  });
+
+  // Build coords array
+  if (!currentLocation || !dest) {
+    document.getElementById('nextKm').textContent = '—';
+    document.getElementById('nextKm').classList.add('empty');
+    document.getElementById('nextKmUnit').textContent = '';
+    document.getElementById('totalKm').textContent = '—';
+    document.getElementById('totalKm').classList.add('empty');
+    document.getElementById('totalKmUnit').textContent = '';
+    document.getElementById('nextTarget').textContent = !currentLocation ? 'Kiindulópont nem ismert' : 'Adj hozzá legalább egy partnert';
+    document.getElementById('calcStatus').textContent = '—';
+    buildMapUrl(null, []);
+    if (typeof updateTripSummary === 'function') updateTripSummary();
+    return;
+  }
+
+  const coords = [{ lat: currentLocation.lat, lng: currentLocation.lng }];
+  for (const p of validPartners) {
+    coords.push({ lat: p.lat, lng: p.lng });
+  }
+
+  // Map URL — instant
+  buildMapUrl(currentLocation, validPartners);
+
+  // Show "computing" state for stats
+  document.getElementById('nextKm').textContent = '…';
+  document.getElementById('nextKm').classList.remove('empty');
+  document.getElementById('totalKm').textContent = '…';
+  document.getElementById('totalKm').classList.remove('empty');
+
+  // Next target = first valid partner
+  document.getElementById('nextTarget').textContent = '→ ' + validPartners[0].name;
+
+  // Calculate route
+  const route = await calculateRoute(coords);
+  if (!route) return;
+
+  lastLegDistances = route.legs;
+
+  // First leg = next partner distance
+  const nextKm = route.legs[0];
+  const totalKm = route.total;
+
+  document.getElementById('nextKm').textContent = nextKm.toFixed(1);
+  document.getElementById('nextKm').classList.remove('empty');
+  document.getElementById('nextKmUnit').textContent = ' km';
+
+  document.getElementById('totalKm').textContent = totalKm.toFixed(1);
+  document.getElementById('totalKm').classList.remove('empty');
+  document.getElementById('totalKmUnit').textContent = ' km';
+
+  // Display per-leg distances on each partner row
+  // Each VALID partner row → corresponding leg km
+  let validStopIdx = 0;
+  stops.forEach((s, idx) => {
+    const p = findPartner(s.name);
+    const legEl = document.querySelector(`p[data-stop-leg="${idx}"]`);
+    if (!p || !legEl) return;
+    const km = route.legs[validStopIdx];
+    const fromLabel = validStopIdx === 0
+      ? (currentLocation.source === 'gps' ? 'GPS-ből' : 'Kiindulóponttól')
+      : 'Előzőtől';
+    legEl.innerHTML = `<span class="from-label">${fromLabel}:</span> ${km.toFixed(1)} km`;
+    legEl.classList.remove('computing');
+    validStopIdx++;
+  });
+
+  // Update trip summary
+  if (typeof updateTripSummary === 'function') updateTripSummary();
+}
+
+// =============================================================
+// MAP
+// =============================================================
+function buildMapUrl(origin, partnersArr) {
+  const map = document.getElementById('map');
+  const empty = document.getElementById('mapEmpty');
+  const openLink = document.getElementById('openInMaps');
+  const wazeLink = document.getElementById('openInWaze');
+
+  if (!origin || !partnersArr || partnersArr.length === 0) {
+    map.style.display = 'none';
+    empty.style.display = 'flex';
+    empty.textContent = !origin ? 'Várakozás kiindulópontra...' : 'Adj hozzá legalább egy partnert.';
+    openLink.setAttribute('aria-disabled', 'true');
+    openLink.href = '#';
+    wazeLink.setAttribute('aria-disabled', 'true');
+    wazeLink.href = '#';
+    wazeLink.innerHTML = '🚦 Waze';
+    return;
+  }
+
+  const destination = partnersArr[partnersArr.length - 1]; // last = destination
+  const intermediates = partnersArr.slice(0, -1);          // all but last
+  const nextPartner = partnersArr[0];                      // first = next leg target
+
+  // Origin: prefer coords for GPS, address for partners
+  const originStr = origin.source === 'gps'
+    ? `${origin.lat},${origin.lng}`
+    : origin.address;
+
+  const intAddrs = intermediates.map(p => p.address);
+  const destAddr = destination.address;
+
+  // ---- Embed (legacy URL, no API key) ----
+  const saddr = encodeURIComponent(originStr);
+  const allWaypoints = [...intAddrs, destAddr].map(encodeURIComponent);
+  const daddr = allWaypoints.join('+to:');
+  const embedUrl = `https://maps.google.com/maps?saddr=${saddr}&daddr=${daddr}&hl=hu&output=embed`;
+
+  if (map.src !== embedUrl) {
+    map.src = embedUrl;
+  }
+  map.style.display = 'block';
+  empty.style.display = 'none';
+
+  // ---- Open in Google Maps (modern URL with avoid=tolls support) ----
+  const orig = encodeURIComponent(originStr);
+  const dest = encodeURIComponent(destAddr);
+  const waypoints = intAddrs.map(encodeURIComponent).join('%7C');
+
+  let openUrl = `https://www.google.com/maps/dir/?api=1&origin=${orig}&destination=${dest}&travelmode=driving`;
+  if (waypoints) openUrl += `&waypoints=${waypoints}`;
+  if (!useHighway) openUrl += `&avoid=tolls`;
+
+  openLink.href = openUrl;
+  openLink.removeAttribute('aria-disabled');
+
+  // ---- Waze URL (single destination = next partner) ----
+  const wazeUrl = `https://waze.com/ul?ll=${nextPartner.lat}%2C${nextPartner.lng}&navigate=yes&zoom=12`;
+  wazeLink.href = wazeUrl;
+  wazeLink.removeAttribute('aria-disabled');
+  wazeLink.innerHTML = `🚦 Waze → ${escapeHtml(nextPartner.name)}`;
+}
+
+// =============================================================
+// TOAST
+// =============================================================
+function showToast(message, type) {
+  const toast = document.getElementById('toast');
+  toast.className = 'toast' + (type ? ' ' + type : '') + ' show';
+  toast.textContent = message;
+  setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// =============================================================
+// TRIP LOGGER
+// =============================================================
+const TRIPS_KEY = 'kmszamolo:trips:v1';
+let trips = [];
+
+function loadTrips() {
+  try {
+    trips = JSON.parse(localStorage.getItem(TRIPS_KEY) || '[]');
+  } catch (e) { trips = []; }
+}
+
+function saveTripsToStorage() {
+  localStorage.setItem(TRIPS_KEY, JSON.stringify(trips));
+}
+
+function buildCurrentTripContext() {
+  const validPartners = stops.map(s => findPartner(s.name)).filter(p => p);
+  const dest = validPartners.length > 0 ? validPartners[validPartners.length - 1] : null;
+  const intermediates = validPartners.slice(0, -1).map(p => p.name);
+  let fromName = '', fromAddr = '';
+  if (currentLocation) {
+    if (currentLocation.source === 'gps') {
+      fromName = 'GPS aktuális helyzet';
+      fromAddr = currentLocation.address || `${currentLocation.lat.toFixed(5)}, ${currentLocation.lng.toFixed(5)}`;
+    } else {
+      fromName = currentLocation.name || 'Partner';
+      fromAddr = currentLocation.address || '';
+    }
+  }
+  return {
+    fromName, fromAddr,
+    destName: dest ? dest.name : '',
+    destAddr: dest ? dest.address : '',
+    intermediates,
+    totalKm: lastLegDistances && lastLegDistances.length
+      ? lastLegDistances.reduce((a,b)=>a+b,0).toFixed(1)
+      : null,
+    highway: useHighway,
+  };
+}
+
+function updateTripSummary() {
+  const ctx = buildCurrentTripContext();
+  document.getElementById('summaryFrom').textContent = ctx.fromName
+    ? (ctx.fromName + (ctx.fromAddr ? ' — ' + ctx.fromAddr : ''))
+    : '—';
+  const toDisplay = [];
+  if (ctx.intermediates.length) toDisplay.push('via ' + ctx.intermediates.join(', '));
+  toDisplay.push(ctx.destName ? (ctx.destName + (ctx.destAddr ? ' — ' + ctx.destAddr : '')) : '—');
+  document.getElementById('summaryTo').textContent = toDisplay.join(' → ');
+  document.getElementById('summaryDist').textContent = ctx.totalKm
+    ? `${ctx.totalKm} km (${ctx.highway ? 'autópályával' : 'autópálya nélkül'})`
+    : '—';
+}
+
+function renderTripList() {
+  const tbody = document.getElementById('tripList');
+  const badge = document.getElementById('tripBadge');
+  const count = document.getElementById('tripListCount');
+  badge.textContent = trips.length;
+  count.textContent = `(${trips.length})`;
+  document.getElementById('exportExcel').disabled = trips.length === 0;
+
+  if (trips.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Még nincs rögzített út</td></tr>';
+    return;
+  }
+  tbody.innerHTML = '';
+  // Sort by date desc
+  const sorted = [...trips].sort((a, b) =>
+    (b.date + (b.id || '')).localeCompare(a.date + (a.id || ''))
+  );
+  for (const t of sorted) {
+    const tr = document.createElement('tr');
+    const dateStr = t.date ? t.date.split('-').reverse().join('.') + '.' : '—';
+    const partnerStr = escapeHtml(t.destName || '—');
+    const kmStr = t.distance != null ? Math.round(t.distance) : '—';
+    tr.innerHTML = `
+      <td>${dateStr}</td>
+      <td>${partnerStr}</td>
+      <td class="km">${kmStr} km</td>
+      <td class="act"><button class="trip-rm-btn" data-trip-id="${t.id}" title="Törlés">×</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+  tbody.querySelectorAll('.trip-rm-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.tripId;
+      trips = trips.filter(x => String(x.id) !== id);
+      saveTripsToStorage();
+      renderTripList();
+      showToast('Út törölve');
+    });
+  });
+}
+
+function saveCurrentTrip() {
+  const ctx = buildCurrentTripContext();
+  const date = document.getElementById('tripDate').value;
+  const purpose = document.getElementById('tripPurpose').value;
+  const kmStartEl = document.getElementById('kmStart');
+  const kmEndEl = document.getElementById('kmEnd');
+  const kmStart = parseInt(kmStartEl.value, 10);
+  const kmEnd = parseInt(kmEndEl.value, 10);
+  const notes = document.getElementById('tripNotes').value.trim();
+
+  if (!ctx.destName) {
+    showToast('Válassz érkező partnert!', 'error');
+    return;
+  }
+  if (!date) {
+    showToast('Adj meg dátumot!', 'error');
+    return;
+  }
+  if (isNaN(kmStart) || isNaN(kmEnd)) {
+    showToast('Add meg a km óra állásokat!', 'error');
+    return;
+  }
+  if (kmEnd <= kmStart) {
+    showToast('Az érkezési km nagyobb legyen, mint az indulási!', 'error');
+    return;
+  }
+
+  const trip = {
+    id: Date.now().toString(),
+    date,
+    purpose,
+    fromName: ctx.fromName,
+    fromAddr: ctx.fromAddr,
+    destName: ctx.destName,
+    destAddr: ctx.destAddr,
+    intermediates: ctx.intermediates.map(name => {
+      const p = findPartner(name);
+      return p ? { name: p.name, address: p.address } : null;
+    }).filter(Boolean),
+    kmStart,
+    kmEnd,
+    distance: kmEnd - kmStart,
+    notes,
+    highway: ctx.highway,
+  };
+  trips.push(trip);
+  saveTripsToStorage();
+  renderTripList();
+
+  // Reset km fields, prefill kmStart with kmEnd of last trip for convenience
+  kmStartEl.value = kmEnd;
+  kmEndEl.value = '';
+  document.getElementById('tripNotes').value = '';
+
+  showToast('✓ Út rögzítve', 'success');
+}
+
+// =============================================================
+// EXCEL EXPORT (ExcelJS, lazy-loaded)
+// =============================================================
+let exceljsLoadPromise = null;
+function loadExcelJS() {
+  if (window.ExcelJS) return Promise.resolve(window.ExcelJS);
+  if (exceljsLoadPromise) return exceljsLoadPromise;
+  exceljsLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
+    script.onload = () => resolve(window.ExcelJS);
+    script.onerror = () => reject(new Error('ExcelJS letöltés sikertelen'));
+    document.head.appendChild(script);
+  });
+  return exceljsLoadPromise;
+}
+
+async function exportToExcel() {
+  if (trips.length === 0) {
+    showToast('Nincs mit exportálni', 'error');
+    return;
+  }
+  const btn = document.getElementById('exportExcel');
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Excel készítése...';
+  btn.disabled = true;
+  try {
+    await loadExcelJS();
+    const buf = await buildExcelBuffer();
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `menetlevel_${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    showToast('✓ Excel mentve', 'success');
+  } catch (e) {
+    console.error(e);
+    showToast('Hiba: ' + e.message, 'error');
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}
+
+async function buildExcelBuffer() {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'KM Számoló';
+  wb.created = new Date();
+
+  // Style helpers
+  const titleStyle = {
+    font: { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E78' } },
+    alignment: { horizontal: 'center', vertical: 'middle' },
+  };
+  const sectionStyle = {
+    font: { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E75B6' } },
+    alignment: { horizontal: 'center', vertical: 'middle' },
+  };
+  const labelStyle = {
+    font: { name: 'Arial', size: 10, bold: true },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9E1F2' } },
+    alignment: { horizontal: 'left', vertical: 'middle' },
+    border: thinBorder(),
+  };
+  const headerStyle = {
+    font: { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF305496' } },
+    alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+    border: mediumBorder(),
+  };
+  const inputFill   = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } };
+  const calcFill    = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } };
+  const prefillFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDDEBF7' } };
+
+  function thinBorder() {
+    const s = { style: 'thin', color: { argb: 'FF000000' } };
+    return { left: s, right: s, top: s, bottom: s };
+  }
+  function mediumBorder() {
+    const s = { style: 'medium', color: { argb: 'FF000000' } };
+    return { left: s, right: s, top: s, bottom: s };
+  }
+
+  // ============================================================
+  // 1. ÚTNYILVÁNTARTÁS
+  // ============================================================
+  const ws = wb.addWorksheet('Útnyilvántartás', { views: [{ state: 'frozen', ySplit: 14 }] });
+
+  // Column widths
+  const widths = [6, 12, 22, 26, 32, 28, 24, 13, 13, 11, 22];
+  widths.forEach((w, i) => ws.getColumn(i + 1).width = w);
+
+  // Title
+  ws.mergeCells('A1:K1');
+  Object.assign(ws.getCell('A1'), titleStyle, { value: 'ÚTNYILVÁNTARTÁS' });
+  ws.getRow(1).height = 28;
+
+  ws.mergeCells('A2:K2');
+  ws.getCell('A2').value = '(a személyi jövedelemadóról szóló 1995. évi CXVII. törvény 5. számú melléklet II/7. pontja szerint)';
+  ws.getCell('A2').font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF595959' } };
+  ws.getCell('A2').alignment = { horizontal: 'center', vertical: 'middle' };
+
+  // Section: Cég + Jármű adatai
+  ws.mergeCells('A4:K4');
+  Object.assign(ws.getCell('A4'), sectionStyle, { value: 'NYILVÁNTARTÁST VEZETŐ ÉS GÉPJÁRMŰ ADATAI' });
+  ws.getRow(4).height = 22;
+
+  function setLabel(row, col, text) {
+    const c = ws.getCell(row, col);
+    c.value = text;
+    c.font = labelStyle.font;
+    c.fill = labelStyle.fill;
+    c.alignment = labelStyle.alignment;
+    c.border = thinBorder();
+  }
+  function setPrefilled(row, colStart, colEnd, value, alignment) {
+    ws.mergeCells(row, colStart, row, colEnd);
+    const c = ws.getCell(row, colStart);
+    c.value = value;
+    c.font = { name: 'Arial', size: 10 };
+    c.fill = prefillFill;
+    c.alignment = alignment || { horizontal: 'left', vertical: 'middle' };
+    for (let cc = colStart; cc <= colEnd; cc++) {
+      ws.getCell(row, cc).border = thinBorder();
+    }
+  }
+  function setInput(row, colStart, colEnd, value, fmt, alignment) {
+    ws.mergeCells(row, colStart, row, colEnd);
+    const c = ws.getCell(row, colStart);
+    c.value = value || '';
+    c.font = { name: 'Arial', size: 10 };
+    c.fill = inputFill;
+    c.alignment = alignment || { horizontal: 'right', vertical: 'middle' };
+    if (fmt) c.numFmt = fmt;
+    for (let cc = colStart; cc <= colEnd; cc++) {
+      ws.getCell(row, cc).border = thinBorder();
+    }
+  }
+  function setCalc(row, colStart, colEnd, formula, fmt, alignment) {
+    ws.mergeCells(row, colStart, row, colEnd);
+    const c = ws.getCell(row, colStart);
+    c.value = { formula };
+    c.font = { name: 'Arial', size: 10 };
+    c.fill = calcFill;
+    c.alignment = alignment || { horizontal: 'right', vertical: 'middle' };
+    if (fmt) c.numFmt = fmt;
+    for (let cc = colStart; cc <= colEnd; cc++) {
+      ws.getCell(row, cc).border = thinBorder();
+    }
+  }
+
+  // Row 5-8: cég + jármű adatok
+  setLabel(5, 1, 'Cégnév:');           setPrefilled(5, 2, 5, 'Gift Energy Kft.');
+  setLabel(5, 6, 'Jármű típusa:');     setPrefilled(5, 7, 11, 'Honda NC 750 XD (motorkerékpár)');
+  setLabel(6, 1, 'Adószám:');          setPrefilled(6, 2, 5, '24366672-2-05');
+  setLabel(6, 6, 'Forg. rendszám:');   setInput(6, 7, 11, '', null, { horizontal: 'left', vertical: 'middle' });
+  setLabel(7, 1, 'Székhely:');         setPrefilled(7, 2, 5, '3530 Miskolc, Mindszent tér 12.');
+  setLabel(7, 6, 'Hengerűrtartalom:'); setPrefilled(7, 7, 11, '745 cm³', { horizontal: 'right', vertical: 'middle' });
+  setLabel(8, 1, 'Tárgyév:');          setPrefilled(8, 2, 5, String(new Date().getFullYear()), { horizontal: 'center', vertical: 'middle' });
+  setLabel(8, 6, 'Üzemanyag:');        setPrefilled(8, 7, 11, 'Benzin');
+
+  // Section: Km óra
+  ws.mergeCells('A10:K10');
+  Object.assign(ws.getCell('A10'), sectionStyle, { value: 'KM-SZÁMLÁLÓ ÁLLÁSA TÁRGYÉVBEN' });
+  ws.getRow(10).height = 22;
+
+  setLabel(11, 1, 'Január 1.:');       setInput(11, 2, 4, '', '#,##0" km"');
+  setLabel(11, 5, 'December 31.:');    setInput(11, 6, 8, '', '#,##0" km"');
+  setLabel(11, 9, 'Éves km:');         setCalc(11, 10, 11, 'IF(AND(ISNUMBER(B11),ISNUMBER(F11)),F11-B11,"")', '#,##0" km"');
+
+  // Section: Útnyilvántartás táblázat
+  ws.mergeCells('A13:K13');
+  Object.assign(ws.getCell('A13'), sectionStyle, { value: 'ÜZLETI CÉLBÓL MEGTETT UTAK' });
+  ws.getRow(13).height = 22;
+
+  // Headers (row 14)
+  const headers = [
+    'Sor-\nszám', 'Dátum', 'Utazás célja', 'Felkeresett partner',
+    'Partner címe\n(automatikus)', 'Honnan\n(indulási hely)', 'Hová\n(érkezési hely)',
+    'Km óra\nINDULÁSKOR', 'Km óra\nÉRKEZÉSKOR', 'Megtett\nüzleti km', 'Megjegyzés',
+  ];
+  headers.forEach((h, i) => {
+    const c = ws.getCell(14, i + 1);
+    c.value = h;
+    c.font = headerStyle.font;
+    c.fill = headerStyle.fill;
+    c.alignment = headerStyle.alignment;
+    c.border = mediumBorder();
+  });
+  ws.getRow(14).height = 38;
+
+  // Sort trips ascending by date
+  const sortedTrips = [...trips].sort((a,b) => (a.date+a.id).localeCompare(b.date+b.id));
+
+  // Trip rows
+  let row = 15;
+  for (const t of sortedTrips) {
+    const r = ws.getRow(row);
+    // A: sorszám
+    r.getCell(1).value = row - 14;
+    r.getCell(1).alignment = { horizontal: 'center' };
+    // B: dátum (parsed as Date)
+    if (t.date) {
+      const [y,m,d] = t.date.split('-').map(Number);
+      r.getCell(2).value = new Date(y, m-1, d);
+      r.getCell(2).numFmt = 'yyyy.mm.dd.';
+      r.getCell(2).fill = inputFill;
+    }
+    r.getCell(2).alignment = { horizontal: 'center' };
+    // C: utazás célja
+    r.getCell(3).value = t.purpose || 'Főépítészi feladatok ellátása';
+    r.getCell(3).fill = prefillFill;
+    // D: felkeresett partner
+    r.getCell(4).value = t.destName;
+    r.getCell(4).fill = inputFill;
+    // E: cím
+    r.getCell(5).value = t.destAddr;
+    r.getCell(5).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
+    r.getCell(5).fill = calcFill;
+    // F: honnan
+    r.getCell(6).value = t.fromAddr || t.fromName || '';
+    r.getCell(6).fill = prefillFill;
+    // G: hová
+    const intStr = t.intermediates && t.intermediates.length
+      ? t.intermediates.map(i => i.name).join(' → ') + ' → ' + t.destName
+      : t.destName;
+    r.getCell(7).value = intStr;
+    r.getCell(7).fill = calcFill;
+    r.getCell(7).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
+    // H: km induláskor
+    r.getCell(8).value = t.kmStart;
+    r.getCell(8).numFmt = '#,##0';
+    r.getCell(8).alignment = { horizontal: 'right' };
+    r.getCell(8).fill = inputFill;
+    // I: km érkezéskor
+    r.getCell(9).value = t.kmEnd;
+    r.getCell(9).numFmt = '#,##0';
+    r.getCell(9).alignment = { horizontal: 'right' };
+    r.getCell(9).fill = inputFill;
+    // J: megtett km (formula)
+    r.getCell(10).value = { formula: `IF(AND(ISNUMBER(H${row}),ISNUMBER(I${row})),I${row}-H${row},"")` };
+    r.getCell(10).numFmt = '#,##0" km"';
+    r.getCell(10).alignment = { horizontal: 'right' };
+    r.getCell(10).font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF375623' } };
+    r.getCell(10).fill = calcFill;
+    // K: megjegyzés
+    r.getCell(11).value = t.notes || '';
+    r.getCell(11).fill = inputFill;
+
+    // Borders + base font
+    for (let c = 1; c <= 11; c++) {
+      const cell = r.getCell(c);
+      if (!cell.font) cell.font = { name: 'Arial', size: 10 };
+      cell.border = thinBorder();
+    }
+    row++;
+  }
+
+  // Empty rows (up to 100 total)
+  const totalRows = Math.max(100, sortedTrips.length);
+  while (row < 15 + totalRows) {
+    const r = ws.getRow(row);
+    // A: sorszám formula
+    r.getCell(1).value = { formula: `IF(AND(B${row}="",D${row}=""),"",ROW()-14)` };
+    r.getCell(1).alignment = { horizontal: 'center' };
+    // B: dátum (input)
+    r.getCell(2).numFmt = 'yyyy.mm.dd.';
+    r.getCell(2).fill = inputFill;
+    r.getCell(2).alignment = { horizontal: 'center' };
+    // C: cél (default)
+    r.getCell(3).value = 'Főépítészi feladatok ellátása';
+    r.getCell(3).fill = prefillFill;
+    // D: partner (input)
+    r.getCell(4).fill = inputFill;
+    // E: cím (formula VLOOKUP)
+    r.getCell(5).value = { formula: `IFERROR(VLOOKUP(D${row},Partnerek!$A$2:$B$200,2,FALSE),"")` };
+    r.getCell(5).fill = calcFill;
+    r.getCell(5).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
+    // F: honnan (default)
+    r.getCell(6).value = '3530 Miskolc, Mindszent tér 12.';
+    r.getCell(6).fill = prefillFill;
+    // G: hová (formula = D)
+    r.getCell(7).value = { formula: `IF(D${row}="","",D${row})` };
+    r.getCell(7).fill = calcFill;
+    r.getCell(7).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
+    // H, I: km óra (input)
+    r.getCell(8).fill = inputFill; r.getCell(8).numFmt = '#,##0'; r.getCell(8).alignment = { horizontal: 'right' };
+    r.getCell(9).fill = inputFill; r.getCell(9).numFmt = '#,##0'; r.getCell(9).alignment = { horizontal: 'right' };
+    // J: megtett km (formula)
+    r.getCell(10).value = { formula: `IF(AND(ISNUMBER(H${row}),ISNUMBER(I${row})),I${row}-H${row},"")` };
+    r.getCell(10).fill = calcFill;
+    r.getCell(10).numFmt = '#,##0" km"';
+    r.getCell(10).alignment = { horizontal: 'right' };
+    r.getCell(10).font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF375623' } };
+    // K: megjegyzés
+    r.getCell(11).fill = inputFill;
+    // Borders
+    for (let c = 1; c <= 11; c++) {
+      const cell = r.getCell(c);
+      if (!cell.font) cell.font = { name: 'Arial', size: 10 };
+      cell.border = thinBorder();
+    }
+    row++;
+  }
+
+  // Total row
+  const totalRow = row + 1;
+  ws.mergeCells(totalRow, 1, totalRow, 9);
+  const tc = ws.getCell(totalRow, 1);
+  tc.value = 'ÖSSZESEN:';
+  tc.font = { name: 'Arial', size: 11, bold: true };
+  tc.fill = labelStyle.fill;
+  tc.alignment = { horizontal: 'right', vertical: 'middle' };
+  for (let c = 1; c <= 9; c++) {
+    ws.getCell(totalRow, c).border = mediumBorder();
+    if (!ws.getCell(totalRow, c).fill) ws.getCell(totalRow, c).fill = labelStyle.fill;
+  }
+  const tj = ws.getCell(totalRow, 10);
+  tj.value = { formula: `SUM(J15:J${row-1})` };
+  tj.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+  tj.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF305496' } };
+  tj.alignment = { horizontal: 'right', vertical: 'middle' };
+  tj.numFmt = '#,##0" km"';
+  tj.border = mediumBorder();
+  ws.getCell(totalRow, 11).fill = labelStyle.fill;
+  ws.getCell(totalRow, 11).border = mediumBorder();
+  ws.getRow(totalRow).height = 26;
+
+  // Data validations
+  const lastDataRow = 14 + totalRows;
+  // C: Utazás célja list
+  ws.dataValidations.add(`C15:C${lastDataRow}`, {
+    type: 'list',
+    allowBlank: true,
+    formulae: ['"Főépítészi feladatok ellátása,Juhhé partneri megbeszélés,Építészeti egyeztetés,Magán"'],
+  });
+  // D: Felkeresett partner list
+  ws.dataValidations.add(`D15:D${lastDataRow}`, {
+    type: 'list',
+    allowBlank: true,
+    formulae: ['=Partnerek!$A$2:$A$200'],
+  });
+
+  // ============================================================
+  // 2. PARTNEREK
+  // ============================================================
+  const wsP = wb.addWorksheet('Partnerek', { views: [{ state: 'frozen', ySplit: 1 }] });
+  wsP.getColumn(1).width = 38;
+  wsP.getColumn(2).width = 50;
+
+  // Headers
+  ['Partner megnevezése', 'Cím'].forEach((h, i) => {
+    const c = wsP.getCell(1, i + 1);
+    c.value = h;
+    c.font = headerStyle.font;
+    c.fill = headerStyle.fill;
+    c.alignment = headerStyle.alignment;
+    c.border = mediumBorder();
+  });
+  wsP.getRow(1).height = 26;
+
+  // Partners
+  PARTNERS.forEach((p, i) => {
+    const r = wsP.getRow(i + 2);
+    r.getCell(1).value = p.name;
+    r.getCell(1).font = { name: 'Arial', size: 10, bold: true };
+    r.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+    r.getCell(1).fill = prefillFill;
+    r.getCell(1).border = thinBorder();
+    r.getCell(2).value = p.address;
+    r.getCell(2).font = { name: 'Arial', size: 10 };
+    r.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+    r.getCell(2).fill = prefillFill;
+    r.getCell(2).border = thinBorder();
+  });
+
+  // ============================================================
+  // 3. HAVI ÖSSZESÍTŐ
+  // ============================================================
+  const wsM = wb.addWorksheet('Havi összesítő');
+  const year = new Date().getFullYear();
+  wsM.mergeCells('A1:D1');
+  Object.assign(wsM.getCell('A1'), titleStyle, { value: `HAVI ÖSSZESÍTŐ — ${year}` });
+  wsM.getRow(1).height = 26;
+
+  wsM.getCell('A2').value = 'Tárgyév:';
+  wsM.getCell('A2').font = labelStyle.font;
+  wsM.getCell('A2').fill = labelStyle.fill;
+  wsM.getCell('A2').alignment = { horizontal: 'right', vertical: 'middle' };
+  wsM.getCell('A2').border = thinBorder();
+  wsM.getCell('B2').value = year;
+  wsM.getCell('B2').font = { name: 'Arial', size: 10, bold: true };
+  wsM.getCell('B2').fill = inputFill;
+  wsM.getCell('B2').alignment = { horizontal: 'center', vertical: 'middle' };
+  wsM.getCell('B2').border = thinBorder();
+
+  wsM.mergeCells('A3:D3');
+  Object.assign(wsM.getCell('A3'), sectionStyle, { value: 'HAVI BONTÁS' });
+  wsM.getRow(3).height = 22;
+
+  ['Hónap', 'Utak száma', 'Megtett km', 'Átlag km/út'].forEach((h, i) => {
+    const c = wsM.getCell(4, i + 1);
+    c.value = h;
+    c.font = headerStyle.font;
+    c.fill = headerStyle.fill;
+    c.alignment = headerStyle.alignment;
+    c.border = mediumBorder();
+  });
+  [18, 14, 18, 14].forEach((w, i) => wsM.getColumn(i + 1).width = w);
+  wsM.getRow(4).height = 24;
+
+  const months = ['Január','Február','Március','Április','Május','Június',
+                  'Július','Augusztus','Szeptember','Október','November','December'];
+  for (let i = 0; i < 12; i++) {
+    const r = i + 5;
+    const c1 = wsM.getCell(r, 1);
+    c1.value = months[i]; c1.font = labelStyle.font; c1.fill = labelStyle.fill;
+    c1.alignment = { horizontal: 'left', vertical: 'middle' }; c1.border = thinBorder();
+
+    const cntFormula = `COUNTIFS(Útnyilvántartás!$B$15:$B$${lastDataRow},">="&DATE($B$2,${i+1},1),Útnyilvántartás!$B$15:$B$${lastDataRow},"<"&DATE($B$2,${i+2},1))`;
+    const sumFormula = `SUMIFS(Útnyilvántartás!$J$15:$J$${lastDataRow},Útnyilvántartás!$B$15:$B$${lastDataRow},">="&DATE($B$2,${i+1},1),Útnyilvántartás!$B$15:$B$${lastDataRow},"<"&DATE($B$2,${i+2},1))`;
+
+    const c2 = wsM.getCell(r, 2);
+    c2.value = { formula: cntFormula }; c2.fill = calcFill;
+    c2.alignment = { horizontal: 'center', vertical: 'middle' };
+    c2.numFmt = '0'; c2.border = thinBorder();
+    c2.font = { name: 'Arial', size: 10 };
+
+    const c3 = wsM.getCell(r, 3);
+    c3.value = { formula: sumFormula }; c3.fill = calcFill;
+    c3.alignment = { horizontal: 'right', vertical: 'middle' };
+    c3.numFmt = '#,##0" km"'; c3.border = thinBorder();
+    c3.font = { name: 'Arial', size: 10 };
+
+    const c4 = wsM.getCell(r, 4);
+    c4.value = { formula: `IFERROR(C${r}/B${r},"")` }; c4.fill = calcFill;
+    c4.alignment = { horizontal: 'right', vertical: 'middle' };
+    c4.numFmt = '0.0" km"'; c4.border = thinBorder();
+    c4.font = { name: 'Arial', size: 10 };
+  }
+  // Yearly total
+  const yt = 17;
+  wsM.getCell(yt, 1).value = 'ÉVES ÖSSZESEN:';
+  wsM.getCell(yt, 1).font = { name: 'Arial', size: 11, bold: true };
+  wsM.getCell(yt, 1).fill = labelStyle.fill;
+  wsM.getCell(yt, 1).alignment = { horizontal: 'right', vertical: 'middle' };
+  wsM.getCell(yt, 1).border = mediumBorder();
+  for (const [c, f, fmt] of [
+    [2, 'SUM(B5:B16)', '0'],
+    [3, 'SUM(C5:C16)', '#,##0" km"'],
+    [4, 'IFERROR(C17/B17,"")', '0.0" km"'],
+  ]) {
+    const cell = wsM.getCell(yt, c);
+    cell.value = { formula: f };
+    cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF305496' } };
+    cell.alignment = { horizontal: c === 2 ? 'center' : 'right', vertical: 'middle' };
+    cell.numFmt = fmt;
+    cell.border = mediumBorder();
+  }
+  wsM.getRow(yt).height = 26;
+
+  return await wb.xlsx.writeBuffer();
+}
+
+// =============================================================
+// INIT
+// =============================================================
+function init() {
+  // Initial state: one partner (Szikszó) added by default
+  stops.push({ name: DEFAULT_PARTNER });
+
+  // Fallback partner select
+  const fbSel = document.getElementById('fallbackSelect');
+  populateSelect(fbSel, FALLBACK_PARTNER);
+  fbSel.addEventListener('change', () => setPartnerAsOrigin(fbSel.value));
+
+  // GPS / Partner mode toggle
+  document.getElementById('modeGps').addEventListener('click', () => {
+    document.getElementById('modeGps').classList.add('active');
+    document.getElementById('modePartner').classList.remove('active');
+    document.getElementById('fallbackWrap').classList.remove('show');
+    refreshGpsAndUpdate();
+  });
+  document.getElementById('modePartner').addEventListener('click', () => {
+    document.getElementById('modePartner').classList.add('active');
+    document.getElementById('modeGps').classList.remove('active');
+    document.getElementById('fallbackWrap').classList.add('show');
+    setPartnerAsOrigin(fbSel.value);
+  });
+
+  // Refresh GPS button
+  document.getElementById('refreshGps').addEventListener('click', () => {
+    if (document.getElementById('modeGps').classList.contains('active')) {
+      refreshGpsAndUpdate();
+    } else {
+      setPartnerAsOrigin(fbSel.value);
+    }
+  });
+
+  // Highway toggle
+  document.querySelectorAll('#toggleHighway button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#toggleHighway button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      useHighway = btn.dataset.value === 'igen';
+      document.getElementById('toggleStatus').textContent =
+        useHighway
+          ? 'Autópályás útvonal — gyorsabb, díjköteles'
+          : 'Mellékutas útvonal — lassabb, díjmentes';
+      updateAll();
+    });
+  });
+
+  // Add stop button
+  document.getElementById('addStop').addEventListener('click', () => {
+    if (stops.length >= MAX_STOPS) return;
+    stops.push({ name: '' });
+    renderIntermediates();
+    updateStopCount();
+    updateAll();
+  });
+
+  // Render the initial default partner row
+  renderIntermediates();
+  updateStopCount();
+
+  // Reference table
+  const refBody = document.getElementById('refTable');
+  PARTNERS.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(p.name)}</td>
+      <td>${escapeHtml(p.address)}</td>`;
+    refBody.appendChild(tr);
+  });
+
+  // === Trip logger ===
+  loadTrips();
+  renderTripList();
+  // Default date = today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('tripDate').value = today;
+  // Wire up buttons
+  document.getElementById('saveTrip').addEventListener('click', saveCurrentTrip);
+  document.getElementById('exportExcel').addEventListener('click', exportToExcel);
+  document.getElementById('clearTrips').addEventListener('click', () => {
+    if (trips.length === 0) return;
+    if (confirm(`Biztosan törlöd mind a ${trips.length} rögzített utat?`)) {
+      trips = [];
+      saveTripsToStorage();
+      renderTripList();
+      showToast('Minden út törölve');
+    }
+  });
+
+  // Try GPS on load
+  refreshGpsAndUpdate();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
