@@ -750,6 +750,23 @@ footer {
   </p>
 </section>
 
+<!-- SAVED CUSTOM PARTNERS -->
+<details id="savedPartnersDetails" style="margin-bottom:12px">
+  <summary>⭐ Saját mentett partnereim <span id="savedPartnersCount" style="color:var(--text-4);margin-left:6px">(0)</span></summary>
+  <table class="ref-table" id="savedPartnersTable">
+    <thead>
+      <tr>
+        <th>Partner</th>
+        <th>Cím</th>
+        <th style="width:30px"></th>
+      </tr>
+    </thead>
+    <tbody id="savedPartnersBody">
+      <tr><td colspan="3" style="text-align:center;color:var(--text-4);font-style:italic;padding:14px">Még nincs mentett partner</td></tr>
+    </tbody>
+  </table>
+</details>
+
 <!-- REFERENCE -->
 <details>
   <summary>📋 Partnerek listája (36)</summary>
@@ -834,9 +851,86 @@ let lastLegDistances = []; // km per leg, in order: [origin→stop1, stop1→sto
 // HELPERS
 // =============================================================
 const CUSTOM_PARTNER_VALUE = '__custom__';
+const CUSTOM_PARTNERS_KEY = 'kmszamolo:custom_partners:v1';
 
+// Saved custom partners (loaded from localStorage)
+let savedCustomPartners = [];
+
+function renderSavedPartners() {
+  const tbody = document.getElementById('savedPartnersBody');
+  const count = document.getElementById('savedPartnersCount');
+  if (!tbody) return;
+  count.textContent = `(${savedCustomPartners.length})`;
+  if (savedCustomPartners.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-4);font-style:italic;padding:14px">Még nincs mentett partner</td></tr>';
+    return;
+  }
+  tbody.innerHTML = '';
+  for (const p of savedCustomPartners) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${escapeHtml(p.name)}</strong></td>
+      <td>${escapeHtml(p.address)}</td>
+      <td style="text-align:center"><button class="trip-rm-btn" data-saved-rm="${escapeHtml(p.name)}" title="Törlés">×</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+  tbody.querySelectorAll('button[data-saved-rm]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.savedRm;
+      if (!confirm(`"${name}" partner törlése a mentett listából?`)) return;
+      removeCustomPartner(name);
+      // Also: if any current stop uses this partner, clear it
+      stops.forEach(s => {
+        if (!s.custom && s.name === name) s.name = '';
+      });
+      renderSavedPartners();
+      renderIntermediates();
+      updateAll();
+      showToast('Partner törölve');
+    });
+  });
+}
+
+function loadCustomPartners() {
+  try {
+    savedCustomPartners = JSON.parse(localStorage.getItem(CUSTOM_PARTNERS_KEY) || '[]');
+  } catch (e) {
+    savedCustomPartners = [];
+  }
+}
+
+function saveCustomPartnersToStorage() {
+  localStorage.setItem(CUSTOM_PARTNERS_KEY, JSON.stringify(savedCustomPartners));
+  // Refresh UI elements that depend on the partner list
+  if (typeof renderSavedPartners === 'function') renderSavedPartners();
+}
+
+function addCustomPartner(partner) {
+  // partner: { name, address, lat, lng }
+  if (!partner || !partner.name || !partner.address || partner.lat == null) return false;
+  // Check for duplicates by name
+  const existingIdx = savedCustomPartners.findIndex(p => p.name === partner.name);
+  if (existingIdx >= 0) {
+    // Update existing
+    savedCustomPartners[existingIdx] = { ...partner };
+  } else {
+    savedCustomPartners.push({ ...partner });
+  }
+  saveCustomPartnersToStorage();
+  return true;
+}
+
+function removeCustomPartner(name) {
+  savedCustomPartners = savedCustomPartners.filter(p => p.name !== name);
+  saveCustomPartnersToStorage();
+}
+
+// findPartner: searches both standard and saved custom partners
 function findPartner(name) {
-  return PARTNERS.find(p => p.name === name) || null;
+  return PARTNERS.find(p => p.name === name)
+      || savedCustomPartners.find(p => p.name === name)
+      || null;
 }
 
 // Returns unified partner data for a stop, or null if not selectable.
@@ -861,8 +955,12 @@ function getStopData(stop) {
       custom: true,
     };
   }
+  // Could be a standard or saved-custom partner
   const p = findPartner(stop.name);
-  return p ? { ...p, custom: false } : null;
+  if (!p) return null;
+  // Mark as savedCustom if it's not in the standard list
+  const isSavedCustom = !PARTNERS.find(sp => sp.name === stop.name);
+  return { ...p, custom: isSavedCustom };
 }
 
 function escapeHtml(s) {
@@ -884,13 +982,30 @@ function populateSelect(sel, defaultValue, includeCustom) {
     if (defaultValue === CUSTOM_PARTNER_VALUE) custom.selected = true;
     sel.appendChild(custom);
   }
+  // Saved custom partners (group)
+  if (savedCustomPartners.length > 0) {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = '⭐ Saját partnerek';
+    for (const p of savedCustomPartners) {
+      const opt = document.createElement('option');
+      opt.value = p.name;
+      opt.textContent = p.name;
+      if (p.name === defaultValue) opt.selected = true;
+      optgroup.appendChild(opt);
+    }
+    sel.appendChild(optgroup);
+  }
+  // Standard partners (group)
+  const standardGroup = document.createElement('optgroup');
+  standardGroup.label = 'Beépített partnerek';
   for (const p of PARTNERS) {
     const opt = document.createElement('option');
     opt.value = p.name;
     opt.textContent = p.name;
     if (p.name === defaultValue) opt.selected = true;
-    sel.appendChild(opt);
+    standardGroup.appendChild(opt);
   }
+  sel.appendChild(standardGroup);
 }
 
 function haversine(a, b) {
@@ -923,7 +1038,8 @@ function setGpsState(state, label, address, coords) {
   co.textContent   = coords  || '';
 }
 
-async function getGps() {
+async function getGps(opts) {
+  opts = opts || {};
   if (!navigator.geolocation) {
     setGpsState('error', 'Nem támogatott', 'A böngésző nem támogatja a GPS-t');
     return null;
@@ -946,7 +1062,8 @@ async function getGps() {
         setGpsState('error', 'GPS hiba', msg, '');
         resolve(null);
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
+      // forceFresh: maximumAge=0 forces a fresh GPS read, no cached position
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: opts.forceFresh ? 0 : 30000 }
     );
   });
 }
@@ -1044,8 +1161,8 @@ async function forwardGeocode(address) {
   return null;
 }
 
-async function refreshGpsAndUpdate() {
-  const pos = await getGps();
+async function refreshGpsAndUpdate(forceFresh) {
+  const pos = await getGps({ forceFresh: !!forceFresh });
   if (!pos) {
     // GPS failed, set fallback
     currentLocation = null;
@@ -1186,6 +1303,22 @@ function renderIntermediates() {
         stop.customName = nameInput.value;
         if (typeof updateTripSummary === 'function') updateTripSummary();
       });
+      nameInput.addEventListener('blur', () => {
+        // If we have valid coords and a name, save it
+        if (stop.customLat != null && stop.customName && stop.customName.trim()) {
+          const ok = addCustomPartner({
+            name: stop.customName.trim(),
+            address: stop.customAddress,
+            lat: stop.customLat,
+            lng: stop.customLng,
+          });
+          if (ok) {
+            statusEl.textContent = `✓ Mentve a partnerek közé: ${stop.customLat.toFixed(4)}, ${stop.customLng.toFixed(4)}`;
+            statusEl.classList.add('ok');
+            statusEl.classList.remove('err');
+          }
+        }
+      });
 
       async function triggerGeocode() {
         const newAddr = stop.customAddress;
@@ -1208,7 +1341,22 @@ function renderIntermediates() {
           stop.customLat = coords.lat;
           stop.customLng = coords.lng;
           stop.customLastGeocoded = newAddr;
-          statusEl.textContent = `✓ Megtalálva: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
+          // Auto-save to library if name is filled
+          if (stop.customName && stop.customName.trim()) {
+            const ok = addCustomPartner({
+              name: stop.customName.trim(),
+              address: newAddr,
+              lat: coords.lat,
+              lng: coords.lng,
+            });
+            if (ok) {
+              statusEl.textContent = `✓ Megtalálva (mentve a partnerek közé): ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
+            } else {
+              statusEl.textContent = `✓ Megtalálva: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`;
+            }
+          } else {
+            statusEl.textContent = `✓ Megtalálva: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)} — adj nevet a mentéshez`;
+          }
           statusEl.classList.add('ok');
           updateAll();
         } else {
@@ -1259,7 +1407,8 @@ function renderIntermediates() {
             toggleEl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             div.classList.toggle('is-private', stop.isPrivate);
-            if (typeof updateTripSummary === 'function') updateTripSummary();
+            // Sync everything (summary, map labels, etc.)
+            updateAll();
           });
         });
       }
@@ -2057,9 +2206,10 @@ async function buildExcelBuffer() {
   });
   wsP.getRow(1).height = 26;
 
-  // Partners
-  PARTNERS.forEach((p, i) => {
-    const r = wsP.getRow(i + 2);
+  // Standard partners
+  let pRow = 2;
+  PARTNERS.forEach((p) => {
+    const r = wsP.getRow(pRow);
     r.getCell(1).value = p.name;
     r.getCell(1).font = { name: 'Arial', size: 10, bold: true };
     r.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
@@ -2070,7 +2220,38 @@ async function buildExcelBuffer() {
     r.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
     r.getCell(2).fill = prefillFill;
     r.getCell(2).border = thinBorder();
+    pRow++;
   });
+
+  // Saved custom partners (with section separator)
+  if (savedCustomPartners.length > 0) {
+    // Section separator row
+    wsP.mergeCells(pRow, 1, pRow, 2);
+    const sep = wsP.getCell(pRow, 1);
+    sep.value = `⭐ SAJÁT PARTNEREK (${savedCustomPartners.length})`;
+    sep.font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+    sep.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBBF24' } };
+    sep.alignment = { horizontal: 'center', vertical: 'middle' };
+    sep.border = mediumBorder();
+    wsP.getCell(pRow, 2).border = mediumBorder();
+    wsP.getRow(pRow).height = 22;
+    pRow++;
+
+    savedCustomPartners.forEach((p) => {
+      const r = wsP.getRow(pRow);
+      r.getCell(1).value = p.name;
+      r.getCell(1).font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF8B6914' } };
+      r.getCell(1).alignment = { horizontal: 'left', vertical: 'middle' };
+      r.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF8E1' } };
+      r.getCell(1).border = thinBorder();
+      r.getCell(2).value = p.address;
+      r.getCell(2).font = { name: 'Arial', size: 10, color: { argb: 'FF8B6914' } };
+      r.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+      r.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF8E1' } };
+      r.getCell(2).border = thinBorder();
+      pRow++;
+    });
+  }
 
   // ============================================================
   // 3. HAVI ÖSSZESÍTŐ
@@ -2197,13 +2378,18 @@ function init() {
     setPartnerAsOrigin(fbSel.value);
   });
 
-  // Refresh GPS button
-  document.getElementById('refreshGps').addEventListener('click', () => {
+  // Refresh GPS button — forceFresh
+  document.getElementById('refreshGps').addEventListener('click', async () => {
+    const btn = document.getElementById('refreshGps');
+    btn.textContent = '⏳';
+    btn.disabled = true;
     if (document.getElementById('modeGps').classList.contains('active')) {
-      refreshGpsAndUpdate();
+      await refreshGpsAndUpdate(true);
     } else {
       setPartnerAsOrigin(fbSel.value);
     }
+    btn.textContent = '🔄';
+    btn.disabled = false;
   });
 
   // Highway toggle
@@ -2243,6 +2429,8 @@ function init() {
   });
 
   // === Trip logger ===
+  loadCustomPartners();
+  renderSavedPartners();
   loadTrips();
   renderTripList();
   // Default date = today
