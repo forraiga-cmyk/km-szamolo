@@ -309,7 +309,7 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   display: flex; align-items: center; gap: 6px;
 }
 
-/* Céges/Magán toggle next to each partner row */
+/* Céges/Otthon-Iroda toggle next to each partner row */
 .cm-toggle {
   display: inline-flex; align-items: center;
   background: var(--surface-2);
@@ -962,7 +962,7 @@ footer {
           <option value="Főépítészi feladatok ellátása">Főépítészi feladatok ellátása</option>
           <option value="Juhhé partneri megbeszélés">Juhhé partneri megbeszélés</option>
           <option value="Építészeti egyeztetés">Építészeti egyeztetés</option>
-          <option value="Magán">Magán</option>
+          <option value="Otthon-Iroda">Otthon-Iroda</option>
         </select>
       </div>
     </div>
@@ -982,7 +982,7 @@ footer {
     </div>
     <button class="btn success" id="saveTrip">💾 Út rögzítése</button>
     <p class="hint" style="margin-top:0;font-size:10px">
-      Minden partner egy külön út-rekordba kerül a megtett km arányában. Magán partnerhez vezető szakasz "Magán" céllal lesz rögzítve.
+      Minden partner egy külön út-rekordba kerül a megtett km arányában. Az "Otthon-Iroda" útcélra állított partnerhez vezető szakasz "Otthon-Iroda" céllal lesz rögzítve (ingázás, nem elszámolható).
     </p>
   </div>
 
@@ -1068,7 +1068,7 @@ footer {
 const PARTNERS = [
   { name: 'Szász Motor Kft.',         address: '4400 Nyíregyháza, Vasgyár u. 2.',                lat: 47.9516164, lng: 21.7051886 },
   { name: 'Gift Energy Kft. — Iroda', address: '3530 Miskolc, Mindszent tér 12.',                lat: 48.0983460, lng: 20.7846350 },
-  { name: 'Lakás',                    address: '3519 Miskolc, Thaly Kálmán u. 45.',              lat: 48.0615801, lng: 20.7574641 },
+  { name: 'Otthon',                   address: '3519 Miskolc, Thaly Kálmán u. 45.',              lat: 48.0615801, lng: 20.7574641 },
   { name: 'Ágasvár',                  address: '3235 Mátraszentimre, Rákóczi Ferenc utca 16.',   lat: 47.9088026, lng: 19.8789588 },
   { name: 'Alsóvadász',               address: '3811 Alsóvadász, Fő út 63.',                     lat: 48.2392697, lng: 20.9040147 },
   { name: 'Átány',                    address: '3371 Átány, II. Rákóczi F. út 60.',              lat: 47.6154401, lng: 20.3610319 },
@@ -1122,6 +1122,15 @@ let lastLegDistances = []; // km per leg, in order: [origin→stop1, stop1→sto
 // =============================================================
 const CUSTOM_PARTNER_VALUE = '__custom__';
 const CUSTOM_PARTNERS_KEY = 'kmszamolo:custom_partners:v1';
+// "Otthon-Iroda" purpose: replaces former "Magán" — used for non-business commute legs
+const COMMUTE_PURPOSE = 'Otthon-Iroda';
+// Legacy "Magán" purpose value (kept for backward-compat migration)
+const LEGACY_PURPOSE = 'Magán';
+
+// Returns true if a purpose string indicates a non-business (commute) trip
+function isCommutePurpose(purpose) {
+  return purpose === COMMUTE_PURPOSE || purpose === LEGACY_PURPOSE;
+}
 
 // Saved custom partners (loaded from localStorage)
 let savedCustomPartners = [];
@@ -1524,7 +1533,7 @@ function renderIntermediates() {
           <span class="cm-toggle-label">Útcél:</span>
           <div class="cm-toggle" data-stop-toggle="${idx}">
             <button type="button" class="cm-business${!stop.isPrivate ? ' active' : ''}" data-cm="business">CÉGES</button>
-            <button type="button" class="cm-private${stop.isPrivate ? ' active' : ''}" data-cm="private">MAGÁN</button>
+            <button type="button" class="cm-private${stop.isPrivate ? ' active' : ''}" data-cm="private">OTTHON-IRODA</button>
           </div>
         </div>
       </div>
@@ -2209,6 +2218,15 @@ function loadTrips() {
   try {
     trips = JSON.parse(localStorage.getItem(TRIPS_KEY) || '[]');
   } catch (e) { trips = []; }
+  // Migrate legacy "Magán" purpose to new "Otthon-Iroda"
+  let migratedCount = 0;
+  for (const t of trips) {
+    if (t.purpose === LEGACY_PURPOSE) {
+      t.purpose = COMMUTE_PURPOSE;
+      migratedCount++;
+    }
+  }
+  if (migratedCount > 0) saveTripsToStorage();
 }
 
 function saveTripsToStorage() {
@@ -2302,9 +2320,9 @@ function renderTripList() {
   for (const t of sorted) {
     const tr = document.createElement('tr');
     const dateStr = t.date ? t.date.split('-').reverse().join('.') + '.' : '—';
-    const isPrivate = t.purpose === 'Magán';
+    const isPrivate = isCommutePurpose(t.purpose);
     const partnerStr = escapeHtml(t.destName || '—')
-      + (isPrivate ? ' <span class="private-tag">MAGÁN</span>' : '');
+      + (isPrivate ? ' <span class="private-tag">OTTHON-IRODA</span>' : '');
     const kmStr = t.distance != null ? Math.round(t.distance) : '—';
     if (isPrivate) tr.classList.add('private-row');
     tr.innerHTML = `
@@ -2383,7 +2401,7 @@ function saveCurrentTrip() {
     newTrips.push({
       id: String(baseId + i),
       date,
-      purpose: leg.isPrivate ? 'Magán' : businessPurpose,
+      purpose: leg.isPrivate ? COMMUTE_PURPOSE : businessPurpose,
       fromName: prevName,
       fromAddr: prevAddr,
       destName: leg.name,
@@ -2590,7 +2608,7 @@ async function buildExcelBuffer() {
 
   setLabel(11, 1, 'Január 1.:');       setInput(11, 2, 4, '', '#,##0" km"');
   setLabel(11, 5, 'December 31.:');    setInput(11, 6, 8, '', '#,##0" km"');
-  setLabel(11, 9, 'Éves km:');         setCalc(11, 10, 11, 'IF(AND(ISNUMBER(B11),ISNUMBER(F11)),F11-B11,"")', '#,##0" km"');
+  setLabel(11, 9, 'Éves km:');         setCalc(11, 10, 11, 'IF(AND(B11>0,F11>0),F11-B11,"")', '#,##0" km"');
 
   // Section: Útnyilvántartás táblázat
   ws.mergeCells('A13:K13');
@@ -2662,7 +2680,7 @@ async function buildExcelBuffer() {
     r.getCell(9).alignment = { horizontal: 'right' };
     r.getCell(9).fill = inputFill;
     // J: megtett km (formula)
-    r.getCell(10).value = { formula: `IF(AND(ISNUMBER(H${row}),ISNUMBER(I${row})),I${row}-H${row},"")` };
+    r.getCell(10).value = { formula: `IF(AND(H${row}>0,I${row}>0),I${row}-H${row},"")` };
     r.getCell(10).numFmt = '#,##0" km"';
     r.getCell(10).alignment = { horizontal: 'right' };
     r.getCell(10).font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF375623' } };
@@ -2671,8 +2689,8 @@ async function buildExcelBuffer() {
     r.getCell(11).value = t.notes || '';
     r.getCell(11).fill = inputFill;
 
-    // If trip is Magán, override fills with gray + italicize
-    const isPrivateRow = t.purpose === 'Magán';
+    // If trip is non-business (Otthon-Iroda / legacy Magán), override fills with gray + italicize
+    const isPrivateRow = isCommutePurpose(t.purpose);
     const privateFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFEFEF' } };
 
     // Borders + base font
@@ -2719,7 +2737,7 @@ async function buildExcelBuffer() {
     r.getCell(8).fill = inputFill; r.getCell(8).numFmt = '#,##0'; r.getCell(8).alignment = { horizontal: 'right' };
     r.getCell(9).fill = inputFill; r.getCell(9).numFmt = '#,##0'; r.getCell(9).alignment = { horizontal: 'right' };
     // J: megtett km (formula)
-    r.getCell(10).value = { formula: `IF(AND(ISNUMBER(H${row}),ISNUMBER(I${row})),I${row}-H${row},"")` };
+    r.getCell(10).value = { formula: `IF(AND(H${row}>0,I${row}>0),I${row}-H${row},"")` };
     r.getCell(10).fill = calcFill;
     r.getCell(10).numFmt = '#,##0" km"';
     r.getCell(10).alignment = { horizontal: 'right' };
@@ -2735,13 +2753,26 @@ async function buildExcelBuffer() {
     row++;
   }
 
-  // Three total rows: ÜZLETI, MAGÁN, MINDÖSSZESEN
+  // Three total rows: ÜZLETI, OTTHON-IRODA, MINDÖSSZESEN
+  // Formulas treat both new "Otthon-Iroda" and legacy "Magán" as commute (non-business)
   const lastDataRow_total = row - 1;
   const totalRowStart = row + 1;
   const totalsConfig = [
-    { label: 'ÜZLETI ÖSSZESEN:',  formula: `SUMIFS(J15:J${lastDataRow_total},C15:C${lastDataRow_total},"<>Magán")`, color: 'FF305496' },
-    { label: 'MAGÁN ÖSSZESEN:',   formula: `SUMIF(C15:C${lastDataRow_total},"Magán",J15:J${lastDataRow_total})`,    color: 'FF7F7F7F' },
-    { label: 'MINDÖSSZESEN:',     formula: `SUM(J15:J${lastDataRow_total})`,                                          color: 'FF1F4E78' },
+    {
+      label: 'ÜZLETI ÖSSZESEN:',
+      formula: `SUMIFS(J15:J${lastDataRow_total},C15:C${lastDataRow_total},"<>Otthon-Iroda",C15:C${lastDataRow_total},"<>Magán")`,
+      color: 'FF305496',
+    },
+    {
+      label: 'OTTHON-IRODA ÖSSZ.:',
+      formula: `SUMIF(C15:C${lastDataRow_total},"Otthon-Iroda",J15:J${lastDataRow_total})+SUMIF(C15:C${lastDataRow_total},"Magán",J15:J${lastDataRow_total})`,
+      color: 'FF7F7F7F',
+    },
+    {
+      label: 'MINDÖSSZESEN:',
+      formula: `SUM(J15:J${lastDataRow_total})`,
+      color: 'FF1F4E78',
+    },
   ];
 
   for (let i = 0; i < totalsConfig.length; i++) {
@@ -2775,7 +2806,7 @@ async function buildExcelBuffer() {
   ws.dataValidations.add(`C15:C${lastDataRow}`, {
     type: 'list',
     allowBlank: true,
-    formulae: ['"Főépítészi feladatok ellátása,Juhhé partneri megbeszélés,Építészeti egyeztetés,Magán"'],
+    formulae: ['"Főépítészi feladatok ellátása,Juhhé partneri megbeszélés,Építészeti egyeztetés,Otthon-Iroda"'],
   });
   // D: Felkeresett partner list
   ws.dataValidations.add(`D15:D${lastDataRow}`, {
@@ -2873,7 +2904,7 @@ async function buildExcelBuffer() {
   Object.assign(wsM.getCell('A3'), sectionStyle, { value: 'HAVI BONTÁS' });
   wsM.getRow(3).height = 22;
 
-  ['Hónap', 'Utak száma', 'Üzleti km', 'Magán km', 'Összesen km'].forEach((h, i) => {
+  ['Hónap', 'Utak száma', 'Üzleti km', 'Otthon-Iroda km', 'Összesen km'].forEach((h, i) => {
     const c = wsM.getCell(4, i + 1);
     c.value = h;
     c.font = headerStyle.font;
@@ -2898,12 +2929,12 @@ async function buildExcelBuffer() {
     const dStart = `DATE($B$2,${i+1},1)`;
     const dEnd = `DATE($B$2,${i+2},1)`;
 
-    // Utak száma (összes, magán+üzleti)
+    // Utak száma (összes)
     const cntFormula = `COUNTIFS(${dateRange},">="&${dStart},${dateRange},"<"&${dEnd})`;
-    // Üzleti km (purpose != "Magán")
-    const bizFormula = `SUMIFS(${kmRange},${dateRange},">="&${dStart},${dateRange},"<"&${dEnd},${purposeRange},"<>Magán")`;
-    // Magán km (purpose == "Magán")
-    const privFormula = `SUMIFS(${kmRange},${dateRange},">="&${dStart},${dateRange},"<"&${dEnd},${purposeRange},"Magán")`;
+    // Üzleti km (purpose nem ingázás)
+    const bizFormula = `SUMIFS(${kmRange},${dateRange},">="&${dStart},${dateRange},"<"&${dEnd},${purposeRange},"<>Otthon-Iroda",${purposeRange},"<>Magán")`;
+    // Otthon-Iroda km (új + legacy)
+    const privFormula = `SUMIFS(${kmRange},${dateRange},">="&${dStart},${dateRange},"<"&${dEnd},${purposeRange},"Otthon-Iroda")+SUMIFS(${kmRange},${dateRange},">="&${dStart},${dateRange},"<"&${dEnd},${purposeRange},"Magán")`;
     // Összesen km
     const totFormula = `SUMIFS(${kmRange},${dateRange},">="&${dStart},${dateRange},"<"&${dEnd})`;
 
