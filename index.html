@@ -78,10 +78,70 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 
 .header {
   display: flex; flex-direction: column;
-  margin-bottom: 18px; padding: 8px 4px 0;
+  margin-bottom: 14px; padding: 8px 4px 0;
 }
 .header h1 { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
 .header p { font-size: 12px; color: var(--text-3); margin: 4px 0 0; font-weight: 500; }
+
+/* Tab navigation */
+.tabs {
+  display: flex; gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 3px;
+  margin-bottom: 14px;
+  position: sticky;
+  top: 8px;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(24,24,27,0.85);
+}
+.tab {
+  flex: 1 1 0;
+  min-width: 0;
+  background: transparent;
+  color: var(--text-3);
+  border: none;
+  padding: 9px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tab:hover { color: var(--text); }
+.tab.active {
+  background: var(--accent);
+  color: #18181b;
+}
+.tab .tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 14px; height: 14px;
+  padding: 0 4px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 7px;
+  font-size: 9px; font-weight: 800;
+}
+.tab.active .tab-badge {
+  background: rgba(0,0,0,0.25);
+}
+.tab:not(.active) .tab-badge {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+
+/* Tab panels — only active visible */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
 
 .card {
   background: var(--surface);
@@ -175,6 +235,56 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 .toggle-status {
   text-align: center; margin: 10px 0 0;
   font-size: 11px; color: var(--text-3); font-weight: 600;
+}
+
+/* iOS-style switch (single toggle) */
+.switch-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+.switch-row .switch-label {
+  flex: 1;
+  font-size: 13px; font-weight: 700;
+  color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.switch-row .switch-label .icon {
+  font-size: 16px;
+}
+.switch {
+  position: relative;
+  width: 50px; height: 30px;
+  flex-shrink: 0;
+}
+.switch input {
+  position: absolute; opacity: 0;
+  width: 100%; height: 100%;
+  cursor: pointer; z-index: 2;
+  margin: 0;
+}
+.switch .slider {
+  position: absolute; inset: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.switch .slider::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 22px; height: 22px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease;
+}
+.switch input:checked + .slider {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.switch input:checked + .slider::after {
+  transform: translateX(20px);
 }
 
 /* Route */
@@ -500,6 +610,130 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 .toast.error { background: var(--danger); color: white; }
 .toast.success { background: var(--success); color: #052e1c; }
 
+/* Weather */
+.weather-empty {
+  text-align: center;
+  color: var(--text-4);
+  font-style: italic;
+  padding: 16px 8px;
+  margin: 0;
+  font-size: 12px;
+}
+.weather-loading {
+  text-align: center;
+  color: var(--text-3);
+  padding: 12px 8px;
+  margin: 0;
+  font-size: 12px;
+}
+.weather-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 11px 12px;
+  margin-bottom: 8px;
+}
+.weather-card:last-child { margin-bottom: 0; }
+.weather-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 8px;
+}
+.weather-card-name {
+  font-weight: 700; font-size: 12px;
+  color: var(--text);
+  flex: 1;
+}
+.weather-card-name .label-prefix {
+  display: inline-block;
+  font-size: 9px;
+  color: var(--text-4);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: 5px;
+}
+.weather-time-section {
+  border-top: 1px dashed var(--border);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+.weather-time-section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+.weather-time-label {
+  font-size: 9px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-4);
+  margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.weather-time-label .time-val {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-size: 10px;
+}
+.weather-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  font-size: 12px;
+}
+.weather-stat {
+  display: flex; align-items: center;
+  gap: 5px;
+}
+.weather-stat .icon {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+}
+.weather-stat .val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--text);
+}
+.weather-stat .unit {
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 500;
+}
+.weather-rideability {
+  margin-top: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid transparent;
+}
+.weather-rideability.ok {
+  background: rgba(58,189,140,0.12);
+  color: var(--success);
+  border-color: rgba(58,189,140,0.3);
+}
+.weather-rideability.warn {
+  background: rgba(251,191,36,0.10);
+  color: var(--accent);
+  border-color: rgba(251,191,36,0.3);
+}
+.weather-rideability.bad {
+  background: rgba(239,68,68,0.10);
+  color: var(--danger);
+  border-color: rgba(239,68,68,0.3);
+}
+.weather-warning {
+  margin-top: 6px;
+  padding: 6px 9px;
+  background: rgba(239,68,68,0.10);
+  border-left: 3px solid var(--danger);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+
 .btn-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -588,7 +822,17 @@ footer {
   <p>Élő útvonaltervező · GPS-alapú km</p>
 </header>
 
-<!-- GPS / Kiindulópont -->
+<!-- TAB NAVIGATION -->
+<nav class="tabs" id="tabsNav">
+  <button class="tab active" data-tab-btn="route">🚗 Út <span class="tab-badge" id="tabBadgeRoute">0</span></button>
+  <button class="tab" data-tab-btn="map">🗺️ Térkép</button>
+  <button class="tab" data-tab-btn="weather">🌤️ Idő</button>
+  <button class="tab" data-tab-btn="trips">📝 Napló <span class="tab-badge" id="tabBadgeTrips">0</span></button>
+  <button class="tab" data-tab-btn="partners">📋 Partnerek</button>
+</nav>
+
+<!-- ÚTVONAL (összevont: GPS + Autópálya + Partnerek) -->
+<div class="tab-panel active" data-tab="route">
 <section class="card gps-card">
   <p class="card-header">
     <span>Kiindulópont</span>
@@ -609,16 +853,16 @@ footer {
   <div class="fallback-select" id="fallbackWrap">
     <select id="fallbackSelect"></select>
   </div>
-</section>
-
-<!-- TOGGLE -->
-<section class="card">
-  <p class="card-header">Autópálya használat</p>
-  <div class="toggle" id="toggleHighway">
-    <button data-value="igen" class="active">🛣️ Autópályával</button>
-    <button data-value="nem">🚙 Anélkül</button>
+  <div class="switch-row" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+    <div class="switch-label">
+      <span class="icon">🛣️</span>
+      <span>Autópálya engedélyezve</span>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="highwaySwitch" checked>
+      <span class="slider"></span>
+    </label>
   </div>
-  <p class="toggle-status" id="toggleStatus">Autópályás útvonal — gyorsabb, díjköteles</p>
 </section>
 
 <!-- ROUTE -->
@@ -649,8 +893,10 @@ footer {
     <p class="stat-value"><span id="totalKm" class="empty">—</span><span class="unit" id="totalKmUnit"></span></p>
   </div>
 </section>
+</div>
 
 <!-- MAP -->
+<div class="tab-panel" data-tab="map">
 <section class="card">
   <p class="card-header">Útvonal és navigáció</p>
   <div class="map-container" id="mapContainer">
@@ -670,8 +916,26 @@ footer {
     <strong>Waze:</strong> azonnali navigáció a <em>következő</em> partnerhez (élő forgalom).
   </p>
 </section>
+</div>
+
+<!-- WEATHER -->
+<div class="tab-panel" data-tab="weather">
+<section class="card" id="weatherSection">
+  <p class="card-header">
+    <span>🌤️ Időjárás motorhoz</span>
+    <span style="font-size:9px;color:var(--text-4);font-weight:600">Open-Meteo</span>
+  </p>
+  <div id="weatherList">
+    <p class="weather-empty">Adj meg legalább egy partnert az időjáráshoz.</p>
+  </div>
+  <p class="hint" id="weatherHint" style="margin-bottom:0">
+    Minden helynél a <strong>most</strong> és a <strong>becsült érkezéskor</strong> (~60 km/h-val számolva) is látszik az adat.
+  </p>
+</section>
+</div>
 
 <!-- ÚTNYILVÁNTARTÁS -->
+<div class="tab-panel" data-tab="trips">
 <section class="card">
   <p class="card-header">
     <span>Útnyilvántartás <span class="badge" id="tripBadge">0</span></span>
@@ -749,9 +1013,13 @@ footer {
     A rögzített utak a böngésző helyi tárolójában vannak. Az Excel mentés a <strong>menetlevel.xlsx</strong>-t generálja a Szja tv. szerinti formátumban.
   </p>
 </section>
+</div>
+
+<!-- PARTNEREK -->
+<div class="tab-panel" data-tab="partners">
 
 <!-- SAVED CUSTOM PARTNERS -->
-<details id="savedPartnersDetails" style="margin-bottom:12px">
+<details id="savedPartnersDetails" style="margin-bottom:12px" open>
   <summary>⭐ Saját mentett partnereim <span id="savedPartnersCount" style="color:var(--text-4);margin-left:6px">(0)</span></summary>
   <table class="ref-table" id="savedPartnersTable">
     <thead>
@@ -768,7 +1036,7 @@ footer {
 </details>
 
 <!-- REFERENCE -->
-<details>
+<details open>
   <summary>📋 Partnerek listája (36)</summary>
   <table class="ref-table">
     <thead>
@@ -780,6 +1048,8 @@ footer {
     <tbody id="refTable"></tbody>
   </table>
 </details>
+
+</div>
 
 <footer>
   ⚙️ Routing: OSRM (open-source) · Térkép: Google Maps<br>
@@ -1426,6 +1696,327 @@ function renderIntermediates() {
 function updateStopCount() {
   document.getElementById('stopCount').textContent = `(${stops.length}/${MAX_STOPS})`;
   document.getElementById('addStop').disabled = stops.length >= MAX_STOPS;
+  // Update tab badge: count of valid (filled, routable) partners
+  const validCount = stops.filter(s => {
+    const d = getStopData(s);
+    return d && d.lat != null;
+  }).length;
+  const routeBadge = document.getElementById('tabBadgeRoute');
+  if (routeBadge) routeBadge.textContent = validCount;
+}
+
+// =============================================================
+// WEATHER (Open-Meteo)
+// =============================================================
+const WEATHER_CACHE_KEY = 'kmszamolo:weather_cache:v1';
+const WEATHER_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const AVG_SPEED_KMH = 60; // for arrival time estimation
+let weatherMode = 'now'; // 'now' | 'arrival'
+let weatherCache = {};
+
+function loadWeatherCache() {
+  try {
+    weatherCache = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || '{}');
+  } catch (e) { weatherCache = {}; }
+}
+
+function saveWeatherCache() {
+  // Prune old entries
+  const now = Date.now();
+  for (const k of Object.keys(weatherCache)) {
+    if (now - weatherCache[k].ts > WEATHER_CACHE_TTL_MS) delete weatherCache[k];
+  }
+  localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(weatherCache));
+}
+
+function weatherCacheKey(lat, lng) {
+  // Round to 2 decimals (~1km precision) — multiple partners in same area share cache
+  return `${lat.toFixed(2)},${lng.toFixed(2)}`;
+}
+
+async function fetchWeather(lat, lng) {
+  const key = weatherCacheKey(lat, lng);
+  const now = Date.now();
+  if (weatherCache[key] && (now - weatherCache[key].ts) < WEATHER_CACHE_TTL_MS) {
+    return weatherCache[key].data;
+  }
+  try {
+    // Hourly forecast for 48 hours; current weather; daily summary
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}`
+      + `&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m`
+      + `&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m`
+      + `&forecast_days=2&timezone=Europe%2FBudapest&wind_speed_unit=kmh`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    weatherCache[key] = { ts: now, data };
+    saveWeatherCache();
+    return data;
+  } catch (e) {
+    console.error('Weather fetch failed:', e);
+    return null;
+  }
+}
+
+// WMO weather code → emoji + text (subset for common codes)
+function weatherCodeInfo(code, isDay) {
+  const dayMap = {
+    0:  { icon: '☀️', text: 'tiszta' },
+    1:  { icon: '🌤️', text: 'kis felhő' },
+    2:  { icon: '⛅', text: 'részben felhős' },
+    3:  { icon: '☁️', text: 'borult' },
+    45: { icon: '🌫️', text: 'köd' },
+    48: { icon: '🌫️', text: 'zúzmaraködös' },
+    51: { icon: '🌦️', text: 'szitálás' },
+    53: { icon: '🌦️', text: 'szitálás' },
+    55: { icon: '🌧️', text: 'szitálás (intenzív)' },
+    56: { icon: '🌧️', text: 'fagyott szitálás' },
+    57: { icon: '🌧️', text: 'fagyott szitálás' },
+    61: { icon: '🌧️', text: 'gyenge eső' },
+    63: { icon: '🌧️', text: 'eső' },
+    65: { icon: '🌧️', text: 'erős eső' },
+    66: { icon: '🌧️', text: 'fagyott eső' },
+    67: { icon: '🌧️', text: 'fagyott eső' },
+    71: { icon: '🌨️', text: 'gyenge havazás' },
+    73: { icon: '🌨️', text: 'havazás' },
+    75: { icon: '❄️', text: 'erős havazás' },
+    77: { icon: '🌨️', text: 'hószemcsés' },
+    80: { icon: '🌧️', text: 'gyenge zápor' },
+    81: { icon: '🌧️', text: 'zápor' },
+    82: { icon: '⛈️', text: 'erős zápor' },
+    85: { icon: '🌨️', text: 'hózápor' },
+    86: { icon: '❄️', text: 'erős hózápor' },
+    95: { icon: '⛈️', text: 'zivatar' },
+    96: { icon: '⛈️', text: 'zivatar jéggel' },
+    99: { icon: '⛈️', text: 'erős zivatar jéggel' },
+  };
+  const nightMap = { 0: { icon: '🌙', text: 'tiszta' }, 1: { icon: '🌙', text: 'kis felhő' }, 2: { icon: '☁️', text: 'felhős' } };
+  if (!isDay && nightMap[code]) return nightMap[code];
+  return dayMap[code] || { icon: '🌤️', text: '—' };
+}
+
+// Compass: degree → 8-direction Hungarian abbrev
+function windDirArrow(deg) {
+  const dirs = ['É', 'ÉK', 'K', 'DK', 'D', 'DNy', 'Ny', 'ÉNy'];
+  const idx = Math.round(((deg % 360) / 45)) % 8;
+  return dirs[idx];
+}
+
+// Calculate motorcycle "rideability" score from weather (0-10)
+// Returns { level: 'ok'|'warn'|'bad', label, reasons: [] }
+function rideability(w) {
+  const reasons = [];
+  let level = 'ok';
+  // Temperature
+  if (w.temperature < 0) { reasons.push('jegesedés veszély'); level = 'bad'; }
+  else if (w.temperature < 5) { reasons.push('hideg (<5°C)'); if (level === 'ok') level = 'warn'; }
+  else if (w.temperature > 35) { reasons.push('hőség (>35°C)'); if (level === 'ok') level = 'warn'; }
+  // Wind
+  if (w.windSpeed >= 50 || w.windGusts >= 70) { reasons.push(`erős szél (${Math.round(Math.max(w.windSpeed, w.windGusts))} km/h lökés)`); level = 'bad'; }
+  else if (w.windSpeed >= 35 || w.windGusts >= 50) { reasons.push(`viharos szél (lökés ${Math.round(w.windGusts)} km/h)`); if (level === 'ok') level = 'warn'; }
+  // Precipitation
+  const code = w.weatherCode;
+  if ([95, 96, 99, 82, 65, 75, 86].includes(code)) { reasons.push('intenzív csapadék/zivatar'); level = 'bad'; }
+  else if ([61, 63, 80, 81, 71, 73, 51, 53, 55, 85].includes(code)) { reasons.push('csapadék várható'); if (level === 'ok') level = 'warn'; }
+  else if (w.precipitationProb >= 60) { reasons.push(`${w.precipitationProb}% esővalószínűség`); if (level === 'ok') level = 'warn'; }
+  // Visibility (weather codes for fog)
+  if ([45, 48].includes(code)) { reasons.push('rossz látótávolság (köd)'); if (level === 'ok') level = 'warn'; }
+
+  const labels = {
+    ok: '✓ Motorozható',
+    warn: '⚠️ Figyelem',
+    bad: '⛔ Nem javasolt',
+  };
+  return { level, label: labels[level], reasons };
+}
+
+// Find hourly index closest to a given Date in the forecast
+function findHourlyIdx(hourly, targetDate) {
+  if (!hourly || !hourly.time) return -1;
+  const targetMs = targetDate.getTime();
+  let bestIdx = 0, bestDiff = Infinity;
+  for (let i = 0; i < hourly.time.length; i++) {
+    const t = new Date(hourly.time[i]).getTime();
+    const diff = Math.abs(t - targetMs);
+    if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+  }
+  return bestIdx;
+}
+
+// Extract weather snapshot from API data, either current or at given time
+function extractWeatherAt(data, targetDate) {
+  if (!data) return null;
+  if (!targetDate) {
+    const c = data.current;
+    if (!c) return null;
+    return {
+      temperature: c.temperature_2m,
+      apparentTemperature: c.apparent_temperature,
+      precipitation: c.precipitation,
+      precipitationProb: 0, // not available in current
+      weatherCode: c.weather_code,
+      cloudCover: c.cloud_cover,
+      windSpeed: c.wind_speed_10m,
+      windDirection: c.wind_direction_10m,
+      windGusts: c.wind_gusts_10m,
+      humidity: c.relative_humidity_2m,
+      isDay: c.is_day === 1,
+      time: new Date(c.time),
+    };
+  }
+  const idx = findHourlyIdx(data.hourly, targetDate);
+  if (idx < 0) return null;
+  const h = data.hourly;
+  // is_day approx: between 6:00 and 20:00 local
+  const localHour = new Date(h.time[idx]).getHours();
+  return {
+    temperature: h.temperature_2m[idx],
+    apparentTemperature: h.temperature_2m[idx],
+    precipitation: h.precipitation[idx],
+    precipitationProb: h.precipitation_probability[idx],
+    weatherCode: h.weather_code[idx],
+    cloudCover: h.cloud_cover[idx],
+    windSpeed: h.wind_speed_10m[idx],
+    windDirection: h.wind_direction_10m[idx],
+    windGusts: h.wind_gusts_10m[idx],
+    humidity: null,
+    isDay: localHour >= 6 && localHour < 20,
+    time: new Date(h.time[idx]),
+  };
+}
+
+function formatHHMM(date) {
+  return date.toTimeString().slice(0, 5);
+}
+
+// Render weather block for one location with multiple time sections
+function renderWeatherStat(weather) {
+  if (!weather) return '<p class="weather-empty" style="padding:6px 0;font-size:11px">Nincs adat</p>';
+  const info = weatherCodeInfo(weather.weatherCode, weather.isDay);
+  const ride = rideability(weather);
+  const precipText = weather.precipitationProb > 0
+    ? `${weather.precipitationProb}%`
+    : (weather.precipitation > 0 ? `${weather.precipitation.toFixed(1)} mm` : '—');
+  return `
+    <div class="weather-card-grid">
+      <div class="weather-stat"><span class="icon">${info.icon}</span><span class="val">${Math.round(weather.temperature)}°C</span><span class="unit">${escapeHtml(info.text)}</span></div>
+      <div class="weather-stat"><span class="icon">💨</span><span class="val">${Math.round(weather.windSpeed)}</span><span class="unit">km/h ${windDirArrow(weather.windDirection)}${weather.windGusts > weather.windSpeed * 1.3 ? ` (${Math.round(weather.windGusts)})` : ''}</span></div>
+      <div class="weather-stat"><span class="icon">🌧️</span><span class="val">${escapeHtml(precipText)}</span><span class="unit">csapadék</span></div>
+      <div class="weather-stat"><span class="icon">☁️</span><span class="val">${Math.round(weather.cloudCover)}%</span><span class="unit">felhőzet</span></div>
+    </div>
+    <div class="weather-rideability ${ride.level}">${escapeHtml(ride.label)}${ride.reasons.length ? ' — ' + escapeHtml(ride.reasons.join(', ')) : ''}</div>
+  `;
+}
+
+// Render single location card with both "now" and (for partners) "arrival" sections
+function renderWeatherCard(prefix, name, data, arrivalDate) {
+  if (!data) {
+    return `<div class="weather-card"><div class="weather-card-header"><div class="weather-card-name"><span class="label-prefix">${escapeHtml(prefix)}</span>${escapeHtml(name)}</div></div><p class="weather-empty" style="padding:8px 0">Nem sikerült lekérni</p></div>`;
+  }
+  const wNow = extractWeatherAt(data, null);
+  const wArrival = arrivalDate ? extractWeatherAt(data, arrivalDate) : null;
+
+  const nowSection = `
+    <div class="weather-time-section">
+      <div class="weather-time-label">📍 MOST <span class="time-val">${formatHHMM(new Date())}</span></div>
+      ${renderWeatherStat(wNow)}
+    </div>
+  `;
+  const arrivalSection = arrivalDate ? `
+    <div class="weather-time-section">
+      <div class="weather-time-label">⏱️ ÉRKEZÉSKOR <span class="time-val">~${formatHHMM(arrivalDate)}</span></div>
+      ${renderWeatherStat(wArrival)}
+    </div>
+  ` : '';
+
+  return `
+    <div class="weather-card">
+      <div class="weather-card-header">
+        <div class="weather-card-name"><span class="label-prefix">${escapeHtml(prefix)}</span>${escapeHtml(name)}</div>
+      </div>
+      ${nowSection}
+      ${arrivalSection}
+    </div>
+  `;
+}
+
+let weatherUpdateId = 0;
+async function updateWeather() {
+  const myId = ++weatherUpdateId;
+  const list = document.getElementById('weatherList');
+  if (!list) return;
+
+  // Build list of points to fetch: origin + each valid partner
+  const points = [];
+  if (currentLocation) {
+    const originName = currentLocation.source === 'gps'
+      ? 'Kiindulópont (GPS)'
+      : (currentLocation.name || 'Kiindulópont');
+    points.push({
+      label: 'Kiinduló',
+      name: originName,
+      lat: currentLocation.lat,
+      lng: currentLocation.lng,
+      isOrigin: true,
+    });
+  }
+  stops.forEach((s, idx) => {
+    const data = getStopData(s);
+    if (data && data.lat != null) {
+      points.push({
+        label: `Partner ${idx + 1}`,
+        name: data.name,
+        lat: data.lat,
+        lng: data.lng,
+      });
+    }
+  });
+
+  if (points.length === 0) {
+    list.innerHTML = '<p class="weather-empty">Adj meg legalább egy partnert az időjáráshoz.</p>';
+    return;
+  }
+
+  list.innerHTML = '<p class="weather-loading">⏳ Időjárás lekérése...</p>';
+
+  // Compute arrival times for "arrival" mode
+  const now = new Date();
+  let cumulativeKm = 0;
+  const arrivalTimes = points.map((p, i) => {
+    if (i === 0) return now; // origin = now
+    // Use lastLegDistances if available
+    const legKm = (lastLegDistances && lastLegDistances[i - 1] != null)
+      ? lastLegDistances[i - 1]
+      : 30; // fallback estimate
+    cumulativeKm += legKm;
+    const minutesElapsed = (cumulativeKm / AVG_SPEED_KMH) * 60;
+    return new Date(now.getTime() + minutesElapsed * 60 * 1000);
+  });
+
+  // Fetch all weather data in parallel
+  const weatherPromises = points.map(p => fetchWeather(p.lat, p.lng));
+  const weatherData = await Promise.all(weatherPromises);
+
+  // Race condition: if another updateWeather started, abort this render
+  if (myId !== weatherUpdateId) return;
+
+  // Render
+  let html = '';
+  let anyFailed = false;
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i];
+    const data = weatherData[i];
+    if (!data) anyFailed = true;
+    // Origin only shows "now"; partners show both "now" and "arrival"
+    const arrivalDate = !p.isOrigin ? arrivalTimes[i] : null;
+    html += renderWeatherCard(p.label, p.name, data, arrivalDate);
+  }
+  list.innerHTML = html;
+
+  if (anyFailed) {
+    list.insertAdjacentHTML('beforeend',
+      '<p class="weather-empty" style="padding:6px 0">⚠️ Nem sikerült lekérni minden helyhez. Ellenőrizd a netkapcsolatot.</p>');
+  }
 }
 
 // =============================================================
@@ -1530,6 +2121,8 @@ async function updateAll() {
 
   // Update trip summary
   if (typeof updateTripSummary === 'function') updateTripSummary();
+  // Update weather (debounced via id race)
+  if (typeof updateWeather === 'function') updateWeather();
 }
 
 // =============================================================
@@ -1691,6 +2284,9 @@ function renderTripList() {
   badge.textContent = trips.length;
   count.textContent = `(${trips.length})`;
   document.getElementById('exportExcel').disabled = trips.length === 0;
+  // Update tab badge
+  const tripsBadge = document.getElementById('tabBadgeTrips');
+  if (tripsBadge) tripsBadge.textContent = trips.length;
 
   if (trips.length === 0) {
     tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Még nincs rögzített út</td></tr>';
@@ -2356,6 +2952,32 @@ async function buildExcelBuffer() {
 // INIT
 // =============================================================
 function init() {
+  // Tab navigation
+  function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tabBtn === tabName);
+    });
+    // Update panels
+    document.querySelectorAll('.tab-panel').forEach(p => {
+      p.classList.toggle('active', p.dataset.tab === tabName);
+    });
+    // Scroll to top of content (above the sticky tab bar)
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    // Refresh data when switching to a tab that needs it
+    if (tabName === 'weather') {
+      // Force weather refresh in case data was stale
+      if (typeof updateWeather === 'function') updateWeather();
+    }
+    if (tabName === 'map') {
+      // Re-trigger map render since iframe was hidden
+      if (typeof updateAll === 'function') updateAll();
+    }
+  }
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tabBtn));
+  });
+
   // Initial state: one partner (Szikszó) added by default
   stops.push({ name: DEFAULT_PARTNER });
 
@@ -2392,18 +3014,11 @@ function init() {
     btn.disabled = false;
   });
 
-  // Highway toggle
-  document.querySelectorAll('#toggleHighway button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('#toggleHighway button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      useHighway = btn.dataset.value === 'igen';
-      document.getElementById('toggleStatus').textContent =
-        useHighway
-          ? 'Autópályás útvonal — gyorsabb, díjköteles'
-          : 'Mellékutas útvonal — lassabb, díjmentes';
-      updateAll();
-    });
+  // Highway switch
+  const highwaySwitch = document.getElementById('highwaySwitch');
+  highwaySwitch.addEventListener('change', () => {
+    useHighway = highwaySwitch.checked;
+    updateAll();
   });
 
   // Add stop button
@@ -2431,6 +3046,7 @@ function init() {
   // === Trip logger ===
   loadCustomPartners();
   renderSavedPartners();
+  loadWeatherCache();
   loadTrips();
   renderTripList();
   // Default date = today
