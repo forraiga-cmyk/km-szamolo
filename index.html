@@ -104,8 +104,8 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   background: transparent;
   color: var(--text-3);
   border: none;
-  padding: 9px 4px;
-  font-size: 11px;
+  padding: 10px 4px;
+  font-size: 18px;
   font-weight: 700;
   border-radius: 10px;
   white-space: nowrap;
@@ -116,7 +116,6 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   justify-content: center;
   gap: 3px;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 .tab:hover { color: var(--text); }
 .tab.active {
@@ -734,6 +733,156 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   line-height: 1.4;
 }
 
+/* Stats */
+.stats-section {
+  margin-bottom: 16px;
+}
+.stats-section:last-child { margin-bottom: 0; }
+.stats-section-title {
+  font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-4);
+  margin: 0 0 8px;
+  padding-left: 4px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.stat-tile {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.stat-tile-label {
+  font-size: 9px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-4);
+  margin: 0 0 4px;
+}
+.stat-tile-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.1;
+}
+.stat-tile-value .unit {
+  font-size: 10px; font-weight: 600;
+  color: var(--text-3);
+  margin-left: 3px;
+}
+.stat-tile-sub {
+  font-size: 10px;
+  color: var(--text-3);
+  margin: 3px 0 0;
+}
+
+/* Bar chart (CSS-only) */
+.bar-chart {
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 10px 12px;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 70px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.bar-label {
+  color: var(--text-3);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.bar-track {
+  height: 18px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+}
+.bar-fill {
+  background: var(--accent);
+  height: 100%;
+  display: flex; align-items: center;
+  transition: width 0.3s ease;
+  min-width: 2px;
+}
+.bar-fill.private {
+  background: #6b7280;
+}
+.bar-fill.split-biz {
+  background: var(--accent);
+}
+.bar-fill.split-cmt {
+  background: #6b7280;
+  border-left: 1px solid var(--bg);
+}
+.bar-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--text);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.bar-legend {
+  display: flex; gap: 12px;
+  margin-top: 8px; padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-size: 10px; color: var(--text-3);
+}
+.bar-legend-item {
+  display: flex; align-items: center; gap: 4px;
+}
+.bar-legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+}
+.bar-legend-dot.biz { background: var(--accent); }
+.bar-legend-dot.cmt { background: #6b7280; }
+
+.partner-rank-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.partner-rank-row:last-child { border-bottom: none; }
+.partner-rank-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  color: var(--accent);
+  text-align: center;
+  font-size: 12px;
+}
+.partner-rank-name {
+  color: var(--text);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.partner-rank-stats {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-3);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
 .btn-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -824,11 +973,13 @@ footer {
 
 <!-- TAB NAVIGATION -->
 <nav class="tabs" id="tabsNav">
-  <button class="tab active" data-tab-btn="route">🚗 Út <span class="tab-badge" id="tabBadgeRoute">0</span></button>
-  <button class="tab" data-tab-btn="map">🗺️ Térkép</button>
-  <button class="tab" data-tab-btn="weather">🌤️ Idő</button>
-  <button class="tab" data-tab-btn="trips">📝 Napló <span class="tab-badge" id="tabBadgeTrips">0</span></button>
-  <button class="tab" data-tab-btn="partners">📋 Partnerek</button>
+  <button class="tab active" data-tab-btn="route" title="Útvonal">🚗 <span class="tab-badge" id="tabBadgeRoute">0</span></button>
+  <button class="tab" data-tab-btn="map" title="Térkép">🗺️</button>
+  <button class="tab" data-tab-btn="weather" title="Időjárás">🌤️</button>
+  <button class="tab" data-tab-btn="trips" title="Útnyilvántartás">📝 <span class="tab-badge" id="tabBadgeTrips">0</span></button>
+  <button class="tab" data-tab-btn="fuel" title="Üzemanyag">⛽</button>
+  <button class="tab" data-tab-btn="stats" title="Statisztika">📈</button>
+  <button class="tab" data-tab-btn="partners" title="Partnerek">📋</button>
 </nav>
 
 <!-- ÚTVONAL (összevont: GPS + Autópálya + Partnerek) -->
@@ -1012,6 +1163,89 @@ footer {
   <p class="hint">
     A rögzített utak a böngésző helyi tárolójában vannak. Az Excel mentés a <strong>menetlevel.xlsx</strong>-t generálja a Szja tv. szerinti formátumban.
   </p>
+</section>
+</div>
+
+<!-- TANKOLÁS -->
+<div class="tab-panel" data-tab="fuel">
+<section class="card">
+  <p class="card-header">
+    <span>⛽ Tankolás <span class="badge" id="fuelBadge">0</span></span>
+    <span style="font-size:9px;color:var(--text-4);font-weight:600">Honda NC 750 XD</span>
+  </p>
+
+  <!-- Quick stats summary -->
+  <div class="trip-summary" id="fuelSummary">
+    <span class="key">Átlag fogyasztás:</span><span class="val" id="fuelAvgConsumption">—</span>
+    <span class="key">Átlag ár:</span><span class="val" id="fuelAvgPrice">—</span>
+    <span class="key">Összes költség:</span><span class="val" id="fuelTotalCost">—</span>
+  </div>
+
+  <!-- Add fuel form -->
+  <div class="trip-form">
+    <div class="trip-form-row">
+      <div class="trip-field">
+        <label>Dátum</label>
+        <input type="date" id="fuelDate">
+      </div>
+      <div class="trip-field">
+        <label>Km óra állás</label>
+        <input type="number" id="fuelKm" class="km-input" inputmode="numeric" placeholder="—">
+      </div>
+    </div>
+    <div class="trip-form-row">
+      <div class="trip-field">
+        <label>Tankolt mennyiség (liter)</label>
+        <input type="number" id="fuelLiters" class="km-input" inputmode="decimal" step="0.01" placeholder="—">
+      </div>
+      <div class="trip-field">
+        <label>Összeg (Ft)</label>
+        <input type="number" id="fuelCost" class="km-input" inputmode="numeric" placeholder="—">
+      </div>
+    </div>
+    <div class="trip-field">
+      <label>Megjegyzés (opcionális)</label>
+      <input type="text" id="fuelNotes" placeholder="pl. MOL Mátraszentimre — 95-ös">
+    </div>
+    <button class="btn success" id="saveFuel">⛽ Tankolás rögzítése</button>
+  </div>
+
+  <!-- Fuel list -->
+  <details id="fuelListDetails" style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;" open>
+    <summary style="font-size:10px">Tankolások listája <span id="fuelListCount" style="color:var(--text-4);margin-left:6px">(0)</span></summary>
+    <table class="trip-list-table">
+      <thead>
+        <tr>
+          <th>Dátum</th>
+          <th>Km / Liter</th>
+          <th class="km">Fogy.</th>
+          <th class="km">Ft</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="fuelList">
+        <tr class="empty-row"><td colspan="5">Még nincs rögzített tankolás</td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <button class="btn danger-outline" id="clearFuels">🗑️ Mind törlése</button>
+  <p class="hint">
+    A tankolások a böngésző helyi tárolójában vannak. A fogyasztás (l/100km) az előző tankolás km-állásától számít.
+  </p>
+</section>
+</div>
+
+<!-- STATISZTIKA -->
+<div class="tab-panel" data-tab="stats">
+<section class="card">
+  <p class="card-header">
+    <span>📈 Statisztikák</span>
+    <span style="font-size:9px;color:var(--text-4);font-weight:600">Aktuális év</span>
+  </p>
+  <div id="statsContent">
+    <p class="weather-empty">Még nincs adat — rögzíts utakat és tankolásokat.</p>
+  </div>
 </section>
 </div>
 
