@@ -1077,7 +1077,7 @@ footer {
 
 <!-- TAB NAVIGATION -->
 <nav class="tabs" id="tabsNav">
-  <button class="tab active" data-tab-btn="route" title="Útvonal">🚗 <span class="tab-badge" id="tabBadgeRoute">0</span></button>
+  <button class="tab active" data-tab-btn="route" title="Útvonal">🏍️ <span class="tab-badge" id="tabBadgeRoute">0</span></button>
   <button class="tab" data-tab-btn="map" title="Térkép">🗺️</button>
   <button class="tab" data-tab-btn="weather" title="Időjárás">🌤️</button>
   <button class="tab" data-tab-btn="trips" title="Útnyilvántartás">📝 <span class="tab-badge" id="tabBadgeTrips">0</span></button>
@@ -1114,7 +1114,7 @@ footer {
       <span>Autópálya engedélyezve</span>
     </div>
     <label class="switch">
-      <input type="checkbox" id="highwaySwitch" checked>
+      <input type="checkbox" id="highwaySwitch">
       <span class="slider"></span>
     </label>
   </div>
@@ -1478,7 +1478,7 @@ const MAX_STOPS = 5;
 // =============================================================
 let currentLocation = null; // { lat, lng, address?, source: 'gps'|'partner' }
 let stops = []; // [{ name }]
-let useHighway = true;
+let useHighway = false;
 let routeCalcId = 0; // increments to cancel stale OSRM responses
 let lastLegDistances = []; // km per leg, in order: [origin→stop1, stop1→stop2, ..., lastStop→dest]
 
@@ -3749,10 +3749,13 @@ function init() {
     btn.addEventListener('click', () => switchTab(btn.dataset.tabBtn));
   });
 
+  // Load custom partners FIRST so dropdowns can include them
+  loadCustomPartners();
+
   // Initial state: one partner (Szikszó) added by default
   stops.push({ name: DEFAULT_PARTNER });
 
-  // Fallback partner select
+  // Fallback partner select (includes saved custom partners)
   const fbSel = document.getElementById('fallbackSelect');
   populateSelect(fbSel, FALLBACK_PARTNER);
   fbSel.addEventListener('change', () => setPartnerAsOrigin(fbSel.value));
@@ -3815,7 +3818,6 @@ function init() {
   });
 
   // === Trip logger ===
-  loadCustomPartners();
   renderSavedPartners();
   loadWeatherCache();
   loadTrips();
