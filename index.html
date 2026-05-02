@@ -1596,6 +1596,27 @@ function saveCustomPartnersToStorage() {
     const currentValue = fbSel.value;
     populateSelect(fbSel, currentValue || FALLBACK_PARTNER);
   }
+  // Refresh route partner dropdowns (they also use populateSelect)
+  // BUT: only if there is no custom partner currently being edited
+  // (re-rendering would destroy the in-progress address input).
+  // We update each existing select's options manually.
+  refreshRoutePartnerDropdowns();
+}
+
+// Update the <select> in each existing route partner row to include
+// the latest savedCustomPartners — without re-rendering the whole row
+// (which would lose any in-progress custom address typing).
+function refreshRoutePartnerDropdowns() {
+  const container = document.getElementById('intermediates');
+  if (!container) return;
+  const selects = container.querySelectorAll('select[data-stop-sel]');
+  selects.forEach(sel => {
+    const idx = parseInt(sel.dataset.stopSel, 10);
+    const stop = stops[idx];
+    if (!stop) return;
+    const currentValue = stop.custom ? CUSTOM_PARTNER_VALUE : stop.name;
+    populateSelect(sel, currentValue, true);
+  });
 }
 
 function addCustomPartner(partner) {
@@ -3709,6 +3730,212 @@ function saveFuel() {
 }
 
 // =============================================================
+// STATISTICS
+// =============================================================
+function renderStats() {
+  const container = document.getElementById('statsContent');
+  if (!container) return;
+
+  if (trips.length === 0 && fuels.length === 0) {
+    container.innerHTML = '<p class="weather-empty">Még nincs adat — rögzíts utakat és tankolásokat.</p>';
+    return;
+  }
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const tripsThisYear = trips.filter(t => t.date && t.date.startsWith(String(currentYear)));
+  const fuelsThisYear = fuels.filter(f => f.date && f.date.startsWith(String(currentYear)));
+
+  // ===== SUMMARY TILES =====
+  let totalKm = 0, businessKm = 0, commuteKm = 0;
+  for (const t of tripsThisYear) {
+    const km = t.distance || 0;
+    totalKm += km;
+    if (isCommutePurpose(t.purpose)) commuteKm += km;
+    else businessKm += km;
+  }
+  const businessPct = totalKm > 0 ? Math.round(businessKm / totalKm * 100) : 0;
+
+  let totalLiters = 0, totalCost = 0;
+  for (const f of fuelsThisYear) {
+    totalLiters += f.liters || 0;
+    totalCost += f.cost || 0;
+  }
+  // Average consumption
+  const ascending = [...fuelsThisYear].sort((a, b) => (a.date || '').localeCompare(b.date || '') || (a.km || 0) - (b.km || 0));
+  let consLiters = 0, consKm = 0;
+  for (let i = 1; i < ascending.length; i++) {
+    const dKm = ascending[i].km - ascending[i - 1].km;
+    if (dKm > 0) { consLiters += ascending[i].liters; consKm += dKm; }
+  }
+  const avgCons = consKm > 0 ? (consLiters / consKm * 100) : null;
+  const costPerKm = totalKm > 0 && totalCost > 0 ? totalCost / totalKm : null;
+
+  // Last trip date
+  const lastTripDate = tripsThisYear.reduce((max, t) => t.date > max ? t.date : max, '');
+  const daysSinceLast = lastTripDate
+    ? Math.floor((now - new Date(lastTripDate)) / (1000 * 60 * 60 * 24))
+    : null;
+
+  let html = `
+    <div class="stats-section">
+      <p class="stats-section-title">📊 ÉVES ÖSSZESÍTÉS (${currentYear})</p>
+      <div class="stats-grid">
+        <div class="stat-tile">
+          <p class="stat-tile-label">Összes km</p>
+          <p class="stat-tile-value">${totalKm.toLocaleString('hu')}<span class="unit">km</span></p>
+          <p class="stat-tile-sub">${tripsThisYear.length} rögzített út</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-tile-label">Üzleti km</p>
+          <p class="stat-tile-value" style="color:var(--accent)">${businessKm.toLocaleString('hu')}<span class="unit">km</span></p>
+          <p class="stat-tile-sub">${businessPct}% (NAV-elszámolható)</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-tile-label">Otthon-Iroda km</p>
+          <p class="stat-tile-value" style="color:#9ca3af">${commuteKm.toLocaleString('hu')}<span class="unit">km</span></p>
+          <p class="stat-tile-sub">${100 - businessPct}% (ingázás)</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-tile-label">Tankolási költség</p>
+          <p class="stat-tile-value">${totalCost.toLocaleString('hu')}<span class="unit">Ft</span></p>
+          <p class="stat-tile-sub">${totalLiters.toFixed(1)} liter</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-tile-label">Átlag fogyasztás</p>
+          <p class="stat-tile-value">${avgCons != null ? avgCons.toFixed(2) : '—'}${avgCons != null ? '<span class="unit">L/100km</span>' : ''}</p>
+          <p class="stat-tile-sub">${ascending.length > 1 ? (ascending.length - 1) + ' szakasz alapján' : 'min. 2 tankolás kell'}</p>
+        </div>
+        <div class="stat-tile">
+          <p class="stat-tile-label">Költség/km</p>
+          <p class="stat-tile-value">${costPerKm != null ? Math.round(costPerKm) : '—'}${costPerKm != null ? '<span class="unit">Ft/km</span>' : ''}</p>
+          <p class="stat-tile-sub">${daysSinceLast != null ? (daysSinceLast === 0 ? 'Ma volt rögzítés' : daysSinceLast + ' napja nincs út') : '—'}</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // ===== MONTHLY BREAKDOWN =====
+  if (tripsThisYear.length > 0) {
+    const months = ['Jan','Feb','Már','Ápr','Máj','Jún','Júl','Aug','Sze','Okt','Nov','Dec'];
+    const monthlyData = months.map(() => ({ business: 0, commute: 0, total: 0 }));
+    for (const t of tripsThisYear) {
+      const m = parseInt(t.date.split('-')[1], 10) - 1;
+      if (m < 0 || m > 11) continue;
+      const km = t.distance || 0;
+      monthlyData[m].total += km;
+      if (isCommutePurpose(t.purpose)) monthlyData[m].commute += km;
+      else monthlyData[m].business += km;
+    }
+    const maxMonth = Math.max(...monthlyData.map(d => d.total));
+
+    html += `
+      <div class="stats-section">
+        <p class="stats-section-title">📅 HAVI BONTÁS</p>
+        <div class="bar-chart">
+    `;
+    for (let i = 0; i < 12; i++) {
+      const d = monthlyData[i];
+      if (d.total === 0) continue;
+      const bizPct = maxMonth > 0 ? (d.business / maxMonth * 100) : 0;
+      const cmtPct = maxMonth > 0 ? (d.commute / maxMonth * 100) : 0;
+      html += `
+        <div class="bar-row">
+          <span class="bar-label">${months[i]}</span>
+          <div class="bar-track">
+            ${d.business > 0 ? `<div class="bar-fill split-biz" style="width:${bizPct}%"></div>` : ''}
+            ${d.commute > 0 ? `<div class="bar-fill split-cmt" style="width:${cmtPct}%"></div>` : ''}
+          </div>
+          <span class="bar-value">${Math.round(d.total)} km</span>
+        </div>
+      `;
+    }
+    html += `
+        <div class="bar-legend">
+          <span><span class="bar-legend-dot" style="background:var(--accent)"></span> Üzleti</span>
+          <span><span class="bar-legend-dot" style="background:#6b7280"></span> Otthon-Iroda</span>
+        </div>
+      </div></div>
+    `;
+  }
+
+  // ===== TOP PARTNERS =====
+  if (tripsThisYear.length > 0) {
+    const partnerCount = {};
+    const partnerKm = {};
+    for (const t of tripsThisYear) {
+      if (isCommutePurpose(t.purpose)) continue; // only business
+      const name = t.destName || '—';
+      partnerCount[name] = (partnerCount[name] || 0) + 1;
+      partnerKm[name] = (partnerKm[name] || 0) + (t.distance || 0);
+    }
+    const top = Object.entries(partnerCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+    if (top.length > 0) {
+      const maxCount = top[0][1];
+      html += `
+        <div class="stats-section">
+          <p class="stats-section-title">🏆 TOP 5 PARTNER (üzleti utak)</p>
+          <div class="bar-chart">
+      `;
+      for (const [name, count] of top) {
+        const pct = (count / maxCount * 100);
+        html += `
+          <div class="bar-row">
+            <span class="bar-label" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${pct}%"></div>
+            </div>
+            <span class="bar-value">${count}× · ${Math.round(partnerKm[name])} km</span>
+          </div>
+        `;
+      }
+      html += `</div></div>`;
+    }
+  }
+
+  // ===== FUEL TREND =====
+  if (fuelsThisYear.length > 0) {
+    const months = ['Jan','Feb','Már','Ápr','Máj','Jún','Júl','Aug','Sze','Okt','Nov','Dec'];
+    const monthlyFuel = months.map(() => ({ liters: 0, cost: 0, count: 0 }));
+    for (const f of fuelsThisYear) {
+      const m = parseInt(f.date.split('-')[1], 10) - 1;
+      if (m < 0 || m > 11) continue;
+      monthlyFuel[m].liters += f.liters || 0;
+      monthlyFuel[m].cost += f.cost || 0;
+      monthlyFuel[m].count += 1;
+    }
+    const hasFuelData = monthlyFuel.some(m => m.count > 0);
+    if (hasFuelData) {
+      const maxCost = Math.max(...monthlyFuel.map(m => m.cost));
+      html += `
+        <div class="stats-section">
+          <p class="stats-section-title">⛽ HAVI TANKOLÁSI KÖLTSÉG</p>
+          <div class="bar-chart">
+      `;
+      for (let i = 0; i < 12; i++) {
+        const d = monthlyFuel[i];
+        if (d.count === 0) continue;
+        const pct = maxCost > 0 ? (d.cost / maxCost * 100) : 0;
+        html += `
+          <div class="bar-row">
+            <span class="bar-label">${months[i]}</span>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${pct}%"></div>
+            </div>
+            <span class="bar-value">${d.cost.toLocaleString('hu')} Ft · ${d.liters.toFixed(1)}L</span>
+          </div>
+        `;
+      }
+      html += `</div></div>`;
+    }
+  }
+
+  container.innerHTML = html;
+}
+
+// =============================================================
 // INIT
 // =============================================================
 function init() {
@@ -3743,6 +3970,10 @@ function init() {
       } else {
         // Already detected — show as is
       }
+    }
+    if (tabName === 'stats') {
+      // Refresh statistics whenever opened
+      if (typeof renderStats === 'function') renderStats();
     }
   }
   document.querySelectorAll('.tab').forEach(btn => {
