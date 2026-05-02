@@ -589,6 +589,32 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 }
 .trip-rm-btn:hover { background: var(--danger); color: white; }
 
+.quick-add-btn {
+  background: var(--accent); color: #18181b;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  font-size: 12px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-right: 4px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.quick-add-btn:hover { transform: scale(1.1); }
+.quick-add-btn:active { transform: scale(0.95); }
+
+.quick-origin-btn {
+  background: #3abd8c; color: #052e1c;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  font-size: 12px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-right: 4px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.quick-origin-btn:hover { transform: scale(1.1); }
+.quick-origin-btn:active { transform: scale(0.95); }
+
 .toast {
   position: fixed; left: 50%; bottom: 32px;
   transform: translateX(-50%) translateY(20px);
@@ -608,6 +634,84 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 }
 .toast.error { background: var(--danger); color: white; }
 .toast.success { background: var(--success); color: #052e1c; }
+
+/* Fuel station detection */
+.fuel-station-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+.fuel-station-card .label {
+  font-size: 9px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-4); margin: 0 0 6px;
+}
+.fuel-station-card .station-name {
+  font-size: 13px; font-weight: 700;
+  color: var(--text); margin: 0;
+}
+.fuel-station-card .station-distance {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 600;
+  color: var(--accent);
+  margin-left: 6px;
+}
+.fuel-station-card .station-addr {
+  font-size: 10px; color: var(--text-3);
+  margin: 3px 0 0;
+}
+.fuel-station-card.loading .station-name {
+  color: var(--text-4); font-style: italic;
+}
+.fuel-station-card.error .station-name {
+  color: var(--danger);
+}
+.fuel-station-actions {
+  display: flex; gap: 6px;
+  margin-top: 8px;
+}
+.fuel-station-actions button {
+  flex: 1;
+  background: var(--surface-2);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  font-size: 11px; font-weight: 700;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.fuel-station-actions button:hover { border-color: var(--accent); }
+.fuel-station-actions button.active {
+  background: var(--accent);
+  color: #18181b;
+  border-color: var(--accent);
+}
+
+/* Octane / fuel type segment */
+.octane-toggle {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+  background: var(--bg); padding: 4px; border-radius: 11px;
+}
+.octane-toggle button {
+  background: transparent;
+  color: var(--text-3);
+  font-size: 13px; font-weight: 700;
+  padding: 9px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.octane-toggle button.active {
+  background: var(--accent);
+  color: #18181b;
+}
+.octane-toggle .octane-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 14px;
+}
 
 /* Weather */
 .weather-empty {
@@ -1183,6 +1287,33 @@ footer {
 
   <!-- Add fuel form -->
   <div class="trip-form">
+
+    <!-- Detected fuel station from GPS -->
+    <div class="fuel-station-card loading" id="fuelStationCard">
+      <p class="label">📍 Benzinkút (GPS alapján)</p>
+      <p class="station-name" id="fuelStationName">⏳ Detektálás...</p>
+      <p class="station-addr" id="fuelStationAddr"></p>
+      <div class="fuel-station-actions" id="fuelStationActions" style="display:none">
+        <button type="button" id="fuelStationRefresh">🔄 Újrakeres</button>
+        <button type="button" id="fuelStationManual">✏️ Saját megadás</button>
+      </div>
+    </div>
+
+    <!-- Manual station name input (hidden by default) -->
+    <div class="trip-field" id="fuelStationManualWrap" style="display:none">
+      <label>Benzinkút neve</label>
+      <input type="text" id="fuelStationCustom" placeholder="pl. MOL Mátraszentimre">
+    </div>
+
+    <!-- Octane / fuel type -->
+    <div class="trip-field">
+      <label>Üzemanyag típus</label>
+      <div class="octane-toggle" id="fuelOctane">
+        <button type="button" class="active" data-octane="95">⛽ <span class="octane-num">95</span></button>
+        <button type="button" data-octane="100">⛽ <span class="octane-num">100</span></button>
+      </div>
+    </div>
+
     <div class="trip-form-row">
       <div class="trip-field">
         <label>Dátum</label>
@@ -1205,7 +1336,7 @@ footer {
     </div>
     <div class="trip-field">
       <label>Megjegyzés (opcionális)</label>
-      <input type="text" id="fuelNotes" placeholder="pl. MOL Mátraszentimre — 95-ös">
+      <input type="text" id="fuelNotes" placeholder="—">
     </div>
     <button class="btn success" id="saveFuel">⛽ Tankolás rögzítése</button>
   </div>
@@ -1384,10 +1515,52 @@ function renderSavedPartners() {
     tr.innerHTML = `
       <td><strong>${escapeHtml(p.name)}</strong></td>
       <td>${escapeHtml(p.address)}</td>
-      <td style="text-align:center"><button class="trip-rm-btn" data-saved-rm="${escapeHtml(p.name)}" title="Törlés">×</button></td>
+      <td style="text-align:center;white-space:nowrap">
+        <button class="quick-add-btn" data-saved-add="${escapeHtml(p.name)}" title="Hozzáadás az útvonalhoz">➕</button>
+        <button class="quick-origin-btn" data-saved-origin="${escapeHtml(p.name)}" title="Kiindulópontnak beállítás">📍</button>
+        <button class="trip-rm-btn" data-saved-rm="${escapeHtml(p.name)}" title="Törlés">×</button>
+      </td>
     `;
     tbody.appendChild(tr);
   }
+  // Quick-add to route
+  tbody.querySelectorAll('button[data-saved-add]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.savedAdd;
+      if (stops.length >= MAX_STOPS) {
+        showToast(`Maximum ${MAX_STOPS} partner adható az útvonalhoz`, 'error');
+        return;
+      }
+      stops.push({ name, isPrivate: false, custom: false });
+      renderIntermediates();
+      updateStopCount();
+      updateAll();
+      showToast(`✓ "${name}" hozzáadva az útvonalhoz`, 'success');
+      // Switch to route tab
+      const routeBtn = document.querySelector('.tab[data-tab-btn="route"]');
+      if (routeBtn) routeBtn.click();
+    });
+  });
+  // Quick-set as origin (Kiindulópont)
+  tbody.querySelectorAll('button[data-saved-origin]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.savedOrigin;
+      // Switch to Partner mode
+      document.getElementById('modeGps').classList.remove('active');
+      document.getElementById('modePartner').classList.add('active');
+      document.getElementById('fallbackWrap').classList.add('show');
+      // Set the fallback select value (now includes saved partners)
+      const fbSel = document.getElementById('fallbackSelect');
+      fbSel.value = name;
+      // Use the existing setter
+      setPartnerAsOrigin(name);
+      showToast(`✓ "${name}" kiindulópontnak beállítva`, 'success');
+      // Switch to route tab
+      const routeBtn = document.querySelector('.tab[data-tab-btn="route"]');
+      if (routeBtn) routeBtn.click();
+    });
+  });
+  // Remove
   tbody.querySelectorAll('button[data-saved-rm]').forEach(btn => {
     btn.addEventListener('click', () => {
       const name = btn.dataset.savedRm;
@@ -1417,6 +1590,12 @@ function saveCustomPartnersToStorage() {
   localStorage.setItem(CUSTOM_PARTNERS_KEY, JSON.stringify(savedCustomPartners));
   // Refresh UI elements that depend on the partner list
   if (typeof renderSavedPartners === 'function') renderSavedPartners();
+  // Refresh the fallback (Kiindulópont) select to show new saved partners
+  const fbSel = document.getElementById('fallbackSelect');
+  if (fbSel) {
+    const currentValue = fbSel.value;
+    populateSelect(fbSel, currentValue || FALLBACK_PARTNER);
+  }
 }
 
 function addCustomPartner(partner) {
@@ -1649,14 +1828,39 @@ async function forwardGeocode(address) {
     } catch (e) { /* try next */ }
   }
 
-  // Last resort: structured query (postcode + city + street separately)
-  const m = trimmed.match(/^(\d{4})\s+([^,]+?)\s*,\s*(.+?)\s+(\d+\S*)$/);
+  // Last resort: structured query — try with or without postcode
+  // Pattern A: "1234 Város, Utca 5" → postcode + city + street + housenum
+  let m = trimmed.match(/^(\d{4})\s+([^,]+?)\s*,\s*(.+?)\s+(\d+\S*)$/);
+  let structured = null;
   if (m) {
+    structured = {
+      postalcode: m[1].trim(),
+      city: m[2].trim(),
+      street: (m[3].trim() + ' ' + m[4].trim().replace(/\.$/, '')).replace(/\bu\.\s*/gi, 'utca '),
+    };
+  } else {
+    // Pattern B: "Város, Utca 5" → city + street + housenum (no postcode)
+    m = trimmed.match(/^([^,\d]+?)\s*,\s*(.+?)\s+(\d+\S*)$/);
+    if (m) {
+      structured = {
+        city: m[1].trim(),
+        street: (m[2].trim() + ' ' + m[3].trim().replace(/\.$/, '')).replace(/\bu\.\s*/gi, 'utca '),
+      };
+    } else {
+      // Pattern C: "Város, Utca" → city + street (no number)
+      m = trimmed.match(/^([^,\d]+?)\s*,\s*(.+)$/);
+      if (m) {
+        structured = {
+          city: m[1].trim(),
+          street: m[2].trim().replace(/\bu\.\s*/gi, 'utca '),
+        };
+      }
+    }
+  }
+  if (structured) {
     await new Promise(r => setTimeout(r, 1100));
-    const street = (m[3].trim() + ' ' + m[4].trim().replace(/\.$/, ''))
-                     .replace(/\bu\.\s*/gi, 'utca ');
     const params = new URLSearchParams({
-      street, city: m[2].trim(), postalcode: m[1].trim(),
+      ...structured,
       format: 'json', countrycodes: 'hu', limit: '1',
       'accept-language': 'hu',
     });
@@ -1759,7 +1963,7 @@ function renderIntermediates() {
     const customFields = stop.custom ? `
       <div class="custom-partner-fields" data-stop-custom="${idx}">
         <input type="text" placeholder="Partner neve (pl. XY Kft.)" data-stop-custom-name="${idx}" value="${escapeHtml(stop.customName || '')}">
-        <input type="text" placeholder="Cím vagy GPS koordináták (pl. 48.0613, 20.7575)" data-stop-custom-addr="${idx}" value="${escapeHtml(stop.customAddress || '')}">
+        <input type="text" placeholder="pl. Miskolc, Meggyesalja utca 6 — irányítószám nem kötelező" data-stop-custom-addr="${idx}" value="${escapeHtml(stop.customAddress || '')}">
         <p class="geocode-status${stop.customLat != null ? ' ok' : ''}" data-stop-geocode="${idx}">${
           stop.customLat != null ? '✓ Cím megtalálva' : 'Cím vagy GPS koordináták (47.x, 20.x) megadása'
         }</p>
@@ -1876,7 +2080,7 @@ function renderIntermediates() {
           stop.customLat = null;
           stop.customLng = null;
           stop.customLastGeocoded = null;
-          statusEl.innerHTML = '✗ Nem található. Próbáld pontosabban (pl. <em>3530 Miskolc, Meggyesalja utca 6</em>) — vagy illessz be GPS koordinátákat (pl. <em>48.0613, 20.7575</em>).';
+          statusEl.innerHTML = '✗ Nem található. Próbáld pontosabban (pl. <em>Miskolc, Meggyesalja utca 6</em>) — vagy illessz be GPS koordinátákat (pl. <em>48.0613, 20.7575</em>).';
           statusEl.classList.add('err');
         }
       }
@@ -3214,6 +3418,297 @@ async function buildExcelBuffer() {
 }
 
 // =============================================================
+// FUEL TRACKING
+// =============================================================
+const FUELS_KEY = 'kmszamolo:fuels:v1';
+let fuels = [];
+let fuelStationDetected = null; // { name, address, lat, lng, distance }
+let fuelStationManual = false;
+let fuelOctane = '95';
+
+function loadFuels() {
+  try {
+    fuels = JSON.parse(localStorage.getItem(FUELS_KEY) || '[]');
+  } catch (e) { fuels = []; }
+}
+function saveFuelsToStorage() {
+  localStorage.setItem(FUELS_KEY, JSON.stringify(fuels));
+}
+
+// Detect nearest fuel station via Overpass API (OpenStreetMap)
+async function detectFuelStation(lat, lng) {
+  // Search radius ~250m around given point
+  const radius = 250;
+  const query = `[out:json][timeout:8];(node["amenity"="fuel"](around:${radius},${lat},${lng});way["amenity"="fuel"](around:${radius},${lat},${lng}););out center 5;`;
+  const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.elements || data.elements.length === 0) return null;
+    // Find closest
+    let best = null, bestDist = Infinity;
+    for (const el of data.elements) {
+      const elLat = el.lat || (el.center && el.center.lat);
+      const elLng = el.lon || (el.center && el.center.lon);
+      if (elLat == null || elLng == null) continue;
+      const d = haversine({ lat, lng }, { lat: elLat, lng: elLng });
+      if (d < bestDist) { bestDist = d; best = el; }
+    }
+    if (!best) return null;
+    const tags = best.tags || {};
+    // Build display name: brand or name
+    const brand = tags.brand || tags['brand:hu'];
+    const name = tags.name || tags['name:hu'];
+    let displayName;
+    if (brand && name && !name.toLowerCase().includes(brand.toLowerCase())) {
+      displayName = brand + ' — ' + name;
+    } else {
+      displayName = brand || name || 'Benzinkút';
+    }
+    // Build address
+    const addrParts = [];
+    if (tags['addr:postcode']) addrParts.push(tags['addr:postcode']);
+    if (tags['addr:city']) addrParts.push(tags['addr:city']);
+    if (tags['addr:street']) {
+      let street = tags['addr:street'];
+      if (tags['addr:housenumber']) street += ' ' + tags['addr:housenumber'];
+      addrParts.push(street);
+    }
+    const address = addrParts.length > 0 ? addrParts.join(', ') : '';
+    return {
+      name: displayName,
+      address,
+      lat: best.lat || best.center.lat,
+      lng: best.lon || best.center.lon,
+      distance: bestDist * 1000, // in meters
+    };
+  } catch (e) {
+    console.error('Fuel station detect failed:', e);
+    return null;
+  }
+}
+
+async function refreshFuelStation() {
+  const card = document.getElementById('fuelStationCard');
+  const nameEl = document.getElementById('fuelStationName');
+  const addrEl = document.getElementById('fuelStationAddr');
+  const actions = document.getElementById('fuelStationActions');
+  const manualWrap = document.getElementById('fuelStationManualWrap');
+
+  fuelStationManual = false;
+  manualWrap.style.display = 'none';
+
+  if (!currentLocation) {
+    card.classList.remove('loading');
+    card.classList.add('error');
+    nameEl.textContent = '✗ GPS pozíció nem ismert';
+    addrEl.textContent = 'Kapcsold be a GPS-t az Útvonal fülön';
+    actions.style.display = 'flex';
+    fuelStationDetected = null;
+    return;
+  }
+
+  card.classList.add('loading');
+  card.classList.remove('error');
+  nameEl.textContent = '⏳ Benzinkút keresése (~250m sugarú körben)...';
+  addrEl.textContent = '';
+  actions.style.display = 'none';
+
+  const station = await detectFuelStation(currentLocation.lat, currentLocation.lng);
+  card.classList.remove('loading');
+
+  if (!station) {
+    card.classList.add('error');
+    nameEl.textContent = '✗ Nincs benzinkút a közelben';
+    addrEl.textContent = 'Próbáld újra, vagy add meg saját kézzel.';
+    actions.style.display = 'flex';
+    fuelStationDetected = null;
+    return;
+  }
+
+  fuelStationDetected = station;
+  nameEl.innerHTML = escapeHtml(station.name) +
+    ` <span class="station-distance">${Math.round(station.distance)}m</span>`;
+  addrEl.textContent = station.address || '';
+  actions.style.display = 'flex';
+}
+
+function setFuelStationManualMode() {
+  fuelStationManual = true;
+  fuelStationDetected = null;
+  document.getElementById('fuelStationCard').style.display = 'none';
+  document.getElementById('fuelStationManualWrap').style.display = 'block';
+  document.getElementById('fuelStationCustom').focus();
+}
+
+function renderFuelList() {
+  const tbody = document.getElementById('fuelList');
+  const badge = document.getElementById('fuelBadge');
+  const count = document.getElementById('fuelListCount');
+  if (!tbody) return;
+  badge.textContent = fuels.length;
+  count.textContent = `(${fuels.length})`;
+
+  if (fuels.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Még nincs rögzített tankolás</td></tr>';
+    return;
+  }
+
+  // Sort by date desc, then by km desc
+  const sorted = [...fuels].sort((a, b) => {
+    const dc = (b.date || '').localeCompare(a.date || '');
+    if (dc !== 0) return dc;
+    return (b.km || 0) - (a.km || 0);
+  });
+  // Sort ascending for consumption calc (need previous km)
+  const ascending = [...fuels].sort((a, b) => {
+    const dc = (a.date || '').localeCompare(b.date || '');
+    if (dc !== 0) return dc;
+    return (a.km || 0) - (b.km || 0);
+  });
+  const consumptionMap = {};
+  for (let i = 1; i < ascending.length; i++) {
+    const prev = ascending[i - 1];
+    const cur = ascending[i];
+    const dKm = cur.km - prev.km;
+    if (dKm > 0 && cur.liters > 0) {
+      consumptionMap[cur.id] = (cur.liters / dKm) * 100;
+    }
+  }
+
+  tbody.innerHTML = '';
+  for (const f of sorted) {
+    const tr = document.createElement('tr');
+    const dateStr = f.date ? f.date.split('-').reverse().join('.') + '.' : '—';
+    const cons = consumptionMap[f.id];
+    const consText = cons != null ? cons.toFixed(2) + 'L' : '—';
+    const stationStr = f.station ? `<div style="font-size:10px;color:var(--text-3)">${escapeHtml(f.station)}${f.octane ? ' · ' + escapeHtml(f.octane) : ''}</div>` : '';
+    tr.innerHTML = `
+      <td>${dateStr}${stationStr}</td>
+      <td><div style="font-family:'JetBrains Mono',monospace;font-weight:700">${(f.km || 0).toLocaleString('hu')} km</div><div style="font-size:10px;color:var(--text-3)">${(f.liters || 0).toFixed(2)} L</div></td>
+      <td class="km">${consText}</td>
+      <td class="km">${(f.cost || 0).toLocaleString('hu')}</td>
+      <td class="act"><button class="trip-rm-btn" data-fuel-id="${f.id}" title="Törlés">×</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+  tbody.querySelectorAll('.trip-rm-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.fuelId;
+      fuels = fuels.filter(x => String(x.id) !== id);
+      saveFuelsToStorage();
+      renderFuelList();
+      updateFuelSummary();
+      showToast('Tankolás törölve');
+    });
+  });
+}
+
+function updateFuelSummary() {
+  const avgConsEl = document.getElementById('fuelAvgConsumption');
+  const avgPriceEl = document.getElementById('fuelAvgPrice');
+  const totalCostEl = document.getElementById('fuelTotalCost');
+  if (!avgConsEl) return;
+
+  if (fuels.length === 0) {
+    avgConsEl.textContent = '—';
+    avgPriceEl.textContent = '—';
+    totalCostEl.textContent = '—';
+    return;
+  }
+
+  const ascending = [...fuels].sort((a, b) => {
+    const dc = (a.date || '').localeCompare(b.date || '');
+    if (dc !== 0) return dc;
+    return (a.km || 0) - (b.km || 0);
+  });
+
+  // Avg consumption: weighted by liters
+  let totalLitersForCons = 0, totalKmForCons = 0;
+  for (let i = 1; i < ascending.length; i++) {
+    const dKm = ascending[i].km - ascending[i - 1].km;
+    if (dKm > 0) {
+      totalLitersForCons += ascending[i].liters;
+      totalKmForCons += dKm;
+    }
+  }
+  const avgCons = totalKmForCons > 0
+    ? (totalLitersForCons / totalKmForCons * 100).toFixed(2) + ' L/100km'
+    : '—';
+
+  // Avg price per liter
+  let totalLiters = 0, totalCost = 0;
+  for (const f of fuels) {
+    totalLiters += f.liters || 0;
+    totalCost += f.cost || 0;
+  }
+  const avgPrice = totalLiters > 0
+    ? Math.round(totalCost / totalLiters).toLocaleString('hu') + ' Ft/L'
+    : '—';
+
+  avgConsEl.textContent = avgCons;
+  avgPriceEl.textContent = avgPrice;
+  totalCostEl.textContent = totalCost.toLocaleString('hu') + ' Ft';
+}
+
+function saveFuel() {
+  const date = document.getElementById('fuelDate').value;
+  const km = parseInt(document.getElementById('fuelKm').value, 10);
+  const liters = parseFloat(document.getElementById('fuelLiters').value);
+  const cost = parseInt(document.getElementById('fuelCost').value, 10);
+  const notes = document.getElementById('fuelNotes').value.trim();
+
+  // Validation
+  if (!date) { showToast('Adj meg dátumot!', 'error'); return; }
+  if (isNaN(km) || km <= 0) { showToast('Add meg a km óra állást!', 'error'); return; }
+  if (isNaN(liters) || liters <= 0) { showToast('Add meg a tankolt mennyiséget!', 'error'); return; }
+  if (isNaN(cost) || cost <= 0) { showToast('Add meg az összeget!', 'error'); return; }
+
+  // Get station
+  let stationName = '';
+  let stationAddr = '';
+  let stationLat = null, stationLng = null;
+  if (fuelStationManual) {
+    stationName = document.getElementById('fuelStationCustom').value.trim();
+    if (!stationName) {
+      showToast('Add meg a benzinkút nevét!', 'error');
+      return;
+    }
+  } else if (fuelStationDetected) {
+    stationName = fuelStationDetected.name;
+    stationAddr = fuelStationDetected.address;
+    stationLat = fuelStationDetected.lat;
+    stationLng = fuelStationDetected.lng;
+  }
+
+  const fuel = {
+    id: Date.now().toString(),
+    date,
+    km,
+    liters,
+    cost,
+    octane: fuelOctane,
+    station: stationName,
+    stationAddress: stationAddr,
+    stationLat, stationLng,
+    notes,
+  };
+  fuels.push(fuel);
+  saveFuelsToStorage();
+  renderFuelList();
+  updateFuelSummary();
+
+  // Reset form (but keep date and station)
+  document.getElementById('fuelKm').value = '';
+  document.getElementById('fuelLiters').value = '';
+  document.getElementById('fuelCost').value = '';
+  document.getElementById('fuelNotes').value = '';
+
+  showToast('✓ Tankolás rögzítve', 'success');
+}
+
+// =============================================================
 // INIT
 // =============================================================
 function init() {
@@ -3237,6 +3732,17 @@ function init() {
     if (tabName === 'map') {
       // Re-trigger map render since iframe was hidden
       if (typeof updateAll === 'function') updateAll();
+    }
+    if (tabName === 'fuel') {
+      // Re-detect fuel station unless user already chose manual
+      const card = document.getElementById('fuelStationCard');
+      if (card && !fuelStationManual && !fuelStationDetected) {
+        refreshFuelStation();
+      } else if (card && fuelStationManual) {
+        // Keep manual mode visible
+      } else {
+        // Already detected — show as is
+      }
     }
   }
   document.querySelectorAll('.tab').forEach(btn => {
@@ -3329,6 +3835,39 @@ function init() {
       showToast('Minden út törölve');
     }
   });
+
+  // === Fuel logger ===
+  loadFuels();
+  renderFuelList();
+  updateFuelSummary();
+  document.getElementById('fuelDate').value = today;
+  document.getElementById('saveFuel').addEventListener('click', saveFuel);
+  document.getElementById('clearFuels').addEventListener('click', () => {
+    if (fuels.length === 0) return;
+    if (confirm(`Biztosan törlöd mind a ${fuels.length} rögzített tankolást?`)) {
+      fuels = [];
+      saveFuelsToStorage();
+      renderFuelList();
+      updateFuelSummary();
+      showToast('Minden tankolás törölve');
+    }
+  });
+  // Octane toggle
+  document.querySelectorAll('#fuelOctane button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#fuelOctane button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      fuelOctane = btn.dataset.octane;
+    });
+  });
+  // Fuel station refresh / manual
+  document.getElementById('fuelStationRefresh').addEventListener('click', () => {
+    fuelStationManual = false;
+    document.getElementById('fuelStationCard').style.display = '';
+    document.getElementById('fuelStationManualWrap').style.display = 'none';
+    refreshFuelStation();
+  });
+  document.getElementById('fuelStationManual').addEventListener('click', setFuelStationManualMode);
 
   // Try GPS on load
   refreshGpsAndUpdate();
