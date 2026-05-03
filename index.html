@@ -1399,6 +1399,121 @@ footer {
 }
 
 /* =============================================================
+   Interval cards (new service layout)
+   ============================================================= */
+.interval-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.interval-card.overdue { border-color: rgba(239,68,68,0.5); }
+.interval-card.due-soon { border-color: rgba(251,191,36,0.5); }
+
+.interval-card-summary {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.interval-card-summary::-webkit-details-marker { display: none; }
+.interval-card-summary::marker { display: none; content: ''; }
+.interval-card[open] .interval-card-summary { border-bottom: 1px solid var(--border); }
+
+.interval-card-info { flex: 1; min-width: 0; }
+.interval-card-km {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 800; color: var(--text);
+  letter-spacing: -0.02em;
+  display: block; line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.interval-card.overdue .interval-card-km { color: var(--danger); }
+.interval-card.due-soon .interval-card-km { color: var(--accent); }
+
+.interval-card-sub {
+  font-size: 11px; font-weight: 600; color: var(--text-3);
+  margin: 2px 0 0; line-height: 1.4;
+}
+
+.interval-card-status {
+  font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 4px 8px; border-radius: 5px;
+  white-space: nowrap;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.interval-card-status.ok { background: rgba(34,197,94,0.12); color: var(--success); }
+.interval-card-status.due-soon { background: rgba(251,191,36,0.15); color: var(--accent); }
+.interval-card-status.overdue { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+.interval-card-arrow {
+  font-size: 14px; color: var(--text-4);
+  transition: transform 0.2s ease;
+}
+.interval-card[open] .interval-card-arrow { transform: rotate(90deg); }
+
+.interval-card-body {
+  padding: 12px 14px 14px;
+}
+
+.interval-section { margin-bottom: 12px; }
+.interval-section:last-child { margin-bottom: 0; }
+.interval-section-title {
+  font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin: 0 0 6px; padding: 4px 6px;
+  border-radius: 5px;
+  display: inline-block;
+}
+.interval-section-title.csere { background: rgba(239,68,68,0.13); color: #f87171; }
+.interval-section-title.ellenőrzés { background: rgba(96,165,250,0.13); color: #60a5fa; }
+.interval-section-title.kenés-tisztítás { background: rgba(168,85,247,0.13); color: #a855f7; }
+
+.interval-section ul {
+  margin: 0; padding: 0; list-style: none;
+}
+.interval-section li {
+  font-size: 12px; color: var(--text-2);
+  padding: 5px 0 5px 16px;
+  position: relative;
+  line-height: 1.5;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.interval-section li:last-child { border-bottom: none; }
+.interval-section li::before {
+  content: '·';
+  position: absolute;
+  left: 4px; top: 5px;
+  color: var(--text-4);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.interval-card-last {
+  font-size: 10px; color: var(--text-4); font-style: italic;
+  margin: 8px 0 4px;
+}
+
+.interval-card-done {
+  width: 100%;
+  background: var(--accent); color: #18181b;
+  border: none; border-radius: 9px;
+  padding: 11px;
+  font-size: 12px; font-weight: 800;
+  cursor: pointer;
+  margin-top: 10px;
+}
+.interval-card-done:hover { opacity: 0.92; }
+.interval-card-done.done-style {
+  background: var(--surface-2); color: var(--text-2);
+  border: 1px solid var(--border);
+}
+
+/* =============================================================
    SOS / VÉSZHELYZET tab
    ============================================================= */
 .sos-big-call {
@@ -1945,19 +2060,19 @@ footer {
   <p id="serviceKmInfo" style="font-size:10px;color:var(--text-4);margin:8px 0 0;font-weight:600;text-transform:uppercase;letter-spacing:0.05em"></p>
 </div>
 
-<!-- Riasztások összegzés -->
-<div class="service-summary" id="serviceSummary">
-  <div class="service-summary-item overdue"><span class="num" id="sumOverdue">0</span><span class="lbl">Lejárt</span></div>
-  <div class="service-summary-item due-soon"><span class="num" id="sumSoon">0</span><span class="lbl">Közelgő</span></div>
-  <div class="service-summary-item ok"><span class="num" id="sumOk">0</span><span class="lbl">Rendben</span></div>
-</div>
-
-<!-- Esedékes/lejárt tételek -->
-<section class="card" id="serviceAlertsCard" style="display:none">
-  <p class="card-header">
-    <span>⚠️ Figyelmet igényel</span>
+<!-- Garancia figyelmeztetés -->
+<section class="card" style="background:linear-gradient(135deg,rgba(251,191,36,0.10),rgba(96,165,250,0.06));border-color:rgba(251,191,36,0.3)">
+  <p style="font-size:12px;color:var(--text);margin:0;line-height:1.6">
+    <strong style="color:var(--accent)">🛡️ 6 év Honda gyári garancia</strong> — A garancia érvényessége az előírt szervízközök betartásához kötött. Vidd el a Honda márkaszervízbe, ha közeleg a következő esedékesség. A szervízkönyv pecsétjei kötelezőek.
   </p>
-  <div id="serviceAlerts"></div>
+</section>
+
+<!-- Következő szervíz nagy kijelző -->
+<section class="card" id="nextServiceCard" style="background:linear-gradient(135deg,var(--surface),var(--surface-2));text-align:center;padding:18px 14px">
+  <p style="font-size:10px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 6px">Következő szervíz</p>
+  <p id="nextServiceKm" style="font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:800;color:var(--accent);margin:0 0 4px;letter-spacing:-0.02em">—</p>
+  <p id="nextServiceLabel" style="font-size:12px;color:var(--text-2);margin:0 0 4px;font-weight:600">—</p>
+  <p id="nextServiceDistance" style="font-size:11px;color:var(--text-3);margin:0;font-family:'JetBrains Mono',monospace"></p>
 </section>
 
 <!-- Indulás előtti ellenőrzés -->
@@ -1969,24 +2084,31 @@ footer {
   </section>
 </details>
 
-<!-- Karbantartási tételek kategóriák szerint -->
+<!-- KM-alapú szervízközök kártyák -->
 <section class="card">
   <p class="card-header">
-    <span>📋 Karbantartási tételek</span>
-    <button id="toggleAddCustom" style="background:transparent;color:var(--accent);font-size:12px;font-weight:700;border:none;cursor:pointer;padding:4px 8px;border-radius:6px">+ Saját</button>
+    <span>📅 KM-alapú szervízközök</span>
+  </p>
+  <div id="intervalCards"></div>
+</section>
+
+<!-- Időalapú szervízközök -->
+<section class="card">
+  <p class="card-header">
+    <span>📆 Időalapú szervízközök</span>
+  </p>
+  <div id="timeBasedCards"></div>
+</section>
+
+<!-- Saját tételek -->
+<section class="card">
+  <p class="card-header">
+    <span>⭐ Saját tételek</span>
+    <button id="toggleAddCustom" style="background:transparent;color:var(--accent);font-size:12px;font-weight:700;border:none;cursor:pointer;padding:4px 8px;border-radius:6px">+ Új</button>
   </p>
 
   <div class="add-custom-form" id="addCustomForm">
     <input type="text" id="customName" placeholder="Tétel neve (pl. Akku mérés)">
-    <select id="customCategory">
-      <option value="egyeni">⭐ Saját tételek</option>
-      <option value="motor">🔧 Motor</option>
-      <option value="folyadekok">💧 Folyadékok</option>
-      <option value="hajtas">⛓️ Hajtás</option>
-      <option value="fekek">🛑 Fékek</option>
-      <option value="futomu">⚙️ Futómű, kerekek</option>
-      <option value="karoszeria">🔩 Karosszéria, egyéb</option>
-    </select>
     <select id="customAction">
       <option value="ellenőrzés">Ellenőrzés</option>
       <option value="csere">Csere</option>
@@ -2003,7 +2125,7 @@ footer {
     </div>
   </div>
 
-  <div id="serviceItems"></div>
+  <div id="customItems"><p style="color:var(--text-4);font-style:italic;text-align:center;padding:14px;font-size:13px;margin:0">Nincs még saját tétel.</p></div>
 </section>
 
 <!-- Előzmények -->
@@ -4720,396 +4842,167 @@ const MANUAL_CHUNKS = [{"pdf_page":2,"doc_page":null,"chapter":"Bevezető","titl
 // Csak NC750XD-re vonatkozó tételek (DCT verzió, *6 jelzéssel)
 // Cselekvések: I=ellenőrzés, R=csere, L=kenés, C=tisztítás
 // =============================================================
-const MAINTENANCE_SCHEDULE = [
-  // ── MOTOR ──────────────────────────────────────────────────
-  {
-    id: 'motorolaj',
-    name: 'Motorolaj',
-    action: 'csere',
-    category: 'motor',
-    first_km: 1000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: true,
-    difficulty: 'easy',
-    page: 133,
-    note: 'Indulás előtt is ellenőrizd a szintet és szivárgást.',
-  },
-  {
-    id: 'motorolajszuro',
-    name: 'Motorolajszűrő',
-    action: 'csere',
-    category: 'motor',
-    first_km: 1000,
-    interval_km: 24000,
-    pretrip: false,
-    difficulty: 'medium',
-    page: null,
-    note: '1.000 km-nél, majd 24.000 km-enként (24k, 48k, 72k…).',
-  },
-  {
-    id: 'kuplungolaj_szuro',
-    name: 'Kuplungolaj-szűrő (DCT)',
-    action: 'csere',
-    category: 'motor',
-    first_km: 1000,
-    interval_km: 24000,
-    pretrip: false,
-    difficulty: 'expert',
-    page: null,
-    note: 'Csak NC750XD modellre. Honda szakszervízt igényel.',
-  },
-  {
-    id: 'gyujtogyertya_ell',
-    name: 'Gyújtógyertya — ellenőrzés',
-    action: 'ellenőrzés',
-    category: 'motor',
-    first_km: 24000,
-    interval_km: 24000,
-    pretrip: false,
-    difficulty: 'medium',
-    page: null,
-    note: null,
-  },
-  {
-    id: 'gyujtogyertya_csere',
-    name: 'Gyújtógyertya — csere',
-    action: 'csere',
-    category: 'motor',
-    first_km: 36000,
-    interval_km: 36000,
-    pretrip: false,
-    difficulty: 'medium',
-    page: null,
-    note: null,
-  },
-  {
-    id: 'szelephezag',
-    name: 'Szelephézag',
-    action: 'ellenőrzés',
-    category: 'motor',
-    first_km: 24000,
-    interval_km: 24000,
-    pretrip: false,
-    difficulty: 'expert',
-    page: null,
-    note: 'Honda szakszerviz. Ha hibás → utánállítás.',
-  },
-  {
-    id: 'legszuro',
-    name: 'Légszűrő',
-    action: 'csere',
-    category: 'motor',
-    first_km: 24000,
-    interval_km: 24000,
-    pretrip: false,
-    difficulty: 'medium',
-    page: null,
-    note: 'Vizes vagy poros körülmények közt gyakrabban (*2).',
-  },
-  {
-    id: 'forgattyushaz_szellozo',
-    name: 'Forgattyúsház-szellőző',
-    action: 'tisztítás',
-    category: 'motor',
-    first_km: 12000,
-    interval_km: 12000,
-    pretrip: false,
-    difficulty: 'medium',
-    page: null,
-    note: 'Esőben/teljes gázzal gyakrabban (*3).',
-  },
-  {
-    id: 'motor_alapjarat',
-    name: 'Motor alapjárati fordulatszám',
-    action: 'ellenőrzés',
-    category: 'motor',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: false,
-    difficulty: 'easy',
-    page: null,
-    note: null,
-  },
+// =============================================================
+// HONDA NC750X DCT KARBANTARTÁSI ÜTEMTERV (Service-szintű csoportosítás)
+// Forrás: 2025 magyar kezelési könyv 110-111. oldal (csak NC750XD/DCT tételek)
+// 6 év Honda gyári garancia — a garancia érvényessége a Honda márkaszervízben
+// elvégzett, ütemtervnek megfelelő karbantartáshoz kötött
+// =============================================================
+//
+// A motor gyári szervízciklusa: 1.000 km első szervíz, utána 12.000 km-enként.
+// A 12k → 24k → 36k → 48k ciklus ismétlődik:
+//   12k, 36k, 60k, 84k, 108k, 132k → "12k szervíz" tartalom
+//   24k, 72k, 120k, 168k          → "24k szervíz" tartalom (12k tételek + bővebb)
+//   36k → "36k szervíz" (12k tételek + gyertya csere)
+//   48k, 96k, 144k                → "48k szervíz" (12k + 24k tételek + összes)
+//
 
-  // ── ÜZEMANYAG / KIBOCSÁTÁS ────────────────────────────────
-  {
-    id: 'uzemanyag_vezetek',
-    name: 'Üzemanyag-vezeték',
-    action: 'ellenőrzés',
-    category: 'motor',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: false,
-    difficulty: 'medium',
-    page: null,
-    note: null,
-  },
-  {
-    id: 'gazkar_mukodes',
-    name: 'Gázkarműködés',
-    action: 'ellenőrzés',
-    category: 'motor',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: true,
-    difficulty: 'easy',
-    page: 146,
-    note: null,
-  },
-  {
-    id: 'karosanyag_kibocsatas',
-    name: 'Károsanyag-kibocsátás szabályzó rendszer',
-    action: 'ellenőrzés',
-    category: 'motor',
-    first_km: 24000,
-    interval_km: 24000,
-    pretrip: false,
-    difficulty: 'expert',
-    page: null,
-    note: null,
-  },
-  {
-    id: 'honda_diag',
-    name: 'Honda diagnosztikai rendszer',
-    action: 'ellenőrzés',
-    category: 'motor',
-    first_km: 1000,
-    interval_km: 12000,
-    pretrip: false,
-    difficulty: 'expert',
-    page: null,
-    note: '1k-nál, majd 12k-enként (12, 24, 36, 48…).',
-  },
+// Items that get done at every 12k visit (= included in every interval)
+const ITEMS_12K_BASE = {
+  csere: ['Motorolaj'],
+  ellenorzes: [
+    'Honda diagnosztikai rendszer',
+    'Üzemanyag-vezeték',
+    'Gázkarműködés',
+    'Motor alapjárati fordulatszám',
+    'Hűtőfolyadék szint',
+    'Hűtőrendszer (csövek, csatlakozók)',
+    'Hajtóláncvezető',
+    'Fékfolyadék szint',
+    'Fékbetétkopás',
+    'Fékrendszer összegelő ellenőrzés',
+    'Féklámpa-kapcsoló',
+    'Fékzárműködés (DCT parkolófék)',
+    'Fényszóró vetítési távolság',
+    'Kuplungrendszer',
+    'Oldaltámasz',
+    'Futómű',
+    'Csavarok, anyák, rögzítők',
+    'Kerekek és gumiabroncsok',
+    'Kormánynyak csapágyak',
+  ],
+  kenes_tisztitas: ['Forgattyúsház-szellőző tisztítás'],
+};
 
-  // ── HŰTÉS ──────────────────────────────────────────────────
-  {
-    id: 'hutofolyadek',
-    name: 'Hűtőfolyadék',
-    action: 'csere',
-    category: 'folyadekok',
-    first_km: null,
-    interval_km: null,
-    interval_months: 36,
-    pretrip: true,
-    difficulty: 'medium',
-    page: 135,
-    note: 'Cserét szakemberrel (3 évente).',
-  },
-  {
-    id: 'hutofolyadek_ell',
-    name: 'Hűtőfolyadék szint',
-    action: 'ellenőrzés',
-    category: 'folyadekok',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: true,
-    difficulty: 'easy',
-    page: 135,
-    note: null,
-  },
-  {
-    id: 'hutorendszer',
-    name: 'Hűtőrendszer (csövek, csatlakozók)',
-    action: 'ellenőrzés',
-    category: 'folyadekok',
-    first_km: 12000,
-    interval_km: 12000,
-    pretrip: false,
-    difficulty: 'easy',
-    page: null,
-    note: null,
-  },
+// Extra items added at 24k visits (on top of 12k base)
+const ITEMS_24K_EXTRA = {
+  csere: [
+    'Motorolajszűrő',
+    'Kuplungolaj-szűrő (csak DCT)',
+    'Légszűrő',
+  ],
+  ellenorzes: [
+    'Gyújtógyertya',
+    'Szelephézag',
+    'Károsanyag-kibocsátás szabályzó rendszer',
+  ],
+  kenes_tisztitas: [],
+};
 
-  // ── HAJTÁS ─────────────────────────────────────────────────
-  {
-    id: 'hajtolanc',
-    name: 'Hajtólánc — ellenőrzés és kenés',
-    action: 'kenés',
-    category: 'hajtas',
-    first_km: 1000,
-    interval_km: 1000,
-    pretrip: true,
-    difficulty: 'easy',
-    page: 141,
-    note: 'Minden 1.000 km-nél! Esőben/sárban gyakrabban.',
-  },
-  {
-    id: 'hajtolancvezeto',
-    name: 'Hajtóláncvezető',
-    action: 'ellenőrzés',
-    category: 'hajtas',
-    first_km: 12000,
-    interval_km: 12000,
-    pretrip: false,
-    difficulty: 'easy',
-    page: null,
-    note: null,
-  },
+// Extra items added only at 36k (gyertya csere)
+const ITEMS_36K_EXTRA = {
+  csere: ['Gyújtógyertya'],
+  ellenorzes: [],
+  kenes_tisztitas: [],
+};
 
-  // ── FÉKEK ──────────────────────────────────────────────────
+// Helper: merge item groups
+function _mergeServiceItems(...groups) {
+  const out = { csere: [], ellenorzes: [], kenes_tisztitas: [] };
+  for (const g of groups) {
+    out.csere.push(...(g.csere || []));
+    out.ellenorzes.push(...(g.ellenorzes || []));
+    out.kenes_tisztitas.push(...(g.kenes_tisztitas || []));
+  }
+  // Dedupe preserving order
+  for (const k of Object.keys(out)) {
+    out[k] = Array.from(new Set(out[k]));
+  }
+  return out;
+}
+
+// Service intervals — what gets done at each milestone
+const SERVICE_INTERVALS = [
   {
-    id: 'fekfolyadek',
-    name: 'Fékfolyadék',
-    action: 'csere',
-    category: 'fekek',
-    first_km: null,
-    interval_km: null,
+    id: 'service_1k',
+    km_first: 1000,
+    km_repeat: null, // one-time
+    title: '1.000 km',
+    subtitle: 'Első szervíz (egyszeri, csak új motornál)',
+    items: {
+      csere: ['Motorolaj', 'Motorolajszűrő', 'Kuplungolaj-szűrő (csak DCT)'],
+      ellenorzes: [
+        'Honda diagnosztikai rendszer',
+        'Üzemanyag-vezeték',
+        'Gázkarműködés',
+        'Motor alapjárati fordulatszám',
+        'Hűtőfolyadék szint',
+        'Fékfolyadék szint',
+        'Fékbetétkopás',
+        'Fékrendszer összegelő ellenőrzés',
+        'Féklámpa-kapcsoló',
+        'Fékzárműködés (DCT parkolófék)',
+        'Kuplungrendszer',
+        'Oldaltámasz',
+        'Csavarok, anyák, rögzítők',
+        'Kerekek és gumiabroncsok',
+      ],
+      kenes_tisztitas: [],
+    },
+  },
+  {
+    id: 'service_12k',
+    km_first: 12000,
+    km_repeat: 48000, // 12, 60, 108, 156k... (12k + multiples of 48k)
+    cycle_kms: [12000, 60000, 108000, 156000],
+    title: '12.000 km-enként',
+    subtitle: 'vagy évente — alap szervíz · 12k, 60k, 108k…',
+    items: ITEMS_12K_BASE,
+  },
+  {
+    id: 'service_24k',
+    km_first: 24000,
+    km_repeat: 48000, // 24, 72, 120k…
+    cycle_kms: [24000, 72000, 120000, 168000],
+    title: '24.000 km-enként',
+    subtitle: 'vagy 2 évente — bővebb szervíz · 24k, 72k, 120k…',
+    items: _mergeServiceItems(ITEMS_12K_BASE, ITEMS_24K_EXTRA),
+  },
+  {
+    id: 'service_36k',
+    km_first: 36000,
+    km_repeat: 48000, // 36, 84, 132k…
+    cycle_kms: [36000, 84000, 132000, 180000],
+    title: '36.000 km-enként',
+    subtitle: '· 36k, 84k, 132k…  (12k tételek + gyertya csere)',
+    items: _mergeServiceItems(ITEMS_12K_BASE, ITEMS_36K_EXTRA),
+  },
+  {
+    id: 'service_48k',
+    km_first: 48000,
+    km_repeat: 48000, // 48, 96, 144k…
+    cycle_kms: [48000, 96000, 144000, 192000],
+    title: '48.000 km-enként',
+    subtitle: 'NAGY szervíz · 48k, 96k, 144k…  (minden tétel)',
+    items: _mergeServiceItems(ITEMS_12K_BASE, ITEMS_24K_EXTRA),
+  },
+];
+
+// Időalapú külön szervízek (km-től függetlenül)
+const TIME_BASED_SERVICES = [
+  {
+    id: 'fekfolyadek_csere',
+    title: '2 évente',
+    subtitle: 'Fékfolyadék csere',
     interval_months: 24,
-    pretrip: true,
-    difficulty: 'medium',
-    page: 137,
-    note: 'Cserét szakemberrel (2 évente).',
+    items: { csere: ['Fékfolyadék'], ellenorzes: [], kenes_tisztitas: [] },
   },
   {
-    id: 'fekfolyadek_ell',
-    name: 'Fékfolyadék szint',
-    action: 'ellenőrzés',
-    category: 'fekek',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: true,
-    difficulty: 'easy',
-    page: 137,
-    note: null,
-  },
-  {
-    id: 'fekbetetkopas',
-    name: 'Fékbetétkopás',
-    action: 'ellenőrzés',
-    category: 'fekek',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: true,
-    difficulty: 'easy',
-    page: 138,
-    note: 'Saját extra javasolt: minden 5.000 km-nél vizuális kontroll.',
-  },
-  {
-    id: 'fekrendszer',
-    name: 'Fékrendszer (összegelő ellenőrzés)',
-    action: 'ellenőrzés',
-    category: 'fekek',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: false,
-    difficulty: 'medium',
-    page: 112,
-    note: null,
-  },
-  {
-    id: 'feklampa_kapcsolo',
-    name: 'Féklámpa-kapcsoló',
-    action: 'ellenőrzés',
-    category: 'fekek',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: false,
-    difficulty: 'easy',
-    page: 139,
-    note: null,
-  },
-  {
-    id: 'fekzar',
-    name: 'Fékzár (parkolófék) működés (DCT)',
-    action: 'ellenőrzés',
-    category: 'fekek',
-    first_km: 12000,
-    interval_km: 12000,
-    pretrip: false,
-    difficulty: 'easy',
-    page: 139,
-    note: 'Csak NC750XD modellre.',
-  },
-
-  // ── FUTÓMŰ / KEREKEK ──────────────────────────────────────
-  {
-    id: 'kerekek_gumiabroncs',
-    name: 'Kerekek és gumiabroncsok',
-    action: 'ellenőrzés',
-    category: 'futomu',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: true,
-    difficulty: 'easy',
-    page: 120,
-    note: 'Indulás előtt: nyomás + állapot. Saját extra: profilmélység mérés.',
-  },
-  {
-    id: 'futomu',
-    name: 'Futómű',
-    action: 'ellenőrzés',
-    category: 'futomu',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: false,
-    difficulty: 'medium',
-    page: null,
-    note: null,
-  },
-  {
-    id: 'kormanynyak_csapagy',
-    name: 'Kormánynyak csapágyak',
-    action: 'ellenőrzés',
-    category: 'futomu',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: false,
-    difficulty: 'expert',
-    page: null,
-    note: null,
-  },
-
-  // ── KAROSSZÉRIA / EGYÉB ───────────────────────────────────
-  {
-    id: 'oldaltamasz',
-    name: 'Oldaltámasz',
-    action: 'ellenőrzés',
-    category: 'karoszeria',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: true,
-    difficulty: 'easy',
-    page: 140,
-    note: null,
-  },
-  {
-    id: 'csavarok',
-    name: 'Csavarok, anyák, rögzítők',
-    action: 'ellenőrzés',
-    category: 'karoszeria',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: false,
-    difficulty: 'medium',
-    page: null,
-    note: null,
-  },
-  {
-    id: 'fenyszoro',
-    name: 'Fényszóró vetítési távolság',
-    action: 'ellenőrzés',
-    category: 'karoszeria',
-    first_km: 12000,
-    interval_km: 12000,
-    interval_months: 12,
-    pretrip: false,
-    difficulty: 'easy',
-    page: null,
-    note: null,
+    id: 'hutofolyadek_csere',
+    title: '3 évente',
+    subtitle: 'Hűtőfolyadék csere',
+    interval_months: 36,
+    items: { csere: ['Hűtőfolyadék'], ellenorzes: [], kenes_tisztitas: [] },
   },
 ];
 
@@ -5119,7 +5012,7 @@ const PRETRIP_CHECKS = [
   { id: 'pre_gazmark', name: 'Gázmarkolat — visszatér alaphelyzetbe', page: 146 },
   { id: 'pre_motorolaj', name: 'Motorolaj szint, szivárgás', page: 133 },
   { id: 'pre_huto', name: 'Hűtőfolyadék szint, szivárgás', page: 135 },
-  { id: 'pre_lanc', name: 'Hajtólánc állapota és feszessége', page: 141 },
+  { id: 'pre_lanc', name: 'Hajtólánc — kenés, feszesség (1.000 km-enként)', page: 141 },
   { id: 'pre_fek', name: 'Fékek (folyadékszint, fékbetét)', page: 137 },
   { id: 'pre_vilagitas', name: 'Világítás és kürt', page: null },
   { id: 'pre_motorleallito', name: 'Motorleállító kapcsoló', page: 70 },
@@ -5389,53 +5282,71 @@ function loadApiKeyStatus() {
 // =============================================================
 // SERVICE / MAINTENANCE LOGIC
 // =============================================================
-function getAllMaintItems() { return [...MAINTENANCE_SCHEDULE, ...customMaint]; }
+// =============================================================
+// SERVICE LOGIC — interval-based, Honda gyári ütemterv szerint
+// =============================================================
 
-function lastDoneFor(itemId) {
-  const entries = serviceLog.filter(e => e.id === itemId);
+// Last service entry for a given interval id (e.g. 'service_12k')
+function lastServiceFor(intervalId) {
+  const entries = serviceLog.filter(e => e.id === intervalId);
   if (!entries.length) return null;
   entries.sort((a, b) => (b.km || 0) - (a.km || 0));
   return entries[0];
 }
 
-function nextDueKm(item) {
-  const last = lastDoneFor(item.id);
-  if (!last) return item.first_km != null ? item.first_km : (item.interval_km || null);
-  return item.interval_km ? last.km + item.interval_km : null;
+// Compute next due km for a service interval
+function nextIntervalDueKm(interval) {
+  const last = lastServiceFor(interval.id);
+
+  // One-time services (1k)
+  if (interval.km_repeat === null) {
+    if (last) return null; // already done
+    return interval.km_first;
+  }
+
+  // Cycle-based: pick the next km from cycle_kms after last done
+  const cycleKms = interval.cycle_kms || [];
+  if (!last) {
+    return cycleKms[0] || interval.km_first;
+  }
+  for (const km of cycleKms) {
+    if (km > last.km) return km;
+  }
+  return null; // beyond planned cycle (>180k)
 }
-function nextDueDate(item) {
-  if (!item.interval_months) return null;
-  const last = lastDoneFor(item.id);
-  if (!last) return null;
+
+// Compute next due date for a time-based service
+function nextTimeBasedDueDate(svc) {
+  const last = lastServiceFor(svc.id);
+  if (!last) return null; // never done — show as informational
   const d = new Date(last.date);
-  d.setMonth(d.getMonth() + item.interval_months);
+  d.setMonth(d.getMonth() + svc.interval_months);
   return d;
 }
 
-function statusFor(item, kmVal) {
-  const dueKm = nextDueKm(item);
-  const dueDate = nextDueDate(item);
-  const now = new Date();
-  let kmStatus = 'na', kmDelta = null;
-  if (dueKm !== null) {
-    kmDelta = dueKm - kmVal;
-    if (kmDelta < 0) kmStatus = 'overdue';
-    else if (kmDelta <= 1000) kmStatus = 'due-soon';
-    else kmStatus = 'ok';
+// Status for a service interval at current km
+function intervalStatus(interval, kmVal) {
+  const dueKm = nextIntervalDueKm(interval);
+  if (dueKm === null) {
+    return { combined: 'ok', kmDelta: null, dueKm: null, completed: true };
   }
-  let dateStatus = 'na', monthsDelta = null;
-  if (dueDate !== null) {
-    const ms = dueDate.getTime() - now.getTime();
-    monthsDelta = Math.round(ms / (1000 * 60 * 60 * 24 * 30));
-    if (ms < 0) dateStatus = 'overdue';
-    else if (monthsDelta <= 1) dateStatus = 'due-soon';
-    else dateStatus = 'ok';
-  }
+  const kmDelta = dueKm - kmVal;
   let combined = 'ok';
-  if (kmStatus === 'overdue' || dateStatus === 'overdue') combined = 'overdue';
-  else if (kmStatus === 'due-soon' || dateStatus === 'due-soon') combined = 'due-soon';
-  else if (kmStatus === 'na' && dateStatus === 'na') combined = 'na';
-  return { combined, kmDelta, monthsDelta, dueKm, dueDate };
+  if (kmDelta < 0) combined = 'overdue';
+  else if (kmDelta <= 1500) combined = 'due-soon';
+  return { combined, kmDelta, dueKm, completed: false };
+}
+
+// Status for time-based services
+function timeBasedStatus(svc) {
+  const dueDate = nextTimeBasedDueDate(svc);
+  if (!dueDate) return { combined: 'na', dueDate: null, monthsDelta: null };
+  const ms = dueDate.getTime() - Date.now();
+  const monthsDelta = Math.round(ms / (1000 * 60 * 60 * 24 * 30));
+  let combined = 'ok';
+  if (ms < 0) combined = 'overdue';
+  else if (monthsDelta <= 1) combined = 'due-soon';
+  return { combined, dueDate, monthsDelta };
 }
 
 function fmtKmDelta(delta) {
@@ -5451,6 +5362,340 @@ function fmtMonthsDelta(delta) {
   return `${delta} hónap múlva`;
 }
 
+// =============================================================
+// Render: KM-alapú szervízközök kártyák
+// =============================================================
+function renderIntervalCards() {
+  const container = document.getElementById('intervalCards');
+  if (!container) return;
+
+  const cards = SERVICE_INTERVALS.map(iv => {
+    const status = intervalStatus(iv, currentKm);
+    const last = lastServiceFor(iv.id);
+    const cls = status.combined === 'overdue' ? 'overdue' : (status.combined === 'due-soon' ? 'due-soon' : '');
+
+    let statusText = '';
+    let statusBadge = '';
+    if (status.completed) {
+      statusBadge = '<span class="interval-card-status ok">✓ Egyszeri kész</span>';
+    } else if (status.combined === 'overdue') {
+      statusBadge = `<span class="interval-card-status overdue">${escapeHtml(fmtKmDelta(status.kmDelta))}</span>`;
+    } else if (status.combined === 'due-soon') {
+      statusBadge = `<span class="interval-card-status due-soon">${escapeHtml(fmtKmDelta(status.kmDelta))}</span>`;
+    } else {
+      statusBadge = `<span class="interval-card-status ok">${escapeHtml(fmtKmDelta(status.kmDelta))}</span>`;
+    }
+
+    const lastInfo = last
+      ? `<p class="interval-card-last">Utoljára: ${last.km.toLocaleString('hu-HU')} km · ${new Date(last.date).toLocaleDateString('hu-HU')}</p>`
+      : '';
+
+    const dueAtInfo = (status.dueKm !== null)
+      ? `<p class="interval-card-last">Következő: ${status.dueKm.toLocaleString('hu-HU')} km</p>`
+      : '<p class="interval-card-last">Túl a tervezett ütem 180.000 km-es határán</p>';
+
+    // Build sections (csere / ellenőrzés / kenés-tisztítás)
+    const sections = [];
+    if (iv.items.csere && iv.items.csere.length) {
+      sections.push(`
+        <div class="interval-section">
+          <p class="interval-section-title csere">🔄 Csere (${iv.items.csere.length})</p>
+          <ul>${iv.items.csere.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>
+        </div>
+      `);
+    }
+    if (iv.items.ellenorzes && iv.items.ellenorzes.length) {
+      sections.push(`
+        <div class="interval-section">
+          <p class="interval-section-title ellenőrzés">👁️ Ellenőrzés (${iv.items.ellenorzes.length})</p>
+          <ul>${iv.items.ellenorzes.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>
+        </div>
+      `);
+    }
+    if (iv.items.kenes_tisztitas && iv.items.kenes_tisztitas.length) {
+      sections.push(`
+        <div class="interval-section">
+          <p class="interval-section-title kenés-tisztítás">✨ Tisztítás / kenés (${iv.items.kenes_tisztitas.length})</p>
+          <ul>${iv.items.kenes_tisztitas.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>
+        </div>
+      `);
+    }
+
+    // Auto-open the next-due card
+    const isOpen = (status.combined === 'overdue' || status.combined === 'due-soon');
+
+    return `<details class="interval-card ${cls}" ${isOpen ? 'open' : ''}>
+      <summary class="interval-card-summary">
+        <div class="interval-card-info">
+          <span class="interval-card-km">${escapeHtml(iv.title)}</span>
+          <p class="interval-card-sub">${escapeHtml(iv.subtitle)}</p>
+        </div>
+        ${statusBadge}
+        <span class="interval-card-arrow">›</span>
+      </summary>
+      <div class="interval-card-body">
+        ${dueAtInfo}
+        ${lastInfo}
+        ${sections.join('')}
+        <button class="interval-card-done" data-interval-done="${escapeHtml(iv.id)}">✓ Ezt a szervízt elvégezte a márkaszervíz</button>
+      </div>
+    </details>`;
+  });
+
+  container.innerHTML = cards.join('');
+
+  // Wire up "done" buttons
+  container.querySelectorAll('button[data-interval-done]').forEach(btn => {
+    btn.addEventListener('click', () => markIntervalDone(btn.dataset.intervalDone));
+  });
+}
+
+// =============================================================
+// Render: Időalapú szervízközök kártyák
+// =============================================================
+function renderTimeBasedCards() {
+  const container = document.getElementById('timeBasedCards');
+  if (!container) return;
+
+  const cards = TIME_BASED_SERVICES.map(svc => {
+    const status = timeBasedStatus(svc);
+    const last = lastServiceFor(svc.id);
+    const cls = status.combined === 'overdue' ? 'overdue' : (status.combined === 'due-soon' ? 'due-soon' : '');
+
+    let statusBadge;
+    if (status.combined === 'na') {
+      statusBadge = '<span class="interval-card-status ok">add meg utolsó dátumot</span>';
+    } else if (status.combined === 'overdue') {
+      statusBadge = `<span class="interval-card-status overdue">${escapeHtml(fmtMonthsDelta(status.monthsDelta))}</span>`;
+    } else if (status.combined === 'due-soon') {
+      statusBadge = `<span class="interval-card-status due-soon">${escapeHtml(fmtMonthsDelta(status.monthsDelta))}</span>`;
+    } else {
+      statusBadge = `<span class="interval-card-status ok">${escapeHtml(fmtMonthsDelta(status.monthsDelta))}</span>`;
+    }
+
+    const lastInfo = last
+      ? `<p class="interval-card-last">Utoljára: ${last.km ? last.km.toLocaleString('hu-HU') + ' km · ' : ''}${new Date(last.date).toLocaleDateString('hu-HU')}</p>`
+      : '<p class="interval-card-last">Még nem rögzítettél dátumot — a Kész gombbal megadhatod, mikor cserélték utoljára</p>';
+
+    const itemsHtml = svc.items.csere.length
+      ? `<div class="interval-section">
+          <p class="interval-section-title csere">🔄 Csere</p>
+          <ul>${svc.items.csere.map(i => `<li>${escapeHtml(i)}</li>`).join('')}</ul>
+        </div>`
+      : '';
+
+    return `<details class="interval-card ${cls}">
+      <summary class="interval-card-summary">
+        <div class="interval-card-info">
+          <span class="interval-card-km">${escapeHtml(svc.title)}</span>
+          <p class="interval-card-sub">${escapeHtml(svc.subtitle)}</p>
+        </div>
+        ${statusBadge}
+        <span class="interval-card-arrow">›</span>
+      </summary>
+      <div class="interval-card-body">
+        ${lastInfo}
+        ${itemsHtml}
+        <button class="interval-card-done" data-timebased-done="${escapeHtml(svc.id)}">✓ Elvégezve, rögzítés</button>
+      </div>
+    </details>`;
+  });
+
+  container.innerHTML = cards.join('');
+
+  container.querySelectorAll('button[data-timebased-done]').forEach(btn => {
+    btn.addEventListener('click', () => markTimeBasedDone(btn.dataset.timebasedDone));
+  });
+}
+
+// =============================================================
+// Render: "Következő szervíz" nagy kijelző
+// =============================================================
+function renderNextServicePanel() {
+  const kmEl = document.getElementById('nextServiceKm');
+  const labelEl = document.getElementById('nextServiceLabel');
+  const distEl = document.getElementById('nextServiceDistance');
+  if (!kmEl) return;
+
+  // Find the closest upcoming km-based interval
+  let nearest = null;
+  for (const iv of SERVICE_INTERVALS) {
+    const status = intervalStatus(iv, currentKm);
+    if (status.completed || status.dueKm === null) continue;
+    if (!nearest || status.kmDelta < nearest.status.kmDelta) {
+      nearest = { interval: iv, status };
+    }
+  }
+
+  if (!nearest) {
+    kmEl.textContent = '—';
+    labelEl.textContent = 'Minden szervíz elvégezve a tervezett ütemen belül';
+    distEl.textContent = '';
+    return;
+  }
+
+  kmEl.textContent = nearest.status.dueKm.toLocaleString('hu-HU') + ' km';
+  labelEl.textContent = nearest.interval.title + ' — ' + nearest.interval.subtitle.split(' · ')[0];
+  distEl.textContent = fmtKmDelta(nearest.status.kmDelta);
+
+  // Color code
+  if (nearest.status.combined === 'overdue') {
+    kmEl.style.color = 'var(--danger)';
+  } else if (nearest.status.combined === 'due-soon') {
+    kmEl.style.color = 'var(--accent)';
+  } else {
+    kmEl.style.color = 'var(--success)';
+  }
+}
+
+// =============================================================
+// Mark a service interval as done (whole visit at once)
+// =============================================================
+function markIntervalDone(intervalId) {
+  const iv = SERVICE_INTERVALS.find(x => x.id === intervalId);
+  if (!iv) return;
+  const km = parseInt(prompt(`Milyen km-állásnál végezte a szervíz a(z) "${iv.title}" tételt?\n(Jelenlegi: ${currentKm.toLocaleString('hu-HU')} km)`, currentKm), 10);
+  if (isNaN(km) || km < 0) return;
+  serviceLog.push({
+    id: intervalId,
+    name: iv.title + ' — ' + iv.subtitle.split(' · ')[0],
+    action: 'szervíz',
+    date: new Date().toISOString(),
+    km,
+    note: '',
+  });
+  saveServiceLog();
+  if (km > currentKm) {
+    currentKm = km;
+    saveCurrentKm();
+  }
+  showToast(`✓ Rögzítve: ${iv.title}`);
+  renderService();
+}
+
+function markTimeBasedDone(svcId) {
+  const svc = TIME_BASED_SERVICES.find(x => x.id === svcId);
+  if (!svc) return;
+  const dateStr = prompt(`Mikor cserélték utoljára? (formátum: ÉÉÉÉ-HH-NN, pl. 2024-09-15)`, new Date().toISOString().slice(0, 10));
+  if (!dateStr) return;
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) { showToast('Érvénytelen dátum'); return; }
+  const km = parseInt(prompt(`Milyen km-állásnál? (kihagyható: 0)`, currentKm), 10);
+  serviceLog.push({
+    id: svcId,
+    name: svc.title + ' — ' + svc.subtitle,
+    action: 'csere',
+    date: date.toISOString(),
+    km: isNaN(km) ? 0 : km,
+    note: '',
+  });
+  saveServiceLog();
+  showToast(`✓ Rögzítve: ${svc.subtitle}`);
+  renderService();
+}
+
+// =============================================================
+// Custom items (saját tételek)
+// =============================================================
+function customItemStatus(item, kmVal) {
+  // Find last entry for this custom item
+  const last = serviceLog.filter(e => e.id === item.id).sort((a, b) => (b.km || 0) - (a.km || 0))[0];
+  let kmStatus = 'na', kmDelta = null;
+  if (item.interval_km) {
+    const dueKm = last ? last.km + item.interval_km : item.interval_km;
+    kmDelta = dueKm - kmVal;
+    if (kmDelta < 0) kmStatus = 'overdue';
+    else if (kmDelta <= 1000) kmStatus = 'due-soon';
+    else kmStatus = 'ok';
+  }
+  let dateStatus = 'na', monthsDelta = null;
+  if (item.interval_months && last) {
+    const dueDate = new Date(last.date);
+    dueDate.setMonth(dueDate.getMonth() + item.interval_months);
+    const ms = dueDate.getTime() - Date.now();
+    monthsDelta = Math.round(ms / (1000 * 60 * 60 * 24 * 30));
+    if (ms < 0) dateStatus = 'overdue';
+    else if (monthsDelta <= 1) dateStatus = 'due-soon';
+    else dateStatus = 'ok';
+  }
+  let combined = 'ok';
+  if (kmStatus === 'overdue' || dateStatus === 'overdue') combined = 'overdue';
+  else if (kmStatus === 'due-soon' || dateStatus === 'due-soon') combined = 'due-soon';
+  else if (kmStatus === 'na' && dateStatus === 'na') combined = 'na';
+  return { combined, kmDelta, monthsDelta, last };
+}
+
+function renderCustomItems() {
+  const container = document.getElementById('customItems');
+  if (!container) return;
+  if (customMaint.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-4);font-style:italic;text-align:center;padding:14px;font-size:13px;margin:0">Nincs még saját tétel.</p>';
+    return;
+  }
+  const rows = customMaint.map(item => {
+    const status = customItemStatus(item, currentKm);
+    const cls = status.combined === 'overdue' ? 'overdue' : (status.combined === 'due-soon' ? 'due-soon' : '');
+    let statusText = '';
+    if (status.combined === 'na') {
+      statusText = 'Még nincs rögzített elvégzés';
+    } else {
+      const parts = [];
+      if (status.kmDelta !== null) parts.push(fmtKmDelta(status.kmDelta));
+      if (status.monthsDelta !== null) parts.push(fmtMonthsDelta(status.monthsDelta));
+      statusText = parts.join(' · ');
+    }
+    const lastInfo = status.last ? ` · ${status.last.km ? status.last.km.toLocaleString('hu-HU') + ' km, ' : ''}${new Date(status.last.date).toLocaleDateString('hu-HU')}` : '';
+    return `<div class="service-item ${cls}">
+      <div class="service-item-info">
+        <p class="service-item-name">
+          ${escapeHtml(item.name)}
+          <span class="service-item-action ${escapeHtml(item.action)}">${escapeHtml(item.action)}</span>
+        </p>
+        <p class="service-item-status">${escapeHtml(statusText)}${escapeHtml(lastInfo)}</p>
+      </div>
+      <button class="service-item-done" data-custom-done="${escapeHtml(item.id)}">Kész</button>
+      <button class="service-history-del" data-custom-del="${escapeHtml(item.id)}" style="font-size:14px">×</button>
+    </div>`;
+  }).join('');
+  container.innerHTML = rows;
+  container.querySelectorAll('button[data-custom-done]').forEach(btn => {
+    btn.addEventListener('click', () => markCustomDone(btn.dataset.customDone));
+  });
+  container.querySelectorAll('button[data-custom-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!confirm('Törlöd ezt a saját tételt?')) return;
+      customMaint = customMaint.filter(i => i.id !== btn.dataset.customDel);
+      saveCustomMaint();
+      renderService();
+    });
+  });
+}
+
+function markCustomDone(itemId) {
+  const item = customMaint.find(i => i.id === itemId);
+  if (!item) return;
+  const km = parseInt(prompt(`Milyen km-állásnál? (jelenlegi: ${currentKm.toLocaleString('hu-HU')})`, currentKm), 10);
+  if (isNaN(km) || km < 0) return;
+  serviceLog.push({
+    id: itemId,
+    name: item.name,
+    action: item.action,
+    date: new Date().toISOString(),
+    km,
+    note: '',
+  });
+  saveServiceLog();
+  if (km > currentKm) {
+    currentKm = km;
+    saveCurrentKm();
+  }
+  showToast(`✓ ${item.name}`);
+  renderService();
+}
+
+// =============================================================
+// Main render — wires all sections
+// =============================================================
 function renderService() {
   // Update km input
   const kmInput = document.getElementById('serviceKmInput');
@@ -5458,58 +5703,17 @@ function renderService() {
     kmInput.value = currentKm || '';
   }
 
-  const items = getAllMaintItems();
-  const counts = { overdue: 0, 'due-soon': 0, ok: 0, na: 0 };
-  const itemsWithStatus = items.map(it => ({ item: it, status: statusFor(it, currentKm) }));
-  itemsWithStatus.forEach(x => counts[x.status.combined]++);
+  // Big "next service" panel
+  renderNextServicePanel();
 
-  document.getElementById('sumOverdue').textContent = counts.overdue;
-  document.getElementById('sumSoon').textContent = counts['due-soon'];
-  document.getElementById('sumOk').textContent = counts.ok + counts.na;
+  // Interval cards (km-based)
+  renderIntervalCards();
 
-  // Alerts (overdue + due-soon)
-  const alerts = itemsWithStatus
-    .filter(x => x.status.combined === 'overdue' || x.status.combined === 'due-soon')
-    .sort((a, b) => {
-      if (a.status.combined !== b.status.combined) return a.status.combined === 'overdue' ? -1 : 1;
-      return (a.status.kmDelta != null ? a.status.kmDelta : 9e9) - (b.status.kmDelta != null ? b.status.kmDelta : 9e9);
-    });
-  const alertsCard = document.getElementById('serviceAlertsCard');
-  const alertsContainer = document.getElementById('serviceAlerts');
-  if (alerts.length === 0) {
-    alertsCard.style.display = 'none';
-  } else {
-    alertsCard.style.display = '';
-    alertsContainer.innerHTML = alerts.map(x => renderItemRow(x.item, x.status)).join('');
-    wireDoneButtons(alertsContainer);
-  }
+  // Time-based cards
+  renderTimeBasedCards();
 
-  // All items by category
-  const byCat = {};
-  for (const x of itemsWithStatus) {
-    const cat = x.item.category || 'egyeni';
-    if (!byCat[cat]) byCat[cat] = [];
-    byCat[cat].push(x);
-  }
-  const catOrder = ['motor', 'folyadekok', 'hajtas', 'fekek', 'futomu', 'karoszeria', 'egyeni'];
-  const itemsContainer = document.getElementById('serviceItems');
-  let html = '';
-  for (const cat of catOrder) {
-    const list = byCat[cat];
-    if (!list || list.length === 0) continue;
-    const meta = MAINT_CATEGORIES[cat] || { label: cat, icon: '•' };
-    list.sort((a, b) => {
-      const order = { overdue: 0, 'due-soon': 1, ok: 2, na: 3 };
-      if (a.status.combined !== b.status.combined) return order[a.status.combined] - order[b.status.combined];
-      return a.item.name.localeCompare(b.item.name, 'hu');
-    });
-    html += `<div class="service-cat">
-      <p class="service-cat-header">${meta.icon} ${escapeHtml(meta.label)}</p>
-      ${list.map(x => renderItemRow(x.item, x.status)).join('')}
-    </div>`;
-  }
-  itemsContainer.innerHTML = html || '<p style="color:var(--text-4);font-style:italic;text-align:center;padding:14px;font-size:13px;margin:0">Nincsenek tételek.</p>';
-  wireDoneButtons(itemsContainer);
+  // Custom items
+  renderCustomItems();
 
   // Pre-trip checks
   const pretripList = document.getElementById('pretripList');
@@ -5534,57 +5738,6 @@ function renderService() {
   renderServiceHistory();
 }
 
-function renderItemRow(item, status) {
-  const last = lastDoneFor(item.id);
-  let statusText = '';
-  if (status.combined === 'na') {
-    statusText = item.interval_months ? `${item.interval_months} hónap esedékesség (egyszer add meg, mikor csinálták)` : (item.first_km ? `Elsőre ${item.first_km.toLocaleString('hu-HU')} km-nél` : 'Egyszeri / saját ütemezés');
-  } else {
-    const parts = [];
-    if (status.kmDelta !== null) parts.push(fmtKmDelta(status.kmDelta));
-    if (status.monthsDelta !== null) parts.push(fmtMonthsDelta(status.monthsDelta));
-    statusText = parts.join(' · ');
-  }
-  const lastInfo = last ? ` · utoljára: ${last.km ? last.km.toLocaleString('hu-HU') + ' km, ' : ''}${new Date(last.date).toLocaleDateString('hu-HU')}` : '';
-
-  return `<div class="service-item ${status.combined}" data-item-id="${escapeHtml(item.id)}">
-    <div class="service-item-info">
-      <p class="service-item-name">
-        ${escapeHtml(item.name)}
-        <span class="service-item-action ${escapeHtml(item.action)}">${escapeHtml(item.action)}</span>
-      </p>
-      <p class="service-item-status">${escapeHtml(statusText)}${escapeHtml(lastInfo)}</p>
-      ${item.note ? `<p style="font-size:10px;color:var(--text-4);margin:4px 0 0;font-style:italic">${escapeHtml(item.note)}</p>` : ''}
-      ${item.page ? `<p style="font-size:10px;color:var(--text-4);margin:2px 0 0">📖 ${item.page}. oldal</p>` : ''}
-    </div>
-    <button class="service-item-done" data-done-id="${escapeHtml(item.id)}">Kész</button>
-  </div>`;
-}
-
-function wireDoneButtons(container) {
-  container.querySelectorAll('button[data-done-id]').forEach(btn => {
-    btn.addEventListener('click', () => markServiceDone(btn.dataset.doneId));
-  });
-}
-
-function markServiceDone(itemId) {
-  const items = getAllMaintItems();
-  const item = items.find(i => i.id === itemId);
-  if (!item) return;
-  const km = parseInt(prompt(`Milyen km-állásnál csinálták? (jelenlegi: ${currentKm.toLocaleString('hu-HU')})`, currentKm), 10);
-  if (isNaN(km) || km < 0) return;
-  const todayISO = new Date().toISOString();
-  serviceLog.push({ id: itemId, name: item.name, action: item.action, date: todayISO, km, note: '' });
-  saveServiceLog();
-  // Auto-bump current km if higher
-  if (km > currentKm) {
-    currentKm = km;
-    saveCurrentKm();
-  }
-  showToast(`✓ Rögzítve: ${item.name}`);
-  renderService();
-}
-
 function renderServiceHistory() {
   const container = document.getElementById('serviceHistory');
   const countEl = document.getElementById('historyCount');
@@ -5599,7 +5752,7 @@ function renderServiceHistory() {
     <div class="service-history-row">
       <div>
         <span class="service-history-name">${escapeHtml(e.name || e.id)}</span>
-        <span style="font-size:10px;color:var(--text-4);margin-left:6px">${escapeHtml(e.action || '')}</span>
+        ${e.action ? `<span style="font-size:10px;color:var(--text-4);margin-left:6px">${escapeHtml(e.action)}</span>` : ''}
       </div>
       <span class="service-history-meta">${e.km ? e.km.toLocaleString('hu-HU') + ' km' : ''} · ${new Date(e.date).toLocaleDateString('hu-HU')}</span>
       <button class="service-history-del" data-del-idx="${sorted.length - 1 - i}">×</button>
@@ -5643,12 +5796,8 @@ function exportServiceCSV() {
   URL.revokeObjectURL(url);
 }
 
-// =============================================================
-// CUSTOM MAINTENANCE ITEMS
-// =============================================================
 function addCustomMaintItem() {
   const name = document.getElementById('customName').value.trim();
-  const category = document.getElementById('customCategory').value;
   const action = document.getElementById('customAction').value;
   const km = parseInt(document.getElementById('customIntervalKm').value, 10);
   const months = parseInt(document.getElementById('customIntervalMonths').value, 10);
@@ -5656,10 +5805,10 @@ function addCustomMaintItem() {
   if (!km && !months) { showToast('Adj meg vagy km-, vagy hónap-gyakoriságot.'); return; }
   const id = 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
   customMaint.push({
-    id, name, category, action,
+    id, name, action,
     interval_km: !isNaN(km) && km > 0 ? km : null,
     interval_months: !isNaN(months) && months > 0 ? months : null,
-    first_km: null, pretrip: false, custom: true,
+    custom: true,
   });
   saveCustomMaint();
   showToast(`+ ${name} hozzáadva`);
@@ -5669,6 +5818,7 @@ function addCustomMaintItem() {
   document.getElementById('addCustomForm').classList.remove('show');
   renderService();
 }
+
 
 // =============================================================
 // Init for new modules
@@ -5771,11 +5921,24 @@ function initManualAndService() {
     originalRenderService();
     const badge = document.getElementById('tabBadgeService');
     if (badge) {
-      const overdue = parseInt(document.getElementById('sumOverdue').textContent || '0', 10);
-      const soon = parseInt(document.getElementById('sumSoon').textContent || '0', 10);
-      const total = overdue + soon;
-      badge.textContent = total;
-      badge.style.display = total > 0 ? '' : 'none';
+      let count = 0;
+      // Count overdue + due-soon km-based intervals
+      for (const iv of SERVICE_INTERVALS) {
+        const s = intervalStatus(iv, currentKm);
+        if (s.combined === 'overdue' || s.combined === 'due-soon') count++;
+      }
+      // Count overdue + due-soon time-based services
+      for (const svc of TIME_BASED_SERVICES) {
+        const s = timeBasedStatus(svc);
+        if (s.combined === 'overdue' || s.combined === 'due-soon') count++;
+      }
+      // Count overdue/due-soon custom items
+      for (const item of customMaint) {
+        const s = customItemStatus(item, currentKm);
+        if (s.combined === 'overdue' || s.combined === 'due-soon') count++;
+      }
+      badge.textContent = count;
+      badge.style.display = count > 0 ? '' : 'none';
     }
   };
   // Run once to set initial badge
