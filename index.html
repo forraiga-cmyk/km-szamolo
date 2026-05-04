@@ -1069,6 +1069,253 @@ footer {
 /* =============================================================
    KÉZIKÖNYV (manual) tab styles
    ============================================================= */
+/* =============================================================
+   KÉZIKÖNYV — Új struktúra (2026-05)
+   ============================================================= */
+
+/* Mode tabs (Hibajelzés / Feladatok / Böngész / Keres) */
+.manual-mode-tabs {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3px;
+  margin-bottom: 12px;
+}
+.manual-mode-tab {
+  background: transparent; color: var(--text-3);
+  border: none; border-radius: 9px;
+  padding: 10px 4px;
+  font-size: 11px; font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.manual-mode-tab:hover { color: var(--text); }
+.manual-mode-tab.active {
+  background: var(--accent); color: #18181b;
+}
+
+.manual-mode-panel { display: none; }
+.manual-mode-panel.active { display: block; }
+
+/* Severity dot (used in warning intro) */
+.severity-dot {
+  display: inline-block;
+  width: 10px; height: 10px; border-radius: 50%;
+  vertical-align: middle;
+  margin: 0 2px;
+}
+.severity-dot.critical { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.6); }
+.severity-dot.warning { background: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.5); }
+.severity-dot.info { background: #60a5fa; }
+
+/* Warning indicators grid (dashboard-icon style) */
+.warning-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.warning-cell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 6px 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+.warning-cell:active { transform: scale(0.97); }
+.warning-cell.critical { border-color: rgba(239,68,68,0.3); }
+.warning-cell.critical:hover { border-color: #ef4444; background: linear-gradient(180deg, rgba(239,68,68,0.06), var(--surface)); }
+.warning-cell.warning { border-color: rgba(251,191,36,0.3); }
+.warning-cell.warning:hover { border-color: #fbbf24; background: linear-gradient(180deg, rgba(251,191,36,0.06), var(--surface)); }
+.warning-cell.info { border-color: rgba(96,165,250,0.3); }
+.warning-cell.info:hover { border-color: #60a5fa; }
+
+.warning-icon {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+}
+.warning-cell.critical .warning-icon { background: rgba(239,68,68,0.12); color: #ef4444; }
+.warning-cell.warning .warning-icon { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.warning-cell.info .warning-icon { background: rgba(96,165,250,0.12); color: #60a5fa; }
+
+.warning-icon svg {
+  width: 32px; height: 32px;
+  fill: currentColor;
+}
+
+.warning-name {
+  font-size: 11px; font-weight: 700; color: var(--text);
+  line-height: 1.25;
+  min-height: 28px;
+}
+
+/* Trouble scenarios list (smartphone icon row) */
+.trouble-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 11px 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.trouble-row:active { transform: scale(0.99); }
+.trouble-row:hover { border-color: var(--accent); }
+.trouble-row-icon {
+  font-size: 22px; flex-shrink: 0;
+  width: 36px; text-align: center;
+}
+.trouble-row-info { flex: 1; min-width: 0; }
+.trouble-row-name {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  margin: 0 0 2px;
+}
+.trouble-row-short {
+  font-size: 11px; color: var(--text-3); margin: 0;
+  line-height: 1.4;
+}
+.trouble-row-arrow { font-size: 16px; color: var(--text-4); }
+
+/* Quick tasks - grouped by category */
+.quick-cat-header {
+  font-size: 10px; font-weight: 800; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 12px 4px 6px; margin: 0;
+  display: flex; align-items: center; gap: 6px;
+}
+.quick-cat-header:first-child { padding-top: 4px; }
+
+.quick-task {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 11px 12px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.quick-task:active { transform: scale(0.99); }
+.quick-task:hover { border-color: var(--accent); background: linear-gradient(180deg, rgba(251,191,36,0.04), var(--surface)); }
+.quick-task-icon {
+  font-size: 22px; flex-shrink: 0;
+  width: 32px; text-align: center;
+}
+.quick-task-info { flex: 1; min-width: 0; }
+.quick-task-name {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  margin: 0;
+}
+.quick-task-sub {
+  font-size: 11px; color: var(--text-3); margin: 2px 0 0;
+  line-height: 1.4;
+}
+.quick-task-page {
+  background: var(--accent-soft); color: var(--accent);
+  font-size: 10px; font-weight: 800; padding: 3px 7px;
+  border-radius: 5px; letter-spacing: 0.04em;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Chapter browse view */
+.chapter-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chapter-card:active { transform: scale(0.99); }
+.chapter-card:hover { border-color: var(--accent); }
+.chapter-card-header {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 0 6px;
+}
+.chapter-card-icon { font-size: 24px; flex-shrink: 0; }
+.chapter-card-name {
+  flex: 1; min-width: 0;
+  font-size: 14px; font-weight: 800; color: var(--text);
+}
+.chapter-card-pages {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text-4);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.chapter-card-desc {
+  font-size: 11px; color: var(--text-3);
+  margin: 4px 0 0; line-height: 1.5;
+}
+
+/* Action steps in trouble/warning detail */
+.action-step {
+  display: flex; gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.action-step.stop { background: linear-gradient(135deg, rgba(239,68,68,0.08), var(--surface)); border-color: rgba(239,68,68,0.4); }
+.action-step.warn { background: linear-gradient(135deg, rgba(251,191,36,0.08), var(--surface)); border-color: rgba(251,191,36,0.35); }
+.action-step.restart { background: linear-gradient(135deg, rgba(34,197,94,0.06), var(--surface)); border-color: rgba(34,197,94,0.3); }
+.action-step.info { background: linear-gradient(135deg, rgba(96,165,250,0.06), var(--surface)); border-color: rgba(96,165,250,0.3); }
+
+.action-step-icon {
+  font-size: 16px;
+  width: 22px; text-align: center; flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.severity-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+.severity-badge.critical { background: rgba(239,68,68,0.15); color: #ef4444; }
+.severity-badge.warning { background: rgba(251,191,36,0.15); color: #fbbf24; }
+.severity-badge.info { background: rgba(96,165,250,0.15); color: #60a5fa; }
+
+.warning-detail-extra {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 11px 12px;
+  font-size: 12px; color: var(--text-3);
+  line-height: 1.5;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+/* Browse: chunks list inside a chapter */
+.chunk-back {
+  background: transparent;
+  color: var(--accent);
+  border: none;
+  font-size: 13px; font-weight: 700;
+  padding: 8px 0;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
 .manual-search {
   display: flex; gap: 8px; margin-bottom: 12px;
 }
@@ -1997,43 +2244,59 @@ footer {
 <!-- KÉZIKÖNYV -->
 <div class="tab-panel" data-tab="manual">
 
-<section class="card">
-  <p class="card-header">
-    <span>Honda NC750X DCT 2025 — Magyar kézikönyv</span>
-    <span style="color:var(--text-4);font-weight:600;text-transform:none;letter-spacing:0">204 oldal</span>
+<!-- "Mit szeretnél most csinálni?" — fő nézet választó -->
+<div class="manual-mode-tabs">
+  <button class="manual-mode-tab active" data-mode="warning">⚠️ Hibajelzés</button>
+  <button class="manual-mode-tab" data-mode="tasks">📌 Feladatok</button>
+  <button class="manual-mode-tab" data-mode="browse">📖 Böngész</button>
+  <button class="manual-mode-tab" data-mode="search">🔍 Keres</button>
+</div>
+
+<!-- 1. HIBAJELZÉSEK NÉZET -->
+<div class="manual-mode-panel active" data-mode-panel="warning">
+  <p style="font-size:12px;color:var(--text-3);margin:0 0 10px;line-height:1.5;padding:0 4px">
+    Koppints arra, ami a műszerfalon világít vagy villog. A piros <span class="severity-dot critical"></span> kritikus, sárga <span class="severity-dot warning"></span> figyelmeztető.
   </p>
+  <div class="warning-grid" id="warningGrid"></div>
+
+  <details style="margin-top:14px">
+    <summary style="font-size:12px;color:var(--text-2);cursor:pointer;padding:10px;font-weight:700">🚨 Egyéb hibák / vészhelyzetek <span style="color:var(--text-4);margin-left:4px">(7 téma)</span></summary>
+    <div id="troubleList" style="margin-top:6px"></div>
+  </details>
+</div>
+
+<!-- 2. GYAKORI FELADATOK NÉZET -->
+<div class="manual-mode-panel" data-mode-panel="tasks">
+  <p style="font-size:12px;color:var(--text-3);margin:0 0 10px;line-height:1.5;padding:0 4px">
+    A leggyakoribb dolgok, amikre kézikönyv kell. Koppints — egyenesen a megfelelő oldalra ugrik.
+  </p>
+  <div id="quickTasks"></div>
+</div>
+
+<!-- 3. BÖNGÉSZÉS FEJEZETEK SZERINT -->
+<div class="manual-mode-panel" data-mode-panel="browse">
+  <p style="font-size:12px;color:var(--text-3);margin:0 0 10px;line-height:1.5;padding:0 4px">
+    A teljes 204 oldalas kézikönyv 6 fejezetbe rendezve. Koppints a fejezetre, hogy belépj.
+  </p>
+  <div id="chapterList"></div>
+</div>
+
+<!-- 4. KERESÉS NÉZET -->
+<div class="manual-mode-panel" data-mode-panel="search">
   <div class="manual-search">
-    <input type="search" id="manualSearchInput" placeholder="Keresés: pl. „szelephézag”, „DCT mód”, „hibakód”…" autocomplete="off" autocapitalize="off" autocorrect="off">
+    <input type="search" id="manualSearchInput" placeholder="Pl. „szelephézag”, „RoadSync”, „kormányzár”…" autocomplete="off" autocapitalize="off" autocorrect="off">
     <button id="manualSearchBtn">Keres</button>
   </div>
-  <div class="manual-chips" id="manualChips">
-    <button class="manual-chip active" data-filter="all">Mind</button>
-    <button class="manual-chip" data-filter="Üzemeltetési útmutató">⚙️ Üzemeltetés</button>
-    <button class="manual-chip" data-filter="Karbantartás">🔧 Karbantartás</button>
-    <button class="manual-chip" data-filter="Hibaelhárítás">⚠️ Hibák</button>
-    <button class="manual-chip" data-filter="Biztonságos motorozás">🛡️ Biztonság</button>
-    <button class="manual-chip" data-filter="Információ">ℹ️ Infó</button>
-    <button class="manual-chip" data-filter="Specifikációk">📐 Specifikáció</button>
-  </div>
-</section>
-
-<section class="card">
-  <p class="card-header">
-    <span id="manualResultsLabel">Találatok</span>
-    <span id="manualResultsCount" style="color:var(--text-4);font-weight:600;text-transform:none;letter-spacing:0"></span>
-  </p>
   <div id="manualResults">
-    <p class="manual-empty">Írj be egy keresési kifejezést, vagy szűrj kategóriára.</p>
+    <p class="manual-empty">Írj be egy kifejezést — a teljes kézikönyv szövegében keresünk.<br><br>Tipp: a hibajelzéseket a ⚠️ fülön gyorsabban megtalálod.</p>
   </div>
-</section>
+</div>
 
-<details style="margin-top:8px">
-  <summary style="font-size:12px;color:var(--text-3);cursor:pointer;padding:8px">⚡ AI-magyarázat beállítása (opcionális)</summary>
+<details style="margin-top:14px">
+  <summary style="font-size:11px;color:var(--text-4);cursor:pointer;padding:8px">⚡ AI-magyarázat beállítása (opcionális)</summary>
   <section class="card" style="margin-top:6px">
     <p style="font-size:12px;color:var(--text-2);margin:0 0 10px;line-height:1.5">
-      Egy talált szakaszt át lehet adni Claude-nak, hogy a saját szavaival, a kérdésedre szabva magyarázza el.
-      Ehhez kell egy Anthropic API-kulcs (regisztrálj a <strong>console.anthropic.com</strong>-on, $5 kreditért).
-      A kulcs csak a telefonod helyi tárolójában él, sehova nem kerül elküldésre.
+      Egy szakaszt átadhatsz Claude-nak, hogy a kérdésedre szabva magyarázza el. Anthropic API-kulcs kell hozzá (console.anthropic.com, $5-tól). A kulcs csak a telefonon él.
     </p>
     <div class="km-input-row" style="gap:8px">
       <label style="flex-shrink:0">API-kulcs</label>
@@ -4922,6 +5185,317 @@ function _mergeServiceItems(...groups) {
 }
 
 // Service intervals — what gets done at each milestone
+// =============================================================
+// HONDA NC750X DCT — KÉZIKÖNYV STRUKTURÁLT ADATOK
+// Forrás: 2025 magyar kezelési könyv (32MKW620HU)
+// =============================================================
+
+// =============================================================
+// A. HIBAJELZÉSEK / FIGYELMEZTETŐ LÁMPÁK
+// (Ha a műszerfalon valami pirosan / sárgan világít, ide nyúl)
+// =============================================================
+//
+// severity:
+//   'critical'   = Állj meg azonnal, motort le! (motor károsodás veszélye)
+//   'warning'    = Folytatható, de mihamarabb szervízbe
+//   'info'       = Figyelmeztetés, de nem azonnal kritikus
+//
+const WARNING_INDICATORS = [
+  {
+    id: 'oil_pressure',
+    icon_svg: 'oil',  // identifier for the dashboard icon style
+    icon_color: 'red',
+    name: 'Alacsony olajnyomás visszajelző',
+    severity: 'critical',
+    short: 'Állj meg azonnal! Motort le!',
+    description: 'Ha menet közben kezd világítani, súlyos motorkárosodás veszélye áll fenn.',
+    actions: [
+      { type: 'stop', text: 'Állj meg biztonságos helyen, állítsd le a motort.' },
+      { type: 'check', text: 'Ellenőrizd a motorolaj szintjét, és töltsd után, ha alacsony (133. o.).' },
+      { type: 'restart', text: 'Indítsd be a motort. Csak akkor folytasd, ha a visszajelző már nem világít.' },
+      { type: 'warn', text: 'Ha a visszajelző megfelelő olajszint mellett is világít, állítsd le a motort és vidd márkaszervízbe.' },
+    ],
+    extra: 'Ha a motorolajszint hirtelen csökkenni kezd, szivárgás vagy más komoly probléma áll fenn.',
+    page: 152,
+  },
+  {
+    id: 'water_temp_high',
+    icon_svg: 'temp',
+    icon_color: 'red',
+    name: 'Magas hűtőfolyadék-hőmérséklet visszajelző (túlmelegedés)',
+    severity: 'critical',
+    short: 'A motor túlmelegszik. Állj meg!',
+    description: '122 °C felett bekapcsol, 132 °C felett a "132" villog. A gyorsulás lassul.',
+    actions: [
+      { type: 'stop', text: 'Állj meg biztonságos helyen, az út szélén.' },
+      { type: 'check', text: 'Állítsd le a motort, majd kapcsold a gyújtást ismét állásba.' },
+      { type: 'check', text: 'Ellenőrizd, hogy a hűtőventilátor működik-e.' },
+      { type: 'warn', text: 'Ha a ventilátor NEM működik: ne indítsd be a motort, szállíttasd a márkaszervízbe.' },
+      { type: 'check', text: 'Ha a ventilátor működik: hagyd a motort lehűlni gyújtás "be" állásban.' },
+      { type: 'check', text: 'Hűlés után vizsgáld meg a hűtőcsövet, van-e szivárgás (135. o.).' },
+      { type: 'check', text: 'Töltsd után a hűtőfolyadékot szükség szerint a tágulási tartályban.' },
+    ],
+    extra: 'Sokáig tartó magas alapjárat esetén is bekapcsolhat. A túlmelegedett motorral motorozás súlyos motorkárosodást okozhat.',
+    page: 151,
+  },
+  {
+    id: 'mil',
+    icon_svg: 'mil',
+    icon_color: 'amber',
+    name: 'PGM-FI hibajelző lámpa (MIL)',
+    severity: 'warning',
+    short: 'Motorvezérlő hiba — kerüld a nagy sebességet',
+    description: 'A MIL világít, ha a károsanyag-kibocsátás szabályzó rendszerrel probléma van. Villog, ha a motor kihagy.',
+    actions: [
+      { type: 'check', text: 'Ha VILÁGÍT: kerüld a nagy sebességet, és menj márkaszervízbe.' },
+      { type: 'stop', text: 'Ha VILLOG: állj meg biztonságos helyen, gyúlékony anyagoktól távol.' },
+      { type: 'check', text: 'Várj legalább 10 percet leállított motorral, hogy lehűljön.' },
+      { type: 'restart', text: 'Próbáld újraindítani a motort.' },
+      { type: 'warn', text: 'Ha újraindítás után is villog: 50 km/h alatt menj a legközelebbi márkaszervízbe.' },
+    ],
+    extra: 'Ha folytatod a motorozást világító hibajelző mellett, a károsanyag-kibocsátás szabályzó rendszer és a motor károsodhat.',
+    page: 153,
+  },
+  {
+    id: 'abs',
+    icon_svg: 'abs',
+    icon_color: 'amber',
+    name: 'ABS visszajelző',
+    severity: 'warning',
+    short: 'ABS-rendszer hiba — fékek hagyományos módon működnek',
+    description: 'Komoly probléma lehet az ABS-rendszerben, ha a visszajelző menet közben világít/villog, nem világít gyújtásnál, vagy nem alszik ki 10 km/h fölött.',
+    actions: [
+      { type: 'check', text: 'Csökkentsd a sebességet.' },
+      { type: 'check', text: 'Vidd márkaszervízbe ellenőrzésre, amint lehet.' },
+      { type: 'info', text: 'A fékrendszer hagyományos fékként működik tovább, de blokkolásgátló nélkül.' },
+    ],
+    extra: 'Az ABS-visszajelző villoghat, ha a hátsó kereket állványon megforgatod. Ilyenkor: gyújtást OFF, majd ON. 30 km/h-nál kialszik.',
+    page: 154,
+  },
+  {
+    id: 'tc',
+    icon_svg: 'tc',
+    icon_color: 'amber',
+    name: 'Nyomatékszabályozó (HSTC) visszajelző',
+    severity: 'warning',
+    short: 'Nyomatékszabályozó hiba — funkció nélkül üzemel tovább',
+    description: 'Komoly probléma lehet, ha a visszajelző motorozás közben világít és úgy is marad, vagy nem alszik ki 5 km/h fölött.',
+    actions: [
+      { type: 'check', text: 'Csökkentsd a sebességet, vidd márkaszervízbe.' },
+      { type: 'info', text: 'Ha menet közben kezd világítani működés közben: a normál menettulajdonságok megtartása érdekében teljesen zárd a gázt.' },
+    ],
+    extra: 'A motor normál módon üzemeltethető, csak nyomatékszabályozó funkció nélkül. Állványon hátsó kerék forgatáskor villoghat, ez normális (kapcsold ki/be a gyújtást).',
+    page: 155,
+  },
+  {
+    id: 'hiss',
+    icon_svg: 'hiss',
+    icon_color: 'amber',
+    name: 'HISS-visszajelző',
+    severity: 'info',
+    short: 'Lopásgátló rendszer — kulcs nem felismerhető',
+    description: 'Ha a visszajelző világít miközben próbálnád indítani a motort, a HISS rendszer nem ismeri fel a kulcsot.',
+    actions: [
+      { type: 'check', text: 'Kapcsold a gyújtást OFF, húzd ki a kulcsot.' },
+      { type: 'check', text: 'Helyezd vissza a kulcsot, kapcsold ON állásba.' },
+      { type: 'check', text: 'Ha még mindig világít: nincs-e másik HISS-kulcs (pl. pótkulcs) a gyújtás közelében?' },
+      { type: 'check', text: 'Nincs-e fém burkolat vagy matrica a kulcson?' },
+      { type: 'warn', text: 'Ha továbbra is világít: márkaszerviz.' },
+    ],
+    extra: 'A HISS visszajelző normál üzemmódban a gyújtáskapcsoló után 24 órán keresztül 2 másodpercenként villog (lopásgátló).',
+    page: 150,
+  },
+  {
+    id: 'dct_dash',
+    icon_svg: 'dash',
+    icon_color: 'red',
+    name: '"–" villog a sebességfokozat-kijelzőben (DCT)',
+    severity: 'critical',
+    short: 'DCT váltó hiba',
+    description: 'A duplakuplungos sebességváltó komoly hibája. Csak NC750XD modellnél.',
+    actions: [
+      { type: 'stop', text: 'Parkolj le biztonságos helyen.' },
+      { type: 'check', text: 'Kapcsold a gyújtást OFF → ON, indítsd be a motort.' },
+      { type: 'check', text: 'Ha nem indul: gyújtás "be", mozgasd a motort kissé előre-hátra (hogy kiugorjon sebességből), majd próbáld újra.' },
+      { type: 'check', text: 'Ha még mindig nem indul: fékkar behúzva vagy fékpedál lenyomva indítsd.' },
+      { type: 'check', text: 'Ha tudsz N→D-be váltani és a fokozatkijelző sebességet mutat: lassan menj márkaszervízbe.' },
+      { type: 'warn', text: 'Ha NEM tudsz N→D-be váltani és a "–" villog: NE használd a motort, azonnal márkaszerviz.' },
+    ],
+    extra: 'A "–" villogás a duplakuplungos rendszer súlyos hibájára utal.',
+    page: 156,
+  },
+  {
+    id: 'fuel_error',
+    icon_svg: 'fuel',
+    icon_color: 'amber',
+    name: 'Üzemanyagszint-jelző hiba',
+    severity: 'info',
+    short: 'Üzemanyag-rendszer hiba',
+    description: 'Az üzemanyagszint-jelző hibás formában jelenik meg.',
+    actions: [
+      { type: 'check', text: 'Mihamarabb vidd márkaszervízbe.' },
+    ],
+    page: 157,
+  },
+  {
+    id: 'water_temp_error',
+    icon_svg: 'temp_error',
+    icon_color: 'amber',
+    name: 'Hűtőfolyadék-hőmérséklet mérő hiba',
+    severity: 'info',
+    short: '"---" villog a hőmérséklet kijelzőn',
+    description: 'A hűtőfolyadék-rendszerben lévő mérő meghibásodott.',
+    actions: [
+      { type: 'check', text: 'Mihamarabb vidd márkaszervízbe.' },
+    ],
+    extra: 'Vigyázz: a magas hűtőfolyadék-hőmérséklet visszajelző (külön ikon) ettől még működhet — figyeld azt is.',
+    page: 158,
+  },
+];
+
+// =============================================================
+// B. NEM-VISSZAJELZŐS HIBÁK / VÉSZHELYZETEK
+// =============================================================
+const TROUBLE_SCENARIOS = [
+  {
+    id: 'no_start',
+    icon: '🔌',
+    name: 'A motor nem indul',
+    short: 'Indítómotor működik, de nem indul',
+    actions: [
+      { type: 'check', text: 'Ellenőrizd a megfelelő motorindítási folyamatot (90. o.).' },
+      { type: 'check', text: 'Van-e elég benzin a tankban?' },
+      { type: 'check', text: 'A MIL (PGM-FI) világít? → Márkaszerviz.' },
+      { type: 'check', text: 'A HISS-visszajelző világít? → Lásd HISS hibajelzés.' },
+    ],
+    extra: 'Ha az indítómotor sem működik: ellenőrizd a biztosítékot (163. o.), az akkumulátor kábelek lazaságát (127. o.), saruk korrózióját (114. o.), akkumulátor állapotát (162. o.).',
+    page: 150,
+  },
+  {
+    id: 'flat_tire',
+    icon: '🛞',
+    name: 'Defekt (lapos gumi)',
+    short: 'Gumiabroncs defekt menet közben',
+    actions: [
+      { type: 'stop', text: 'Lassan, kontrolláltan állj meg.' },
+      { type: 'check', text: 'Tömlő nélküli javítókészlettel ideiglenes javítás.' },
+      { type: 'warn', text: 'Soha NE lépd túl az 50 km/h sebességet javított gumival!' },
+      { type: 'check', text: 'Mihamarabb cseréltesd a gumit márkaszervízben.' },
+    ],
+    extra: 'A kerék kiszerelése vagy a defekt javítása célszerszámokat és szaktudást igényel. Javasolt szakszervizben végeztetni.',
+    page: 159,
+  },
+  {
+    id: 'dead_battery',
+    icon: '🔋',
+    name: 'Lemerült akkumulátor',
+    short: 'Az akkumulátor lemerült',
+    actions: [
+      { type: 'check', text: 'Szereld ki az akkut a motorkerékpárból (132. o.).' },
+      { type: 'check', text: 'Tölts MOTORKERÉKPÁRTÖLTŐVEL (NEM autótöltővel!).' },
+      { type: 'warn', text: 'NE bikázd autóról! Az elektromos rendszer károsodhat.' },
+      { type: 'warn', text: 'Ha töltés után sem kel életre: márkaszerviz.' },
+    ],
+    page: 162,
+  },
+  {
+    id: 'fuse_blown',
+    icon: '⚡',
+    name: 'Kiolvadt biztosíték',
+    short: 'Áramköri probléma — biztosíték csere',
+    actions: [
+      { type: 'check', text: 'Olvasd át a "Biztosítékok ellenőrzése" részt (116. o.).' },
+      { type: 'check', text: 'Nyisd ki a csomagtartó dobozt (103. o.).' },
+      { type: 'check', text: 'Távolítsd el a karbantartónyílás fedelét (132. o.).' },
+      { type: 'check', text: 'Vedd le a biztosítékdoboz fedelét.' },
+      { type: 'check', text: 'A szerszámkészletben lévő csipesszel egyesével ellenőrizd a biztosítékokat.' },
+      { type: 'check', text: 'Mindig AZONOS értékű biztosítékra cseréld. Tartalék: a biztosítékdoboz fedelének hátoldalán.' },
+    ],
+    page: 163,
+  },
+  {
+    id: 'led_dead',
+    icon: '💡',
+    name: 'Kiégett LED',
+    short: 'Egy LED nem világít',
+    actions: [
+      { type: 'check', text: 'Az összes izzó LED típusú a motoron — nem cserélheted házilag.' },
+      { type: 'check', text: 'Vidd márkaszervízbe.' },
+    ],
+    page: 162,
+  },
+  {
+    id: 'phone_pair',
+    icon: '📱',
+    name: 'Okostelefon nem párosítható',
+    short: 'Bluetooth probléma a Honda RoadSync-kel',
+    actions: [
+      { type: 'check', text: 'Lehet, hogy az okostelefon nem kompatibilis (egyes modellek korlátozottak).' },
+      { type: 'check', text: 'Mind a motor, mind a telefon legyen párosítás módban (81. o.).' },
+      { type: 'check', text: 'Nincs-e más Bluetooth eszköz párosítás módban a közelben? (interferencia)' },
+      { type: 'check', text: 'Töröld a telefon Bluetooth beállításából a motor korábbi párosítási információit.' },
+    ],
+    page: 160,
+  },
+  {
+    id: 'phone_connect',
+    icon: '📱',
+    name: 'Okostelefon nem csatlakozik',
+    short: 'Korábban párosított telefon nem kapcsolódik',
+    actions: [
+      { type: 'check', text: 'A motor indítása alatt a kapcsolat átmenetileg megszakadhat — ez normális.' },
+      { type: 'check', text: 'Ellenőrizd a Bluetooth állapotjelző ikont a motor műszerfalán.' },
+      { type: 'check', text: 'Ellenőrizd, hogy az okostelefon csatlakoztatható állapotban van-e.' },
+      { type: 'check', text: 'Egyes telefonok nem csatlakoznak automatikusan — kézzel csatlakoztasd.' },
+      { type: 'warn', text: '2 vagy több telefon egyszerre nem párosítható.' },
+    ],
+    page: 161,
+  },
+];
+
+// =============================================================
+// C. GYAKORI FELADATOK (Quick Tasks)
+// Ezek az emberek leggyakrabban előhúzzák a kézikönyvet emiatt.
+// Mindegyik egy konkrét manual oldalra ugrik.
+// =============================================================
+const QUICK_TASKS = [
+  // Napi használat
+  { id: 'dct_modes', icon: '🎛️', name: 'DCT mód váltás', subtitle: 'D / S / Manuális, AT/MT váltás', page: 84, category: 'daily' },
+  { id: 'riding_modes', icon: '🏁', name: 'Motorozási módok', subtitle: 'Standard / Sport / Rain / User', page: 84, category: 'daily' },
+  { id: 'cruise_control', icon: '🚦', name: 'Tempomat (cruise control)', subtitle: 'Bekapcsolás, sebesség beállítása', page: 96, category: 'daily' },
+  { id: 'usb_charger', icon: '🔌', name: 'USB-töltő használata', subtitle: 'Telefon töltése menet közben', page: 88, category: 'daily' },
+  { id: 'storage', icon: '🎒', name: 'Csomagtartó nyitás', subtitle: 'Kulcs vagy gomb használata', page: 103, category: 'daily' },
+  { id: 'fuel_cap', icon: '⛽', name: 'Tanksapka nyitás, tankolás', subtitle: 'Tankolási folyamat', page: 102, category: 'daily' },
+
+  // Karbantartás
+  { id: 'oil_check', icon: '🛢️', name: 'Olajszint ellenőrzés', subtitle: 'Indulás előtt', page: 133, category: 'maint' },
+  { id: 'oil_change', icon: '🧴', name: 'Olajcsere folyamata', subtitle: 'Otthon vagy szervízben', page: 134, category: 'maint' },
+  { id: 'chain_lube', icon: '⛓️', name: 'Hajtólánc kenése', subtitle: 'Minden 1.000 km-en', page: 141, category: 'maint' },
+  { id: 'chain_tension', icon: '⚙️', name: 'Hajtólánc feszesség', subtitle: 'Mérés és beállítás', page: 141, category: 'maint' },
+  { id: 'tire_pressure', icon: '💨', name: 'Gumiabroncs nyomás', subtitle: 'Üres / utassal', page: 120, category: 'maint' },
+  { id: 'coolant', icon: '💧', name: 'Hűtőfolyadék szint', subtitle: 'Indulás előtti ellenőrzés', page: 135, category: 'maint' },
+  { id: 'brake_fluid', icon: '🛑', name: 'Fékfolyadék szint', subtitle: 'Első és hátsó', page: 137, category: 'maint' },
+  { id: 'air_filter', icon: '🌬️', name: 'Légszűrő', subtitle: 'Karbantartás, csere', page: 144, category: 'maint' },
+
+  // Beállítások
+  { id: 'brake_lever', icon: '🤚', name: 'Fékkar állítás', subtitle: 'Távolság a kormányhoz', page: 145, category: 'setup' },
+  { id: 'rear_suspension', icon: '🪑', name: 'Hátsó futómű állítás', subtitle: 'Rugóelőfeszítés (1-7)', page: 148, category: 'setup' },
+  { id: 'mirrors', icon: '🪞', name: 'Visszapillantó beállítás', subtitle: 'Tükrök', page: 87, category: 'setup' },
+  { id: 'clutch_lever', icon: '✋', name: 'Kuplungkar holtjáték', subtitle: 'Csak NC750XA, manuális váltó', page: 144, category: 'setup' },
+
+  // Specifikáció
+  { id: 'specs', icon: '📐', name: 'Specifikációk', subtitle: 'Teljes műszaki adatok', page: 190, category: 'specs' },
+  { id: 'fluid_specs', icon: '🧪', name: 'Folyadék típusok és mennyiség', subtitle: 'Olaj, hűtő, fék', page: 191, category: 'specs' },
+];
+
+const QUICK_TASK_CATEGORIES = {
+  daily: { label: 'Napi használat', icon: '🏍️' },
+  maint: { label: 'Karbantartás', icon: '🔧' },
+  setup: { label: 'Beállítások', icon: '⚙️' },
+  specs: { label: 'Specifikáció', icon: '📐' },
+};
+
+
 const SERVICE_INTERVALS = [
   {
     id: 'service_1k',
@@ -5155,29 +5729,25 @@ function highlightSnippet(snippet, query) {
 }
 
 function renderManual() {
-  const query = (document.getElementById('manualSearchInput').value || '').trim();
-  const results = manualSearch(query, manualFilter);
+  // Only updates the search-mode panel; other modes are rendered separately
+  const searchInput = document.getElementById('manualSearchInput');
+  if (!searchInput) return;
+  const query = (searchInput.value || '').trim();
+  const results = manualSearch(query, 'all');
   const container = document.getElementById('manualResults');
-  const countEl = document.getElementById('manualResultsCount');
-  const labelEl = document.getElementById('manualResultsLabel');
+  if (!container) return;
 
   if (results === null) {
-    container.innerHTML = '<p class="manual-empty">Írj be egy keresési kifejezést, vagy válassz kategóriát a fenti címkékből.<br><br>Pl.: <em>„DCT mód”</em>, <em>„szelephézag”</em>, <em>„hibakód”</em>, <em>„olajcsere”</em></p>';
-    countEl.textContent = '';
-    labelEl.textContent = 'Találatok';
+    container.innerHTML = '<p class="manual-empty">Írj be egy kifejezést — a teljes kézikönyv szövegében keresünk.<br><br>Tipp: a hibajelzéseket a ⚠️ fülön gyorsabban megtalálod.</p>';
     return;
   }
   if (results.length === 0) {
-    container.innerHTML = '<p class="manual-empty">Nincs találat. Próbálj más kulcsszót, vagy szűrj kategóriára.</p>';
-    countEl.textContent = '0 találat';
-    labelEl.textContent = 'Találatok';
+    container.innerHTML = '<p class="manual-empty">Nincs találat. Próbálj más kulcsszót.</p>';
     return;
   }
-  labelEl.textContent = query ? 'Találatok' : (manualFilter === 'all' ? 'Szakaszok' : manualFilter);
-  countEl.textContent = `${results.length} találat`;
 
   const lastQuery = query;
-  container.innerHTML = results.map((r, i) => {
+  container.innerHTML = `<p style="font-size:11px;color:var(--text-4);margin:0 0 8px;font-weight:600">${results.length} találat</p>` + results.map((r, i) => {
     const snippet = r._snippet || r.text.substring(0, 220);
     const highlighted = lastQuery ? highlightSnippet(snippet, lastQuery) : escapeHtml(snippet);
     const pageLabel = r.doc_page ? `${r.doc_page}. o.` : '';
@@ -5195,6 +5765,254 @@ function renderManual() {
 }
 
 // =============================================================
+// MANUAL — Mode panels (warning / tasks / browse / search)
+// =============================================================
+
+// Dashboard icon SVGs - simplified Honda dashboard symbols
+const WARNING_ICON_SVGS = {
+  oil: '<svg viewBox="0 0 24 24"><path d="M5 19c0-3.5 7-12 7-12s7 8.5 7 12a7 7 0 01-14 0z" fill="currentColor"/><circle cx="12" cy="16" r="2" fill="#000" opacity="0.3"/></svg>',
+  temp: '<svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 00-3 3v9.5a4 4 0 106 0V5a3 3 0 00-3-3zm0 17a2.5 2.5 0 11.001-5.001A2.5 2.5 0 0112 19z" fill="currentColor"/><path d="M3 10l3 0M3 14l3 0M3 6l3 0M3 18l3 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  mil: '<svg viewBox="0 0 24 24"><path d="M19 9c0-1.1-.9-2-2-2h-3l-1.5-2h-5L6 7H5c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9z" fill="currentColor"/><circle cx="12" cy="13" r="2.5" fill="#000" opacity="0.3"/></svg>',
+  abs: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="currentColor"/><text x="12" y="15" text-anchor="middle" font-size="6" font-weight="800" fill="currentColor">ABS</text><path d="M5 5l14 14" stroke="currentColor" stroke-width="0.5" opacity="0.4" stroke-dasharray="2 2"/></svg>',
+  tc: '<svg viewBox="0 0 24 24"><path d="M12 4l-3 4h2v3H8.5l-1-2h-2l2 4h3v3H7l3 4 3-4h-3v-3h3.5l1 2h2l-2-4h-3V8h3l-3-4z" fill="currentColor"/></svg>',
+  hiss: '<svg viewBox="0 0 24 24"><path d="M12 2a4 4 0 00-4 4v3H6v11h12V9h-2V6a4 4 0 00-4-4zm-2 7V6a2 2 0 014 0v3h-4z" fill="currentColor"/><circle cx="12" cy="14" r="1.5" fill="#000" opacity="0.3"/></svg>',
+  dash: '<svg viewBox="0 0 24 24"><rect x="3" y="10" width="18" height="4" fill="currentColor" rx="1"/></svg>',
+  fuel: '<svg viewBox="0 0 24 24"><path d="M5 4h8v16H5V4z" fill="currentColor"/><path d="M14 8h2c1 0 2 1 2 2v6c0 1 1 2 2 2v-2c0-1-.5-2-1-2v-4l-3-3-2 1v2z" fill="currentColor"/><circle cx="9" cy="14" r="2" fill="#000" opacity="0.4"/></svg>',
+  temp_error: '<svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 00-3 3v9.5a4 4 0 106 0V5a3 3 0 00-3-3z" fill="currentColor"/><text x="12" y="15" text-anchor="middle" font-size="5" font-weight="800" fill="#000" opacity="0.5">---</text></svg>',
+};
+
+const ACTION_ICONS = {
+  stop: '🛑',
+  check: '👁️',
+  restart: '🔄',
+  warn: '⚠️',
+  info: 'ℹ️',
+};
+
+let currentManualMode = 'warning';
+let browseChapter = null; // null = chapter list, otherwise chapter name
+
+function renderWarningGrid() {
+  const grid = document.getElementById('warningGrid');
+  if (!grid) return;
+  grid.innerHTML = WARNING_INDICATORS.map((w, i) => {
+    const svg = WARNING_ICON_SVGS[w.icon_svg] || WARNING_ICON_SVGS.mil;
+    return `<div class="warning-cell ${escapeHtml(w.severity)}" data-warning-idx="${i}">
+      <div class="warning-icon">${svg}</div>
+      <p class="warning-name">${escapeHtml(w.short)}</p>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.warning-cell').forEach((el, i) => {
+    el.addEventListener('click', () => openWarningDetail(WARNING_INDICATORS[i]));
+  });
+}
+
+function renderTroubleList() {
+  const list = document.getElementById('troubleList');
+  if (!list) return;
+  list.innerHTML = TROUBLE_SCENARIOS.map((t, i) => `
+    <div class="trouble-row" data-trouble-idx="${i}">
+      <div class="trouble-row-icon">${escapeHtml(t.icon)}</div>
+      <div class="trouble-row-info">
+        <p class="trouble-row-name">${escapeHtml(t.name)}</p>
+        <p class="trouble-row-short">${escapeHtml(t.short)}</p>
+      </div>
+      <span class="trouble-row-arrow">›</span>
+    </div>
+  `).join('');
+  list.querySelectorAll('.trouble-row').forEach((el, i) => {
+    el.addEventListener('click', () => openTroubleDetail(TROUBLE_SCENARIOS[i]));
+  });
+}
+
+function renderQuickTasks() {
+  const container = document.getElementById('quickTasks');
+  if (!container) return;
+  let html = '';
+  for (const catId of Object.keys(QUICK_TASK_CATEGORIES)) {
+    const cat = QUICK_TASK_CATEGORIES[catId];
+    const tasks = QUICK_TASKS.filter(t => t.category === catId);
+    if (!tasks.length) continue;
+    html += `<p class="quick-cat-header">${cat.icon} ${escapeHtml(cat.label)}</p>`;
+    html += tasks.map(t => `
+      <div class="quick-task" data-task-page="${t.page}" data-task-name="${escapeHtml(t.name)}">
+        <div class="quick-task-icon">${escapeHtml(t.icon)}</div>
+        <div class="quick-task-info">
+          <p class="quick-task-name">${escapeHtml(t.name)}</p>
+          <p class="quick-task-sub">${escapeHtml(t.subtitle)}</p>
+        </div>
+        <span class="quick-task-page">${t.page}. o.</span>
+      </div>
+    `).join('');
+  }
+  container.innerHTML = html;
+  container.querySelectorAll('.quick-task').forEach(el => {
+    el.addEventListener('click', () => {
+      const page = parseInt(el.dataset.taskPage, 10);
+      // Find the chunk closest to this doc page
+      let best = null;
+      let bestDist = Infinity;
+      for (const c of MANUAL_CHUNKS) {
+        if (c.doc_page == null) continue;
+        const dist = Math.abs(c.doc_page - page);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = c;
+        }
+      }
+      if (best) {
+        // Use the task name as the "query" so it can drive the AI button
+        openManualReader(best, el.dataset.taskName);
+      } else {
+        showToast('Nem találom a kézikönyvben');
+      }
+    });
+  });
+}
+
+function renderChapterList() {
+  const container = document.getElementById('chapterList');
+  if (!container) return;
+
+  if (browseChapter === null) {
+    // Show chapter cards
+    const chapters = [
+      { name: 'Biztonságos motorozás', icon: '🛡️', desc: 'Védőöltözet, biztonsági tudnivalók, kormányzás' },
+      { name: 'Üzemeltetési útmutató', icon: '⚙️', desc: 'Műszerek, kapcsolók, indítás, motorozási módok, DCT' },
+      { name: 'Karbantartás', icon: '🔧', desc: 'Karbantartási terv, lánckenés, olajcsere, beállítások' },
+      { name: 'Hibaelhárítás', icon: '⚠️', desc: 'Visszajelzők, defekt, akkumulátor, biztosítékok' },
+      { name: 'Információ', icon: 'ℹ️', desc: 'Karosszéria-tisztítás, tárolás, regisztrációs szám' },
+      { name: 'Specifikációk', icon: '📐', desc: 'Műszaki adatok, folyadékmennyiségek' },
+    ];
+    container.innerHTML = chapters.map(ch => {
+      const chunks = MANUAL_CHUNKS.filter(c => c.chapter === ch.name);
+      return `<div class="chapter-card" data-chapter="${escapeHtml(ch.name)}">
+        <div class="chapter-card-header">
+          <span class="chapter-card-icon">${ch.icon}</span>
+          <span class="chapter-card-name">${escapeHtml(ch.name)}</span>
+          <span class="chapter-card-pages">${chunks.length} szakasz</span>
+        </div>
+        <p class="chapter-card-desc">${escapeHtml(ch.desc)}</p>
+      </div>`;
+    }).join('');
+    container.querySelectorAll('.chapter-card').forEach(el => {
+      el.addEventListener('click', () => {
+        browseChapter = el.dataset.chapter;
+        renderChapterList();
+      });
+    });
+  } else {
+    // Show chunks list inside the chapter
+    const chunks = MANUAL_CHUNKS.filter(c => c.chapter === browseChapter);
+    let html = `<button class="chunk-back" id="chapterBackBtn">‹ Vissza a fejezetekhez</button>`;
+    html += `<p style="font-size:13px;font-weight:800;color:var(--text);margin:0 0 10px">${escapeHtml(browseChapter)} <span style="color:var(--text-4);font-weight:600;font-size:11px;margin-left:6px">${chunks.length} szakasz</span></p>`;
+    html += chunks.map((c, i) => {
+      const pageLabel = c.doc_page ? `${c.doc_page}. o.` : '';
+      const preview = c.text.substring(0, 140).replace(/\n/g, ' ');
+      return `<div class="manual-result" data-chapter-idx="${i}">
+        <p class="manual-result-title">
+          ${escapeHtml(c.title)}
+          ${pageLabel ? `<span class="manual-result-page">${pageLabel}</span>` : ''}
+        </p>
+        <p class="manual-result-snippet">${escapeHtml(preview)}…</p>
+      </div>`;
+    }).join('');
+    container.innerHTML = html;
+    document.getElementById('chapterBackBtn').addEventListener('click', () => {
+      browseChapter = null;
+      renderChapterList();
+    });
+    container.querySelectorAll('.manual-result').forEach((el, i) => {
+      el.addEventListener('click', () => openManualReader(chunks[i], chunks[i].title));
+    });
+  }
+}
+
+function openWarningDetail(warning) {
+  const aiBox = document.getElementById('manualAiBox');
+  if (aiBox) aiBox.style.display = 'none';
+
+  document.getElementById('manualReaderTitle').textContent = warning.name;
+  document.getElementById('manualReaderPage').textContent = warning.page ? `${warning.page}. o.` : '';
+
+  const sevLabel = { critical: '🚨 Kritikus', warning: '⚠️ Figyelmeztetés', info: 'ℹ️ Információ' }[warning.severity] || warning.severity;
+
+  let html = `<div style="padding:14px">
+    <span class="severity-badge ${escapeHtml(warning.severity)}">${sevLabel}</span>
+    <p style="font-size:14px;font-weight:700;color:var(--text);margin:6px 0 4px;line-height:1.4">${escapeHtml(warning.short)}</p>
+    <p style="font-size:13px;color:var(--text-2);margin:0 0 12px;line-height:1.5">${escapeHtml(warning.description)}</p>
+    <p style="font-size:10px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin:14px 0 8px">📋 Mit tegyél</p>`;
+  for (const a of warning.actions) {
+    html += `<div class="action-step ${escapeHtml(a.type)}">
+      <span class="action-step-icon">${ACTION_ICONS[a.type] || '•'}</span>
+      <span>${escapeHtml(a.text)}</span>
+    </div>`;
+  }
+  if (warning.extra) {
+    html += `<div class="warning-detail-extra">${escapeHtml(warning.extra)}</div>`;
+  }
+  html += `</div>`;
+
+  document.getElementById('manualReaderBody').innerHTML = html;
+
+  // Hide the AI button for warning detail (it's not a chunk-based view)
+  const aiBtn = document.getElementById('manualAiBtn');
+  if (aiBtn) aiBtn.style.display = 'none';
+  const actionsBar = document.querySelector('.manual-reader-actions');
+  if (actionsBar) actionsBar.style.display = 'none';
+
+  document.getElementById('manualReader').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function openTroubleDetail(trouble) {
+  // Same as warning but without severity badge
+  const aiBox = document.getElementById('manualAiBox');
+  if (aiBox) aiBox.style.display = 'none';
+
+  document.getElementById('manualReaderTitle').textContent = trouble.name;
+  document.getElementById('manualReaderPage').textContent = trouble.page ? `${trouble.page}. o.` : '';
+
+  let html = `<div style="padding:14px">
+    <p style="font-size:14px;font-weight:700;color:var(--text);margin:0 0 12px;line-height:1.4">${escapeHtml(trouble.short)}</p>
+    <p style="font-size:10px;font-weight:800;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;margin:0 0 8px">📋 Mit tegyél</p>`;
+  for (const a of trouble.actions) {
+    html += `<div class="action-step ${escapeHtml(a.type)}">
+      <span class="action-step-icon">${ACTION_ICONS[a.type] || '•'}</span>
+      <span>${escapeHtml(a.text)}</span>
+    </div>`;
+  }
+  if (trouble.extra) {
+    html += `<div class="warning-detail-extra">${escapeHtml(trouble.extra)}</div>`;
+  }
+  html += `</div>`;
+
+  document.getElementById('manualReaderBody').innerHTML = html;
+  const aiBtn = document.getElementById('manualAiBtn');
+  if (aiBtn) aiBtn.style.display = 'none';
+  const actionsBar = document.querySelector('.manual-reader-actions');
+  if (actionsBar) actionsBar.style.display = 'none';
+
+  document.getElementById('manualReader').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function switchManualMode(mode) {
+  currentManualMode = mode;
+  document.querySelectorAll('.manual-mode-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  document.querySelectorAll('.manual-mode-panel').forEach(p => {
+    p.classList.toggle('active', p.dataset.modePanel === mode);
+  });
+  // Render the active mode's content
+  if (mode === 'warning') { renderWarningGrid(); renderTroubleList(); }
+  else if (mode === 'tasks') { renderQuickTasks(); }
+  else if (mode === 'browse') { renderChapterList(); }
+  else if (mode === 'search') { renderManual(); document.getElementById('manualSearchInput').focus(); }
+}
+
+// =============================================================
 // MANUAL READER (modal)
 // =============================================================
 function openManualReader(chunk, query) {
@@ -5203,14 +6021,18 @@ function openManualReader(chunk, query) {
   document.getElementById('manualReaderBody').textContent = chunk.text;
   const aiBox = document.getElementById('manualAiBox');
   if (aiBox) aiBox.style.display = 'none';
+  // Re-show the AI button (warning/trouble detail hides it)
   const aiBtn = document.getElementById('manualAiBtn');
+  const actionsBar = document.querySelector('.manual-reader-actions');
   if (aiBtn) {
+    aiBtn.style.display = '';
     const apiKey = localStorage.getItem(API_KEY_STORAGE) || '';
     aiBtn.disabled = !apiKey || !query;
     aiBtn.style.opacity = (!apiKey || !query) ? '0.5' : '1';
     aiBtn.dataset.query = query || '';
     aiBtn.dataset.chunkIdx = MANUAL_CHUNKS.indexOf(MANUAL_CHUNKS.find(c => c.pdf_page === chunk.pdf_page));
   }
+  if (actionsBar) actionsBar.style.display = '';
   document.getElementById('manualReader').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
@@ -5826,7 +6648,13 @@ function addCustomMaintItem() {
 function initManualAndService() {
   loadServiceData();
 
-  // ==== MANUAL ====
+  // ==== MANUAL (V2 — mode-based) ====
+  // Mode tabs (warning / tasks / browse / search)
+  document.querySelectorAll('.manual-mode-tab').forEach(btn => {
+    btn.addEventListener('click', () => switchManualMode(btn.dataset.mode));
+  });
+
+  // Search mode
   const searchInput = document.getElementById('manualSearchInput');
   const searchBtn = document.getElementById('manualSearchBtn');
   if (searchInput) {
@@ -5838,14 +6666,6 @@ function initManualAndService() {
     searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') renderManual(); });
   }
   if (searchBtn) searchBtn.addEventListener('click', renderManual);
-  document.querySelectorAll('#manualChips .manual-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('#manualChips .manual-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      manualFilter = chip.dataset.filter;
-      renderManual();
-    });
-  });
 
   // Reader modal
   document.getElementById('manualReaderBack').addEventListener('click', closeManualReader);
@@ -5912,7 +6732,7 @@ function initManualAndService() {
   });
 
   // Initial render
-  renderManual();
+  switchManualMode('warning');  // Default to warning view (the most useful)
   renderService();
 
   // Wrap renderService to also update the tab badge
@@ -6184,7 +7004,10 @@ function init() {
       if (typeof renderStats === 'function') renderStats();
     }
     if (tabName === 'manual') {
-      if (typeof renderManual === 'function') renderManual();
+      // Re-render the active mode panel
+      if (typeof switchManualMode === 'function') {
+        switchManualMode(currentManualMode || 'warning');
+      }
     }
     if (tabName === 'service') {
       if (typeof renderService === 'function') renderService();
