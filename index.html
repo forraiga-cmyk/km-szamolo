@@ -2042,6 +2042,7 @@ footer {
           <option value="Főépítészi feladatok ellátása">Főépítészi feladatok ellátása</option>
           <option value="Juhhé partneri megbeszélés">Juhhé partneri megbeszélés</option>
           <option value="Építészeti egyeztetés">Építészeti egyeztetés</option>
+          <option value="Honda Márkaszervíz">Honda Márkaszervíz</option>
           <option value="Otthon-Iroda">Otthon-Iroda</option>
         </select>
       </div>
@@ -4418,7 +4419,7 @@ async function buildExcelBuffer() {
   ws.dataValidations.add(`C15:C${lastDataRow}`, {
     type: 'list',
     allowBlank: true,
-    formulae: ['"Főépítészi feladatok ellátása,Juhhé partneri megbeszélés,Építészeti egyeztetés,Otthon-Iroda"'],
+    formulae: ['"Főépítészi feladatok ellátása,Juhhé partneri megbeszélés,Építészeti egyeztetés,Honda Márkaszervíz,Otthon-Iroda"'],
   });
   // D: Felkeresett partner list
   ws.dataValidations.add(`D15:D${lastDataRow}`, {
