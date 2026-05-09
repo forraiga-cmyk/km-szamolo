@@ -1275,6 +1275,103 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 .wx-advice-card[open] .wx-advice-summary { border-bottom: 1px solid var(--border); }
 .wx-advice-body { padding: 10px 12px 12px; }
 
+/* ───────── Tire & riding-style sub-sections (inside .wx-advice-card) ───────── */
+.wx-tire-section {
+  padding: 9px 0; border-bottom: 1px dashed var(--border);
+}
+.wx-tire-section:last-child { border-bottom: none; padding-bottom: 0; }
+.wx-tire-section:first-child { padding-top: 0; }
+.wx-tire-section-label {
+  font-size: 9px; font-weight: 800; color: var(--text-4);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 5px;
+  display: flex; align-items: center; gap: 5px;
+}
+.wx-tire-info-row {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.wx-tire-info-brand {
+  font-size: 13px; font-weight: 700; color: var(--text);
+}
+.wx-tire-info-meta {
+  font-size: 11px; color: var(--text-3);
+}
+.wx-tire-info-sizes {
+  font-family: 'JetBrains Mono', monospace; font-weight: 600;
+  font-size: 11px; color: var(--text-2); margin-top: 3px;
+}
+.wx-tire-info-sizes .axle {
+  color: var(--text-4); font-weight: 500; margin-right: 3px;
+}
+.wx-tire-suit-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.wx-tire-suit-pill {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0; box-shadow: 0 0 6px currentColor;
+}
+.wx-tire-suit-label { font-size: 12px; font-weight: 700; }
+.wx-tire-suit-note {
+  font-size: 11px; color: var(--text-2); line-height: 1.45;
+}
+.wx-tire-asphalt {
+  display: flex; align-items: baseline; gap: 8px;
+}
+.wx-tire-asphalt-num {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800;
+  font-size: 26px; line-height: 1;
+}
+.wx-tire-asphalt-note {
+  font-size: 11px; color: var(--text-3); line-height: 1.45;
+}
+.wx-tire-style-label {
+  font-size: 13px; font-weight: 700; margin-bottom: 4px;
+}
+.wx-tire-style-points {
+  margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.wx-tire-style-points li {
+  font-size: 11px; color: var(--text-2); line-height: 1.45;
+  padding-left: 12px; position: relative;
+}
+.wx-tire-style-points li::before {
+  content: ''; position: absolute; left: 0; top: 6px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: currentColor; opacity: 0.5;
+}
+.wx-tire-pressure-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.wx-tire-pressure-cell {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 9px;
+}
+.wx-tire-pressure-axle {
+  font-size: 9px; font-weight: 800; color: var(--text-4);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.wx-tire-pressure-val {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800;
+  font-size: 16px; color: var(--accent); margin-top: 2px;
+}
+.wx-tire-pressure-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--text-3); margin-top: 1px;
+}
+.wx-tire-pressure-notes {
+  margin-top: 6px; font-size: 10px; color: var(--text-3);
+  line-height: 1.5; padding-left: 0;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.wx-tire-pressure-notes li {
+  list-style: none; padding-left: 12px; position: relative;
+}
+.wx-tire-pressure-notes li::before {
+  content: 'ⓘ'; position: absolute; left: 0; top: 0;
+  color: var(--text-4);
+}
+
 /* Stats */
 .stats-section {
   margin-bottom: 16px;
@@ -3994,6 +4091,207 @@ function wxRecentPrecip(hourly, hoursBack=6) {
   return { sum, recentCode, dryHours };
 }
 
+/* ───────── Honda NC750X DCT 2026 — factory tire data ─────────
+   Forrás: Honda hivatalos 2026 sajtóanyag (hondanews.com, 2026-01-07)
+   és a NC750X DCT kézikönyv guminyomás-matricája. */
+const WX_BIKE = {
+  model: 'Honda NC750X DCT (2026)',
+  tire: {
+    brand: 'Metzeler Tourance Next',
+    type: 'sport-túra (90/10 országút/terep)',
+    front: '120/70 R17',
+    rear:  '160/60 R17',
+  },
+  pressure: {
+    /* Hideg guminyomás Honda gyári spec szerint, szóló és duplázva is */
+    front: { bar: 2.50, psi: 36, kpa: 250 },
+    rear:  { bar: 2.90, psi: 42, kpa: 290 },
+  },
+  /* Sport-túra gumikra általános üzemi tartomány */
+  optimalRange: { airMin: 5, airMax: 35, asphaltMax: 50 },
+};
+
+/* Aszfalt felszíni hőmérséklet becslés.
+   Egyszerű empirikus modell: levegő hőmérséklet + napsugárzás felmelegítés,
+   módosítva felhőzettel, napszakkal és csapadékkal. */
+function wxAsphaltTemp({airT, cloudCover, isDay, hour, weatherCode}) {
+  if (airT == null) return null;
+  const w = wx(weatherCode);
+
+  /* Csapadékos: kis párolgási hűtés */
+  if (['rain','drizzle','storm'].includes(w.icon)) return airT - 1;
+  if (w.icon === 'snow') return Math.min(airT, 0);
+  if (w.icon === 'fog')  return airT;
+
+  /* Éjszaka: kisugárzási hűtés (~3°C alatta) */
+  if (isDay === 0) return airT - 3;
+
+  /* Nappal: napszakkal súlyozott csúcs ~14:00 körül */
+  let timeFactor = 1.0;
+  if (hour != null) {
+    const dist = Math.abs(hour - 14);
+    timeFactor = Math.max(0.1, 1 - (dist * dist) / 50);
+  }
+
+  /* Felhőzet: 0% = teljes nap, 100% = ~15% sugárzás */
+  const cc = cloudCover != null ? cloudCover : 30;
+  const cloudFactor = Math.max(0.15, (100 - cc) / 100);
+
+  /* Maximum +28°C az aszfaltra teljes nap, csúcs nyári napon */
+  return airT + 28 * cloudFactor * timeFactor;
+}
+
+/* Gumi-megfelelőség az aktuális időjárásra.
+   A Tourance Next 90/10 sport-túra adventure gumi — nem téli/terep. */
+function wxTireSuitability({airT, asphaltT, weatherCode, recentDryHours}) {
+  const w = wx(weatherCode);
+  const isRaining = ['rain','drizzle','storm'].includes(w.icon);
+  const isFreezing = [56,57,66,67].includes(weatherCode);
+
+  if (w.icon === 'snow') return {
+    level:'danger', color:'#f87171', label:'Nem alkalmas',
+    note:'A Tourance Next 90/10 országúti gumi — hóban nincs téli kompound és tapadás. Tilos vele indulni.'
+  };
+  if (isFreezing) return {
+    level:'danger', color:'#f87171', label:'Nem alkalmas',
+    note:'Ónos eső: a sport-túra kompound pillanatok alatt elveszti a tapadást a jeges felületen.'
+  };
+  if (airT != null && airT < 0) return {
+    level:'warn', color:'#fb923c', label:'Erősen csökkent tapadás',
+    note:'0°C alatt a szilika-kompound megmerevedik. Az első 15 perc fokozatos vezetéssel kell, hogy a gumi felmelegedjen.'
+  };
+  if (airT != null && airT < 5) return {
+    level:'warn', color:'#fbbf24', label:'Korlátozott — bemelegítés kell',
+    note:'5°C alatt a gumi az üzemi tartomány alsó határán van. Az első 10-15 percben óvatos vezetés ajánlott.'
+  };
+  if (asphaltT != null && asphaltT > 55) return {
+    level:'warn', color:'#fb923c', label:'Forró aszfalt — fokozott kopás',
+    note:'55°C feletti aszfalton a kompound erősen meglágyul. Kerüld a sportos vezetést, erős fékezést, hosszabb teljesgáz-szakaszokat.'
+  };
+  if (asphaltT != null && asphaltT > 45) return {
+    level:'note', color:'#fbbf24', label:'Meleg aszfalt — figyelj',
+    note:'45-55°C aszfalton még megfelelő, de kerüld az erős fékezést és sportos kanyarokat — gyorsabb kopás.'
+  };
+  if (isRaining) return {
+    level:'ok', color:'#34d399', label:'Megfelelő nedves úton',
+    note:'A Tourance Next szilika-keveréke nedvesen kiváló tapadást ad (magas vízkivezetés). Tartsd a 2× követési távolságot.'
+  };
+  if (recentDryHours != null && recentDryHours < 1) return {
+    level:'note', color:'#fbbf24', label:'Friss eső után — olajfilm',
+    note:'Az első 30 perc különösen csúszós (víz + olajfilm). Sima fékezés, fokozatos kanyaróvás.'
+  };
+  return {
+    level:'ok', color:'#34d399', label:'Optimális',
+    note:'Az időjárás a Tourance Next optimális üzemi tartományán belül van. Száraz aszfalton kiváló tapadás.'
+  };
+}
+
+/* Vezetési stílus javaslat aktuális időjárásra. */
+function wxRidingStyle({airT, asphaltT, weatherCode, gust, recentDryHours}) {
+  const w = wx(weatherCode);
+  const isRaining = ['rain','drizzle','storm'].includes(w.icon);
+  const isFreezing = [56,57,66,67].includes(weatherCode);
+
+  if (w.icon === 'snow' || isFreezing) return {
+    level:'danger', color:'#f87171', label:'Ne indulj',
+    points: ['Téli felszerelés és téli gumi szükséges. A Tourance Next nem alkalmas erre az időjárásra.']
+  };
+  if (airT != null && airT < 5) return {
+    level:'warn', color:'#fbbf24', label:'Lassú, fokozatos',
+    points: [
+      'Az első 10-15 perc bemelegítés — kerüld a hirtelen kanyarokat',
+      'Növeld a fékutat 1.5×-ösre — a hideg gumi és aszfalt kombinálva csökkenti a tapadást',
+      'Lágy gyorsítás és fékezés — a gumi még nem érte el az üzemi hőmérsékletet',
+    ]
+  };
+  if (isRaining) return {
+    level:'warn', color:'#fbbf24', label:'Defenzív — esőben',
+    points: [
+      'Sima fékezés — kerüld a hirtelen lassításokat',
+      'Tartsd a 2× követési távolságot',
+      'Kerüld a hirtelen kormánymozdulatokat',
+      'Útburkolati jelek (zebra, terelővonal, felfestés) különösen csúszósak',
+    ]
+  };
+  if (recentDryHours != null && recentDryHours < 1) return {
+    level:'warn', color:'#fbbf24', label:'Óvatos — friss eső után',
+    points: [
+      'Az első 30 perc kritikus: olajfilm + víz keverék',
+      'Sima fékezés és fokozatos kanyaróvás — a tapadás 50%-ára eshet',
+    ]
+  };
+  if (gust != null && gust >= 70) return {
+    level:'warn', color:'#fb923c', label:'Csökkentett tempó — erős szél',
+    points: [
+      `${Math.round(gust)} km/h-s széllökések — kisodródás veszélye`,
+      'Kerüld a magas hidakat és nyitott szakaszokat',
+      'Tartsd a kormányt mindkét kézzel, számíts oldalszél-lökésekre',
+    ]
+  };
+  if (gust != null && gust >= 50) return {
+    level:'note', color:'#fbbf24', label:'Figyelj az oldalszélre',
+    points: [
+      `Mérsékelten erős szél (${Math.round(gust)} km/h lökések)`,
+      'Tartsd a sávközéppontot — szélpercek kissé tolhatnak',
+      'Autópályán és hidakon különösen figyelj',
+    ]
+  };
+  if (airT != null && airT > 35) return {
+    level:'note', color:'#fbbf24', label:'Mérsékelt tempó — hőség',
+    points: [
+      'Extrém hőség: gumi és fékrendszer is megterhelve',
+      'Kerüld a hosszú teljesgáz-szakaszokat',
+      'Sok víz, gyakori pihenő',
+    ]
+  };
+  if (asphaltT != null && asphaltT > 50) return {
+    level:'note', color:'#fbbf24', label:'Mérsékelt — forró aszfalt',
+    points: [
+      `Becsült aszfalt-hőmérséklet ${Math.round(asphaltT)}°C — gumi meglágyul`,
+      'Kerüld az erős fékezést és sportos kanyaróvást',
+    ]
+  };
+  if (airT != null && airT >= 15 && airT <= 28) return {
+    level:'ok', color:'#34d399', label:'Normál → sportos',
+    points: [
+      'Optimális feltételek — sportos vezetés is biztonságos',
+      'Tartsd be a sávhatárokat, követési távolságot, sebességhatárokat',
+    ]
+  };
+  return {
+    level:'ok', color:'#34d399', label:'Normál vezetés',
+    points: ['Standard vezetési stílus megfelelő. Tartsd a sávközéppontot, normál követési távolságot.']
+  };
+}
+
+/* Javasolt guminyomás. A Honda gyári hideg-spec az alapérték.
+   Hideg időben kis figyelmeztetés a kontrakcióról. */
+function wxTirePressure({airT, isWet}) {
+  const notes = [];
+  if (airT != null && airT < 5) {
+    notes.push('Hidegben a hideg-mérés értéke ~0.07 bar-ral csökken minden 10°C-onként. Ha a 20°C feletti spec a cél, fontold meg a +0.1 bar pótlást.');
+  }
+  if (isWet) {
+    notes.push('Nedves időben tartsd a gyári értéket — alacsonyabb nyomás csökkenti a vízkivezetést a profilból.');
+  }
+  if (airT != null && airT > 30) {
+    notes.push('Forró időben mindig hidegen mérd, indulás előtt — a guminyomás üzem közben +0.2-0.4 bar-t emelkedhet, ez normális.');
+  }
+  return { ...WX_BIKE.pressure, notes };
+}
+
+/* Aszfalt-hőmérséklet szín osztály */
+function wxAsphaltColor(t) {
+  if (t == null) return 'var(--text-3)';
+  if (t < 0)  return '#60a5fa';
+  if (t < 10) return '#93c5fd';
+  if (t < 25) return '#34d399';
+  if (t < 40) return '#86efac';
+  if (t < 50) return '#fbbf24';
+  if (t < 60) return '#fb923c';
+  return '#f87171';
+}
+
 function wxHourlyAt(hourly, dateStr, hour) {
   if (!hourly?.time) return null;
   const target = `${dateStr}T${wxPad2(hour)}:00`;
@@ -4007,6 +4305,8 @@ function wxHourlyAt(hourly, dateStr, hour) {
     precip: hourly.precipitation?.[idx],
     wind: hourly.wind_speed_10m?.[idx],
     gust: hourly.wind_gusts_10m?.[idx],
+    cloudCover: hourly.cloud_cover?.[idx],
+    isDay: hourly.is_day?.[idx],
   };
 }
 
@@ -4122,7 +4422,7 @@ async function wxLoadForecast(loc) {
   const p = new URLSearchParams({
     latitude: loc.latitude, longitude: loc.longitude,
     current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,pressure_msl',
-    hourly: 'temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m',
+    hourly: 'temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,cloud_cover,is_day',
     daily: 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,precipitation_sum,precipitation_hours,wind_speed_10m_max,wind_gusts_10m_max,sunrise,sunset,uv_index_max',
     timezone: 'auto', forecast_days: '16', past_days: '1',
   });
@@ -4170,6 +4470,7 @@ const wxState = {
   initialized: false,
   calendarOpen: false,  // collapsible 30-day calendar — closed by default
   adviceOpen: false,    // collapsible motorcycle advice — closed by default
+  tireOpen: false,      // collapsible tire & riding-style box — closed by default
 };
 let wxSearchTimer, wxArrivalSearchTimer;
 
@@ -4545,6 +4846,187 @@ function wxRenderCalendar(days, selectedIdx) {
     </details>`;
 }
 
+/* Tire & riding-style box — collapsible, closed by default.
+   Honda gyári Metzeler Tourance Next-re vonatkozik (2026 NC750X). */
+function wxRenderTireBox(day, dep, recentInfo) {
+  if (!day) return '';
+
+  /* Climatology day — show static tire info only, no per-hour analysis */
+  if (day.source !== 'forecast' || !dep) {
+    return `
+      <details class="wx-advice-card" data-wx-tire ${wxState.tireOpen ? 'open' : ''}>
+        <summary class="wx-advice-summary">
+          <span class="wx-advice-title">
+            🛞 <span>Gumi és vezetési stílus</span>
+          </span>
+          <span class="wx-advice-chevron">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </span>
+        </summary>
+        <div class="wx-advice-body">
+          <div class="wx-tire-section">
+            <div class="wx-tire-section-label">🛞 Gyári gumi (${escapeHtml(WX_BIKE.model)})</div>
+            <div class="wx-tire-info-row">
+              <div class="wx-tire-info-brand">${escapeHtml(WX_BIKE.tire.brand)}</div>
+              <div class="wx-tire-info-meta">${escapeHtml(WX_BIKE.tire.type)}</div>
+              <div class="wx-tire-info-sizes">
+                <span class="axle">első:</span>${escapeHtml(WX_BIKE.tire.front)}
+                <span style="margin:0 6px;color:var(--text-4)">·</span>
+                <span class="axle">hátsó:</span>${escapeHtml(WX_BIKE.tire.rear)}
+              </div>
+            </div>
+          </div>
+          <div class="wx-tire-section">
+            <div class="wx-tire-section-label">💨 Gyári hideg guminyomás</div>
+            <div class="wx-tire-pressure-grid">
+              <div class="wx-tire-pressure-cell">
+                <div class="wx-tire-pressure-axle">Első</div>
+                <div class="wx-tire-pressure-val">${WX_BIKE.pressure.front.bar.toFixed(2)} bar</div>
+                <div class="wx-tire-pressure-sub">${WX_BIKE.pressure.front.psi} psi · ${WX_BIKE.pressure.front.kpa} kPa</div>
+              </div>
+              <div class="wx-tire-pressure-cell">
+                <div class="wx-tire-pressure-axle">Hátsó</div>
+                <div class="wx-tire-pressure-val">${WX_BIKE.pressure.rear.bar.toFixed(2)} bar</div>
+                <div class="wx-tire-pressure-sub">${WX_BIKE.pressure.rear.psi} psi · ${WX_BIKE.pressure.rear.kpa} kPa</div>
+              </div>
+            </div>
+            <div style="margin-top:6px; font-size:10px; color:var(--text-4); line-height:1.5">
+              Hidegen mérd, indulás előtt — Honda gyári érték szóló és duplázva is.
+            </div>
+          </div>
+          <div class="wx-tire-section">
+            <div class="wx-tire-section-label">ℹ️ 16 napon túl</div>
+            <div style="font-size:11px; color:var(--text-3); line-height:1.45">
+              Részletes gumi-megfelelőség, aszfalt-hőmérséklet és vezetési stílus elemzés csak 16 napon belül érhető el (klimatológiai becslésen ez nem értelmes).
+            </div>
+          </div>
+        </div>
+      </details>`;
+  }
+
+  /* Forecast day with per-hour data — full analysis */
+  const hour = new Date(dep.time).getHours();
+  const isWet = ['rain','drizzle','storm'].includes(wx(dep.code).icon);
+
+  const asphaltT = wxAsphaltTemp({
+    airT: dep.temp,
+    cloudCover: dep.cloudCover,
+    isDay: dep.isDay,
+    hour,
+    weatherCode: dep.code,
+  });
+
+  const tireSuit = wxTireSuitability({
+    airT: dep.temp,
+    asphaltT,
+    weatherCode: dep.code,
+    recentDryHours: recentInfo?.dryHours,
+  });
+
+  const ridingStyle = wxRidingStyle({
+    airT: dep.temp,
+    asphaltT,
+    weatherCode: dep.code,
+    gust: dep.gust,
+    recentDryHours: recentInfo?.dryHours,
+  });
+
+  const pressure = wxTirePressure({ airT: dep.temp, isWet });
+  const aColor = wxAsphaltColor(asphaltT);
+
+  /* Asphalt context note (cloud / sun / time / wet) */
+  let asphaltCtx = [];
+  if (dep.cloudCover != null) {
+    asphaltCtx.push(`felhőzet ${Math.round(dep.cloudCover)}%`);
+  }
+  if (dep.isDay === 0) asphaltCtx.push('éjszaka');
+  else if (hour < 8) asphaltCtx.push('reggel');
+  else if (hour >= 12 && hour <= 16) asphaltCtx.push('napsütéses csúcs');
+  else if (hour >= 17) asphaltCtx.push('késő délután');
+  if (isWet) asphaltCtx.push('nedves');
+
+  return `
+    <details class="wx-advice-card" data-wx-tire ${wxState.tireOpen ? 'open' : ''}>
+      <summary class="wx-advice-summary">
+        <span class="wx-advice-title">
+          🛞 <span>Gumi és vezetési stílus</span>
+          <span class="wx-advice-hint">· ${escapeHtml(WX_BIKE.tire.brand)}</span>
+        </span>
+        <span class="wx-advice-chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </summary>
+      <div class="wx-advice-body">
+
+        <div class="wx-tire-section">
+          <div class="wx-tire-section-label">🛞 Gyári gumi (${escapeHtml(WX_BIKE.model)})</div>
+          <div class="wx-tire-info-row">
+            <div class="wx-tire-info-brand">${escapeHtml(WX_BIKE.tire.brand)}</div>
+            <div class="wx-tire-info-meta">${escapeHtml(WX_BIKE.tire.type)}</div>
+            <div class="wx-tire-info-sizes">
+              <span class="axle">első:</span>${escapeHtml(WX_BIKE.tire.front)}
+              <span style="margin:0 6px;color:var(--text-4)">·</span>
+              <span class="axle">hátsó:</span>${escapeHtml(WX_BIKE.tire.rear)}
+            </div>
+          </div>
+        </div>
+
+        <div class="wx-tire-section">
+          <div class="wx-tire-section-label">✓ Megfelelőség az időjárásra</div>
+          <div class="wx-tire-suit-row">
+            <span class="wx-tire-suit-pill" style="background:${tireSuit.color}; color:${tireSuit.color}"></span>
+            <span class="wx-tire-suit-label" style="color:${tireSuit.color}">${escapeHtml(tireSuit.label)}</span>
+          </div>
+          <div class="wx-tire-suit-note">${escapeHtml(tireSuit.note)}</div>
+        </div>
+
+        <div class="wx-tire-section">
+          <div class="wx-tire-section-label">🌡️ Aszfalt hőmérséklet (becsült)</div>
+          <div class="wx-tire-asphalt">
+            <span class="wx-tire-asphalt-num" style="color:${aColor}">${wxRound(asphaltT)}°C</span>
+            <span class="wx-tire-asphalt-note">
+              levegő ${wxRound(dep.temp)}°C${asphaltCtx.length ? ' · '+asphaltCtx.join(' · ') : ''}
+            </span>
+          </div>
+        </div>
+
+        <div class="wx-tire-section">
+          <div class="wx-tire-section-label">🏍️ Javasolt vezetési stílus</div>
+          <div class="wx-tire-style-label" style="color:${ridingStyle.color}">${escapeHtml(ridingStyle.label)}</div>
+          <ul class="wx-tire-style-points" style="color:${ridingStyle.color}">
+            ${ridingStyle.points.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="wx-tire-section">
+          <div class="wx-tire-section-label">💨 Javasolt guminyomás (hideg)</div>
+          <div class="wx-tire-pressure-grid">
+            <div class="wx-tire-pressure-cell">
+              <div class="wx-tire-pressure-axle">Első</div>
+              <div class="wx-tire-pressure-val">${pressure.front.bar.toFixed(2)} bar</div>
+              <div class="wx-tire-pressure-sub">${pressure.front.psi} psi · ${pressure.front.kpa} kPa</div>
+            </div>
+            <div class="wx-tire-pressure-cell">
+              <div class="wx-tire-pressure-axle">Hátsó</div>
+              <div class="wx-tire-pressure-val">${pressure.rear.bar.toFixed(2)} bar</div>
+              <div class="wx-tire-pressure-sub">${pressure.rear.psi} psi · ${pressure.rear.kpa} kPa</div>
+            </div>
+          </div>
+          ${pressure.notes && pressure.notes.length ? `
+            <ul class="wx-tire-pressure-notes">
+              ${pressure.notes.map(n => `<li>${escapeHtml(n)}</li>`).join('')}
+            </ul>
+          ` : `
+            <div style="margin-top:6px; font-size:10px; color:var(--text-4); line-height:1.5">
+              Hidegen mérd, indulás előtt. Honda gyári érték — szóló és duplázva is megegyezik.
+            </div>
+          `}
+        </div>
+
+      </div>
+    </details>`;
+}
+
 function wxRenderDayDetail(day, hourly, recentInfo, departureHour) {
   const w = wx(day.code);
   const cc = wxConfColor(day.confidence);
@@ -4659,7 +5141,8 @@ function wxRenderDayDetail(day, hourly, recentInfo, departureHour) {
         <div class="wx-departure-hint">Kattints egy órára — a tanácsadó azt számolja</div>
         ${depSummaryHtml}
       </div>
-      ${adviceHtml}`;
+      ${adviceHtml}
+      ${wxRenderTireBox(day, dep, recentInfo)}`;
   }
 
   const climateNote = day.source==='climatology' ? `
@@ -4743,6 +5226,8 @@ function wxRender() {
         code: H.weather_code[i], pop: H.precipitation_probability[i],
         precip: H.precipitation[i], wind: H.wind_speed_10m[i],
         gust: H.wind_gusts_10m[i],
+        cloudCover: H.cloud_cover?.[i],
+        isDay: H.is_day?.[i],
       });
     }
   }
@@ -4783,6 +5268,14 @@ function wxRender() {
   if (adviceCard) {
     adviceCard.addEventListener('toggle', () => {
       wxState.adviceOpen = adviceCard.open;
+    });
+  }
+
+  /* Track collapse state for the tire & riding-style section */
+  const tireCard = list.querySelector('[data-wx-tire]');
+  if (tireCard) {
+    tireCard.addEventListener('toggle', () => {
+      wxState.tireOpen = tireCard.open;
     });
   }
 
