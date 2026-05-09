@@ -1372,6 +1372,50 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   color: var(--text-4);
 }
 
+/* ───── Trip datetime picker (in Kiindulópont card, first row) ───── */
+.wx-trip-time-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; margin-bottom: 6px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 11px;
+}
+.wx-trip-time-icon {
+  font-size: 16px; flex-shrink: 0;
+}
+.wx-trip-time-input {
+  flex: 1; min-width: 0;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px;
+  color: var(--text); font-size: 16px;
+  font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  -webkit-appearance: none; appearance: none;
+}
+.wx-trip-time-input:focus {
+  border-color: var(--accent); outline: none;
+}
+.wx-trip-time-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
+}
+.wx-trip-time-now-btn {
+  flex-shrink: 0;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px;
+  color: var(--text-2); font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s ease;
+}
+.wx-trip-time-now-btn:hover, .wx-trip-time-now-btn:active {
+  color: var(--accent); border-color: var(--accent);
+  background: rgba(251,191,36,0.08);
+}
+.wx-trip-time-hint {
+  font-size: 10px; color: var(--text-4);
+  margin: 0 0 14px; padding: 0 4px;
+  line-height: 1.4;
+}
+.wx-trip-time-hint strong { color: var(--accent); font-weight: 700; }
+.wx-trip-time-hint.future { color: var(--accent); }
+
 /* Stats */
 .stats-section {
   margin-bottom: 16px;
@@ -2453,6 +2497,12 @@ footer {
     <span>Kiindulópont</span>
     <button id="refreshGps" class="rm-btn" title="GPS frissítés" style="background:transparent;color:var(--text-3);width:auto;height:auto;font-size:12px;padding:4px 8px;border-radius:6px">🔄</button>
   </p>
+  <div class="wx-trip-time-row">
+    <span class="wx-trip-time-icon">📅</span>
+    <input type="datetime-local" id="wxTripDT" class="wx-trip-time-input" step="3600">
+    <button id="wxTripDTNow" class="wx-trip-time-now-btn" type="button" title="Vissza az aktuális időre">Most</button>
+  </div>
+  <div class="wx-trip-time-hint" id="wxTripDTHint">Tervezett indulási időpont — minden számítás ehhez igazodik</div>
   <div class="gps-status">
     <div class="gps-icon-wrap loading" id="gpsIcon">📍</div>
     <div class="gps-info">
@@ -2531,6 +2581,9 @@ footer {
     <strong>Waze:</strong> azonnali navigáció a <em>következő</em> partnerhez (élő forgalom).
   </p>
 </section>
+
+<!-- Tire & riding-style box (mirrors the weather tab — current conditions, current location) -->
+<div id="routeTireBox"></div>
 </div>
 
 <!-- WEATHER -->
@@ -4471,8 +4524,118 @@ const wxState = {
   calendarOpen: false,  // collapsible 30-day calendar — closed by default
   adviceOpen: false,    // collapsible motorcycle advice — closed by default
   tireOpen: false,      // collapsible tire & riding-style box — closed by default
+  tripDateTime: null,   // ISO local datetime string for planned trip; null = "now"
 };
+const WX_TRIP_DT_KEY = 'kmszamolo:wx_trip_dt:v1';
 let wxSearchTimer, wxArrivalSearchTimer;
+
+/* ───── Trip datetime helpers (planned departure: year, month, day, hour) ─────
+   Single source of truth for: which day in the 30-day list, which hour,
+   what to show in the trip card, tire box, route map's tire mirror, etc.
+   Saved to localStorage; reset to "now" if the saved value is in the past. */
+
+function wxNowRounded() {
+  const now = new Date();
+  let h = now.getHours();
+  if (now.getMinutes() >= 30) h = Math.min(23, h + 1);
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, 0, 0, 0);
+}
+
+/* Format a Date object to the value `<input type="datetime-local">` expects. */
+function wxFormatLocalDT(date) {
+  return `${date.getFullYear()}-${wxPad2(date.getMonth()+1)}-${wxPad2(date.getDate())}T${wxPad2(date.getHours())}:00`;
+}
+
+/* Parse the input's value (local datetime, no timezone) to a Date. */
+function wxParseLocalDT(s) {
+  if (!s) return null;
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!m) return null;
+  return new Date(+m[1], +m[2]-1, +m[3], +m[4], +m[5], 0, 0);
+}
+
+function wxLoadTripDT() {
+  try {
+    const v = localStorage.getItem(WX_TRIP_DT_KEY);
+    if (!v) return null;
+    const dt = wxParseLocalDT(v);
+    if (!dt || isNaN(dt.getTime())) return null;
+    /* Discard if more than 1 hour in the past */
+    if (dt.getTime() < Date.now() - 60 * 60 * 1000) return null;
+    return v;
+  } catch { return null; }
+}
+
+function wxSaveTripDT(iso) {
+  try {
+    if (iso) localStorage.setItem(WX_TRIP_DT_KEY, iso);
+    else     localStorage.removeItem(WX_TRIP_DT_KEY);
+  } catch {}
+}
+
+/* The effective planned datetime: saved value if valid, else "now". */
+function wxGetEffectiveDT() {
+  if (wxState.tripDateTime) {
+    const dt = wxParseLocalDT(wxState.tripDateTime);
+    if (dt && !isNaN(dt.getTime()) && dt.getTime() >= Date.now() - 60*60*1000) return dt;
+  }
+  return wxNowRounded();
+}
+
+/* Convert the effective datetime to the day-index in our 30-day list. */
+function wxDTtoDayIdx(dt) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(dt); target.setHours(0,0,0,0);
+  return Math.max(0, Math.min(29, Math.round((target - today) / 86400000)));
+}
+
+/* Apply a new trip datetime to state. Updates selectedIdx + departureHour,
+   persists, syncs the input UI, and re-renders everything. */
+function wxApplyTripDT(iso, opts) {
+  opts = opts || {};
+  wxState.tripDateTime = iso;
+  if (opts.save !== false) wxSaveTripDT(iso);
+  const dt = wxGetEffectiveDT();
+  wxState.selectedIdx = wxDTtoDayIdx(dt);
+  wxState.departureHour = dt.getHours();
+  wxUpdateTripDTInput();
+  wxRender();
+}
+
+/* Sync the visible <input> with current wxState.tripDateTime (or "now").
+   Also updates the hint text (e.g. "ma 14:00", "3 nap múlva 09:00"). */
+function wxUpdateTripDTInput() {
+  const input = document.getElementById('wxTripDT');
+  if (input) {
+    const dt = wxGetEffectiveDT();
+    input.value = wxFormatLocalDT(dt);
+    /* Allow the entire current day even if some hours have passed, plus 30 days ahead */
+    const minDate = new Date();
+    minDate.setHours(0, 0, 0, 0);
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    maxDate.setHours(23, 0, 0, 0);
+    input.min = wxFormatLocalDT(minDate);
+    input.max = wxFormatLocalDT(maxDate);
+  }
+  const hint = document.getElementById('wxTripDTHint');
+  if (hint) {
+    const dt = wxGetEffectiveDT();
+    const dayIdx = wxDTtoDayIdx(dt);
+    const isCustom = !!wxState.tripDateTime;
+    const dayLabel = dayIdx === 0 ? 'ma'
+                   : dayIdx === 1 ? 'holnap'
+                   : `${dayIdx} nap múlva`;
+    const timeStr = `${wxPad2(dt.getHours())}:${wxPad2(dt.getMinutes())}`;
+    if (isCustom) {
+      hint.classList.add('future');
+      hint.innerHTML = `<strong>Tervezett indulás: ${dayLabel} · ${timeStr}</strong> — minden számítás ehhez igazodik`;
+    } else {
+      hint.classList.remove('future');
+      hint.textContent = `Most (${dayLabel} · ${timeStr}) — minden számítás ehhez igazodik`;
+    }
+  }
+}
 
 /* Build 30-day data array from forecast + climate */
 function wxBuildDays() {
@@ -5027,6 +5190,42 @@ function wxRenderTireBox(day, dep, recentInfo) {
     </details>`;
 }
 
+/* Render the same tire box on the Map tab — uses the SAME planned trip
+   datetime as everything else (selectedIdx + departureHour). */
+function wxRenderRouteTireBox() {
+  const container = document.getElementById('routeTireBox');
+  if (!container) return;
+
+  /* No data yet → keep empty */
+  if (!wxState.location || !wxState.forecast) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const days = wxBuildDays();
+  const day = days[wxState.selectedIdx] || days[0];
+  if (!day) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let dep = null;
+  if (day.source === 'forecast' && wxState.departureHour != null) {
+    dep = wxHourlyAt(wxState.forecast.hourly, day.dateStr, wxState.departureHour);
+  }
+
+  const recentInfo = wxRecentPrecip(wxState.forecast.hourly, 6);
+  container.innerHTML = wxRenderTireBox(day, dep, recentInfo);
+
+  /* Wire toggle for this instance */
+  const tireCard = container.querySelector('[data-wx-tire]');
+  if (tireCard) {
+    tireCard.addEventListener('toggle', () => {
+      wxState.tireOpen = tireCard.open;
+    });
+  }
+}
+
 function wxRenderDayDetail(day, hourly, recentInfo, departureHour) {
   const w = wx(day.code);
   const cc = wxConfColor(day.confidence);
@@ -5279,29 +5478,46 @@ function wxRender() {
     });
   }
 
-  /* Wire calendar tile clicks */
+  /* Wire calendar tile clicks → update planned trip datetime */
   list.querySelectorAll('.wx-cal-tile').forEach(btn => {
     btn.addEventListener('click', () => {
       const i = parseInt(btn.dataset.idx, 10);
-      wxState.selectedIdx = i;
-      const d = wxBuildDays()[i];
-      wxState.departureHour = d?.source === 'forecast' ? wxDefaultHour(d.daysAhead) : null;
-      /* Keep calendar in its current open/closed state */
-      wxRender();
+      const days = wxBuildDays();
+      const d = days[i];
+      if (!d) return;
+      if (d.source === 'forecast') {
+        const newHour = wxDefaultHour(d.daysAhead);
+        const dt = new Date(d.date.getFullYear(), d.date.getMonth(), d.date.getDate(), newHour, 0);
+        wxApplyTripDT(wxFormatLocalDT(dt));
+      } else {
+        /* Climatology day — set selectedIdx but don't persist a tripDateTime */
+        wxState.selectedIdx = i;
+        wxState.departureHour = null;
+        wxRender();
+      }
       const detail = list.querySelector('[data-wx-detail]');
       if (detail) detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 
-  /* Wire hour-cell clicks */
+  /* Wire hour-cell clicks → update planned trip datetime */
   list.querySelectorAll('.wx-hour-cell.selectable').forEach(cell => {
     cell.addEventListener('click', () => {
-      wxState.departureHour = parseInt(cell.dataset.hour, 10);
-      wxRender();
+      const newHour = parseInt(cell.dataset.hour, 10);
+      const days = wxBuildDays();
+      const d = days[wxState.selectedIdx];
+      if (d) {
+        const dt = new Date(d.date.getFullYear(), d.date.getMonth(), d.date.getDate(), newHour, 0);
+        wxApplyTripDT(wxFormatLocalDT(dt));
+      }
       const sel = list.querySelector('.wx-hour-cell.selected');
       if (sel) sel.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     });
   });
+
+  /* Mirror tire box onto the Map tab, and keep the Kiindulópont datetime input in sync */
+  wxRenderRouteTireBox();
+  wxUpdateTripDTInput();
 }
 
 /* ───── Search dropdown for main location (rendered into #wxDropdown) ───── */
@@ -5386,8 +5602,10 @@ async function wxPickLocation(loc) {
   const input = document.getElementById('wxSearchInput');
   if (input) input.value = wxState.query;
   wxState.showDropdown = false;
-  wxState.selectedIdx = 0;
-  wxState.departureHour = null;
+  /* Keep the user's planned trip datetime — derive selectedIdx + departureHour from it */
+  const dt0 = wxGetEffectiveDT();
+  wxState.selectedIdx = wxDTtoDayIdx(dt0);
+  wxState.departureHour = dt0.getHours();
   wxState.arrival = null;
   wxState.arrivalQuery = '';
   wxState.arrivalResults = [];
@@ -5447,9 +5665,40 @@ function wxClearSearch() {
 }
 
 function wxInit() {
-  /* Host integration: data comes from Route tab.
-     There's no search input to wire — wxRender will display whatever is in
-     currentLocation / stops at sync time. */
+  /* Trip datetime: load saved value, derive selectedIdx + departureHour. */
+  wxState.tripDateTime = wxLoadTripDT();
+  const dt0 = wxGetEffectiveDT();
+  wxState.selectedIdx = wxDTtoDayIdx(dt0);
+  wxState.departureHour = dt0.getHours();
+
+  const input = document.getElementById('wxTripDT');
+  if (input) {
+    input.addEventListener('change', () => {
+      if (input.value) {
+        /* Validate: not more than 30 days ahead */
+        const dt = wxParseLocalDT(input.value);
+        if (dt) {
+          const max = new Date(); max.setDate(max.getDate() + 30);
+          if (dt.getTime() > max.getTime()) {
+            wxApplyTripDT(wxFormatLocalDT(max));
+            return;
+          }
+        }
+        wxApplyTripDT(input.value);
+      } else {
+        /* Cleared → "now" mode */
+        wxApplyTripDT(null);
+      }
+    });
+  }
+  const nowBtn = document.getElementById('wxTripDTNow');
+  if (nowBtn) {
+    nowBtn.addEventListener('click', () => {
+      wxApplyTripDT(null);
+    });
+  }
+  /* Set initial input value */
+  wxUpdateTripDTInput();
 }
 
 /* ───── Host integration: pull origin & destination from Route tab state ───── */
@@ -5527,8 +5776,10 @@ async function wxSyncFromRoute() {
     wxState.location = origin;
     wxState.forecast = null;
     wxState.climate = null;
-    wxState.selectedIdx = 0;
-    wxState.departureHour = null;
+    /* Keep the user's planned trip datetime — derive selectedIdx + departureHour from it */
+    const dt0 = wxGetEffectiveDT();
+    wxState.selectedIdx = wxDTtoDayIdx(dt0);
+    wxState.departureHour = dt0.getHours();
     wxState.loading = true;
     wxState.error = null;
     wxRender();
@@ -5592,7 +5843,12 @@ async function updateWeather() {
 }
 
 function loadWeatherCache() {
-  /* No-op kept for host compatibility — host's init() calls this on app start. */
+  /* Called by host's init() on app start. Wire the trip-datetime input
+     listeners now so they work regardless of which tab the user opens first. */
+  if (!wxState.initialized) {
+    wxInit();
+    wxState.initialized = true;
+  }
 }
 
 
