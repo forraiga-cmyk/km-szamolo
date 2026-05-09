@@ -713,129 +713,567 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   font-size: 14px;
 }
 
-/* Weather */
+/* =================================================================
+   Weather forecast (motorcycle planner) — themed to host
+   ================================================================= */
 .weather-empty {
-  text-align: center;
-  color: var(--text-4);
-  font-style: italic;
-  padding: 16px 8px;
-  margin: 0;
-  font-size: 12px;
+  text-align: center; color: var(--text-4); font-style: italic;
+  padding: 16px 8px; margin: 0; font-size: 12px;
 }
 .weather-loading {
-  text-align: center;
-  color: var(--text-3);
-  padding: 12px 8px;
-  margin: 0;
-  font-size: 12px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  color: var(--text-3); padding: 14px 8px; margin: 0; font-size: 12px;
 }
-.weather-card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 11px;
-  padding: 11px 12px;
+.weather-loading svg { animation: wx-spin 1s linear infinite; }
+@keyframes wx-spin { to { transform: rotate(360deg); } }
+.wx-error {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 10px 12px; border-radius: 10px;
+  background: rgba(239,68,68,0.10);
+  border: 1px solid rgba(239,68,68,0.30);
+  color: #fecaca; font-size: 12px; line-height: 1.4;
+}
+
+/* Search input + dropdown */
+.wx-search-wrap { position: relative; }
+.wx-search-icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-3); pointer-events: none;
+}
+.wx-search-input {
+  padding-left: 40px; padding-right: 38px;
+}
+.wx-search-clear {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-3); padding: 4px;
+}
+.wx-search-clear:hover { color: var(--text); }
+.wx-dropdown {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 50;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; max-height: 280px; overflow-y: auto;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+.wx-dd-item {
+  width: 100%; padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+  text-align: left; border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+.wx-dd-item:last-child { border-bottom: none; }
+.wx-dd-item:hover { background: var(--surface-2); }
+.wx-dd-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.wx-dd-sub  { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+
+/* Current weather hero */
+.wx-current { display: flex; align-items: flex-start; gap: 14px; }
+.wx-current-icon {
+  width: 56px; height: 56px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-soft); border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 12px; color: var(--accent);
+}
+.wx-current-info { flex: 1; min-width: 0; }
+.wx-current-loc {
+  font-size: 11px; font-weight: 700; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px;
+  display: flex; align-items: center; gap: 4px;
+}
+.wx-current-temp {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800;
+  font-size: 40px; line-height: 1; letter-spacing: -0.04em; color: var(--text);
+}
+.wx-current-temp sup { font-size: 18px; color: var(--text-3); vertical-align: top; }
+.wx-current-label { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.wx-current-feel { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.wx-stat-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  margin-top: 12px;
+}
+.wx-stat {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 10px;
+}
+.wx-stat-lbl {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-4); font-weight: 800;
+  display: flex; align-items: center; gap: 4px; margin-bottom: 2px;
+}
+.wx-stat-val {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  font-size: 13px; color: var(--text);
+}
+.wx-stat-sub { font-size: 9px; color: var(--text-3); margin-top: 1px; }
+
+/* Section heading */
+.wx-section-title {
+  font-size: 10px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-3); margin: 0 0 8px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+/* 30-day calendar grid */
+.wx-calendar { padding: 4px; }
+.wx-cal-head, .wx-cal-grid {
+  display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 4px;
+}
+.wx-cal-head { margin-bottom: 6px; }
+.wx-cal-day-label {
+  text-align: center; font-size: 9px; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--text-4); font-weight: 800;
+}
+.wx-cal-tile {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 9px; padding: 5px 3px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-height: 76px; cursor: pointer; transition: all 0.12s ease;
+}
+.wx-cal-tile:hover { border-color: var(--border-2); }
+.wx-cal-tile.selected {
+  background: var(--accent-soft); border-color: var(--accent);
+}
+.wx-cal-day  { font-size: 9px; color: var(--text-4); font-weight: 700; line-height: 1; }
+.wx-cal-num  { font-family: 'JetBrains Mono', monospace; font-weight: 700;
+               font-size: 14px; color: var(--text); line-height: 1; }
+.wx-cal-icon { color: var(--text-2); height: 18px; }
+.wx-cal-tile.selected .wx-cal-icon { color: var(--accent); }
+.wx-cal-temp { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-2); }
+.wx-cal-temp .lo { color: var(--text-4); }
+.wx-cal-precip { font-family: 'JetBrains Mono', monospace; font-size: 8px; color: var(--info); line-height: 1; }
+.wx-cal-conf {
+  display: flex; align-items: center; gap: 2px;
+  font-family: 'JetBrains Mono', monospace; font-size: 8px;
+}
+.wx-conf-dot { width: 4px; height: 4px; border-radius: 50%; }
+
+/* Day detail card */
+.wx-detail-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.wx-detail-day-name {
+  font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 2px;
+}
+.wx-detail-day-eyebrow {
+  font-size: 9px; font-weight: 800; color: var(--text-4);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.wx-detail-date { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.wx-conf-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 10px; min-width: 140px;
+}
+.wx-conf-eyebrow {
+  font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-4); font-weight: 800; margin-bottom: 3px;
+}
+.wx-conf-row { display: flex; align-items: baseline; gap: 6px; }
+.wx-conf-num { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 18px; }
+.wx-conf-label { font-size: 10px; color: var(--text-2); }
+.wx-conf-bar {
+  height: 4px; background: var(--surface-2); border-radius: 999px;
+  overflow: hidden; margin-top: 5px;
+}
+.wx-conf-fill { height: 100%; border-radius: 999px; transition: width 0.5s ease; }
+.wx-conf-source { font-size: 9px; color: var(--text-4); margin-top: 4px; }
+
+/* Warnings */
+.wx-warnings { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.wx-warning {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 10px; border-radius: 9px; font-size: 11px; line-height: 1.4;
+  background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25);
+  color: #fde68a;
+}
+.wx-warning.major {
+  background: rgba(239,68,68,0.10); border-color: rgba(239,68,68,0.30);
+  color: #fecaca;
+}
+.wx-warning svg { flex-shrink: 0; margin-top: 1px; }
+
+/* Departure planner */
+.wx-departure {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 12px; margin-bottom: 12px;
+}
+.wx-departure-head {
+  display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 8px;
 }
-.weather-card:last-child { margin-bottom: 0; }
-.weather-card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 8px; margin-bottom: 8px;
+.wx-departure-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-4); font-weight: 800; display: flex; align-items: center; gap: 5px;
 }
-.weather-card-name {
-  font-weight: 700; font-size: 12px;
-  color: var(--text);
-  flex: 1;
+.wx-departure-time {
+  font-family: 'JetBrains Mono', monospace; font-weight: 800;
+  font-size: 16px; color: var(--accent);
 }
-.weather-card-name .label-prefix {
-  display: inline-block;
-  font-size: 9px;
-  color: var(--text-4);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-right: 5px;
+.wx-hour-strip {
+  display: flex; gap: 4px; overflow-x: auto;
+  padding-bottom: 4px; -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
-.weather-time-section {
+.wx-hour-strip::-webkit-scrollbar { height: 4px; }
+.wx-hour-strip::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 999px; }
+.wx-hour-cell {
+  flex: 0 0 auto; min-width: 52px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9px; padding: 6px 4px;
+  cursor: pointer; transition: all 0.12s ease;
+}
+.wx-hour-cell:hover { border-color: var(--border-2); }
+.wx-hour-cell.selected {
+  background: var(--accent-soft); border-color: var(--accent);
+}
+.wx-hour-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-3); font-weight: 700; }
+.wx-hour-cell.selected .wx-hour-time { color: var(--accent); }
+.wx-hour-icon { color: var(--text-2); height: 18px; }
+.wx-hour-cell.selected .wx-hour-icon { color: var(--accent); }
+.wx-hour-temp { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text); }
+.wx-hour-pop { font-family: 'JetBrains Mono', monospace; font-size: 8px; color: var(--info); }
+.wx-departure-hint { font-size: 10px; color: var(--text-4); margin-top: 6px; }
+
+/* Departure summary block */
+.wx-dep-summary {
+  margin-top: 10px; padding-top: 10px;
   border-top: 1px dashed var(--border);
-  padding-top: 8px;
-  margin-top: 8px;
 }
-.weather-time-section:first-of-type {
-  border-top: none;
-  padding-top: 0;
-  margin-top: 0;
+.wx-dep-summary-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.wx-dep-summary-icon { color: var(--accent); flex-shrink: 0; }
+.wx-dep-summary-text { flex: 1; min-width: 0; }
+.wx-dep-summary-label { font-size: 13px; font-weight: 700; color: var(--text); }
+.wx-dep-summary-temp { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-3); }
+
+/* Route planner card */
+.wx-route { /* uses .card class */ }
+.wx-route-info {
+  display: flex; flex-wrap: wrap; gap: 6px 10px;
+  align-items: baseline; padding: 8px 0;
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
+  margin: 8px 0;
 }
-.weather-time-label {
-  font-size: 9px; font-weight: 800;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--text-4);
-  margin-bottom: 6px;
-  display: flex; align-items: center; gap: 6px;
+.wx-route-from-to {
+  font-weight: 700; font-size: 13px; color: var(--text);
+  display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;
 }
-.weather-time-label .time-val {
-  font-family: 'JetBrains Mono', monospace;
-  color: var(--accent);
-  font-size: 10px;
+.wx-route-arrow { color: var(--text-3); }
+.wx-route-meta {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-2);
 }
-.weather-card-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 12px;
-  font-size: 12px;
+.wx-route-meta .num { color: var(--text); font-weight: 700; }
+.wx-route-source-tag {
+  font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em;
+  font-weight: 800; padding: 2px 6px; border-radius: 4px;
+  background: var(--surface-2); color: var(--text-3);
 }
-.weather-stat {
-  display: flex; align-items: center;
-  gap: 5px;
+
+.wx-route-endpoints {
+  display: grid; grid-template-columns: 1fr; gap: 8px;
+  margin-bottom: 10px;
 }
-.weather-stat .icon {
-  font-size: 14px;
-  width: 18px;
-  text-align: center;
+.wx-route-endpoint {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
 }
-.weather-stat .val {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
-  color: var(--text);
+.wx-route-ep-eyebrow {
+  font-size: 9px; font-weight: 800; color: var(--text-4);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px;
 }
-.weather-stat .unit {
-  color: var(--text-3);
-  font-size: 10px;
-  font-weight: 500;
+.wx-route-ep-name {
+  font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.weather-rideability {
-  margin-top: 8px;
-  padding: 7px 10px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex; align-items: center; gap: 6px;
-  border: 1px solid transparent;
+.wx-route-ep-summary { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+.wx-route-ep-icon { color: var(--accent); flex-shrink: 0; }
+.wx-route-ep-temp { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 22px; color: var(--text); line-height: 1; }
+.wx-route-ep-label { font-size: 11px; color: var(--text-2); }
+.wx-route-ep-stats { font-size: 10px; color: var(--text-3); line-height: 1.5; }
+.wx-route-ep-stats span { color: var(--text-2); font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+.wx-verdict {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
 }
-.weather-rideability.ok {
-  background: rgba(58,189,140,0.12);
+.wx-verdict-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.wx-verdict-pill {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+.wx-verdict-label { font-size: 13px; font-weight: 700; flex: 1; }
+.wx-verdict-points { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.wx-verdict-points li {
+  font-size: 11px; color: var(--text-2); line-height: 1.45;
+  padding-left: 12px; position: relative;
+}
+.wx-verdict-points li::before {
+  content: ''; position: absolute; left: 0; top: 6px;
+  width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.5;
+}
+
+/* Gear stack */
+.wx-gear {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+  margin: 8px 0 4px;
+}
+.wx-gear-pill {
+  font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 999px;
+  background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.35);
   color: var(--success);
-  border-color: rgba(58,189,140,0.3);
 }
-.weather-rideability.warn {
-  background: rgba(251,191,36,0.10);
+.wx-gear-pill.warn {
+  background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.35);
   color: var(--accent);
-  border-color: rgba(251,191,36,0.3);
 }
-.weather-rideability.bad {
-  background: rgba(239,68,68,0.10);
+.wx-gear-pill.cancel {
+  background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.35);
   color: var(--danger);
-  border-color: rgba(239,68,68,0.3);
 }
-.weather-warning {
-  margin-top: 6px;
-  padding: 6px 9px;
-  background: rgba(239,68,68,0.10);
-  border-left: 3px solid var(--danger);
-  border-radius: 4px;
-  font-size: 11px;
-  color: var(--text-2);
-  line-height: 1.4;
+.wx-gear-plus { color: var(--text-4); font-size: 11px; }
+.wx-gear-explain { font-size: 10px; color: var(--text-4); margin-top: 4px; line-height: 1.4; }
+
+/* Speed comparison cards */
+.wx-speed-grid {
+  display: grid; grid-template-columns: 1fr; gap: 8px;
+  margin: 10px 0 6px;
 }
+.wx-speed-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px;
+  border-left-width: 3px;
+}
+.wx-speed-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; }
+.wx-speed-num { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 22px; line-height: 1; }
+.wx-speed-unit { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); font-weight: 800; }
+.wx-speed-tag { font-size: 8px; text-transform: uppercase; letter-spacing: 0.10em; color: var(--text-4); margin-left: auto; font-weight: 800; }
+.wx-speed-verdict { font-size: 12px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+.wx-speed-card .wx-gear { margin: 5px 0 6px; }
+.wx-speed-felt {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 10px; color: var(--text-3);
+  padding-top: 6px; border-top: 1px dashed var(--border);
+}
+.wx-speed-felt-num { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px; }
+
+/* Detail cells (precip etc.) */
+.wx-detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  margin-top: 10px;
+}
+.wx-detail-cell {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 9px; padding: 7px 9px;
+}
+.wx-detail-cell.precip-hl {
+  background: rgba(96,165,250,0.06); border-color: rgba(96,165,250,0.25);
+}
+.wx-detail-cell-lbl {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-4); font-weight: 800; margin-bottom: 2px;
+  display: flex; align-items: center; gap: 4px;
+}
+.wx-detail-cell-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 12px; color: var(--text); }
+.wx-detail-cell.precip-hl .wx-detail-cell-val { color: var(--info); }
+
+/* Road condition */
+.wx-road {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px; margin-top: 10px;
+}
+.wx-road-head {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-4); margin-bottom: 5px;
+  display: flex; align-items: center; gap: 5px;
+}
+.wx-road-note { font-size: 11px; color: var(--text-2); line-height: 1.45; margin-top: 4px; }
+
+/* Climate disclaimer */
+.wx-climate-note {
+  margin-top: 12px; padding: 9px 12px;
+  background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.20);
+  border-radius: 9px; font-size: 10px; color: #fde68a; line-height: 1.5;
+}
+.wx-climate-note strong { color: #fef3c7; }
+
+/* Footer */
+.wx-footer {
+  margin-top: 16px; padding-bottom: 4px; text-align: center;
+  font-size: 9px; color: var(--text-4); line-height: 1.6;
+}
+.wx-footer span { color: var(--text-3); }
+
+/* ───────── Trip summary (top quick-view card) ───────── */
+.wx-trip {
+  background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(96,165,250,0.04));
+  border: 1px solid rgba(251,191,36,0.22);
+  position: relative; overflow: hidden;
+}
+.wx-trip::before {
+  content: ''; position: absolute; top: -40px; right: -40px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(251,191,36,0.12), transparent 70%);
+  pointer-events: none;
+}
+.wx-trip-eyebrow {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-4); margin-bottom: 2px;
+}
+.wx-trip-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0; position: relative; z-index: 1;
+}
+.wx-trip-row + .wx-trip-divider { margin: 0 6px; }
+.wx-trip-row + .wx-trip-row { border-top: 1px dashed var(--border); }
+.wx-trip-icon {
+  width: 40px; height: 40px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent-soft); border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 10px; color: var(--accent);
+}
+.wx-trip-text { flex: 1; min-width: 0; }
+.wx-trip-label {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.10em; color: var(--text-3);
+  display: flex; align-items: baseline; gap: 6px;
+}
+.wx-trip-time {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent); font-size: 11px;
+}
+.wx-trip-name {
+  font-size: 14px; font-weight: 700; color: var(--text);
+  margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.wx-trip-temp {
+  font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  font-size: 18px; color: var(--text);
+}
+.wx-trip-stats {
+  font-size: 11px; color: var(--text-2); margin-top: 1px;
+}
+.wx-trip-route {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 0; margin: 4px 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text-3); position: relative; z-index: 1;
+  border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border);
+}
+.wx-trip-route .num { color: var(--text); font-weight: 700; }
+.wx-trip-arrow-icon { color: var(--accent); }
+.wx-trip-verdict {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 10px; padding-top: 8px;
+  border-top: 1px solid var(--border);
+  position: relative; z-index: 1;
+}
+.wx-trip-verdict-label { font-size: 13px; font-weight: 700; flex: 1; }
+.wx-trip-no-dest {
+  margin: 6px 0 0; padding: 8px 10px;
+  background: var(--bg); border: 1px dashed var(--border);
+  border-radius: 9px; font-size: 11px; color: var(--text-3);
+  line-height: 1.45; text-align: center; position: relative; z-index: 1;
+}
+.wx-trip-climate {
+  margin-top: 6px; font-size: 11px; color: var(--text-3);
+  line-height: 1.5; position: relative; z-index: 1;
+}
+
+/* Daily-stats line inside trip card */
+.wx-trip-daily {
+  display: flex; flex-wrap: wrap; gap: 6px 14px;
+  padding: 8px 0; margin: 4px 0;
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
+  font-size: 11px; color: var(--text-2);
+  position: relative; z-index: 1;
+}
+.wx-trip-daily-stat {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: 'JetBrains Mono', monospace; font-weight: 600;
+}
+.wx-trip-daily-stat-icon { font-size: 13px; opacity: 0.85; }
+.wx-trip-daily-stat-lbl { color: var(--text-3); margin-right: 2px; font-weight: 500; }
+
+/* Road status banner inside trip card (today only) */
+.wx-trip-road {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; margin-top: 6px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 9px;
+  position: relative; z-index: 1;
+}
+.wx-trip-road-pill {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0; box-shadow: 0 0 6px currentColor;
+}
+.wx-trip-road-text {
+  font-size: 11px; font-weight: 700; flex: 1;
+}
+.wx-trip-road-eyebrow {
+  font-size: 9px; font-weight: 800; color: var(--text-4);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+/* ───────── Collapsible calendar (closed by default) ───────── */
+.wx-cal-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; margin-bottom: 12px; overflow: hidden;
+}
+.wx-cal-summary {
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; list-style: none;
+  transition: background 0.12s ease;
+}
+.wx-cal-summary::-webkit-details-marker { display: none; }
+.wx-cal-summary:hover { background: var(--surface-2); }
+.wx-cal-summary-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.wx-cal-summary-hint {
+  font-size: 10px; color: var(--text-4); font-weight: 600;
+}
+.wx-cal-chevron {
+  transition: transform 0.2s ease; color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+}
+.wx-cal-card[open] .wx-cal-chevron { transform: rotate(180deg); }
+.wx-cal-card[open] .wx-cal-summary { border-bottom: 1px solid var(--border); }
+.wx-cal-body { padding: 12px 16px 16px; }
+
+/* ───────── Collapsible motorcycle-advice section (closed by default) ───────── */
+.wx-advice-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; margin-top: 10px; overflow: hidden;
+}
+.wx-advice-summary {
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; list-style: none;
+  transition: background 0.12s ease;
+}
+.wx-advice-summary::-webkit-details-marker { display: none; }
+.wx-advice-summary:hover { background: var(--surface-2); }
+.wx-advice-title {
+  font-size: 11px; font-weight: 800; color: var(--text);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  display: flex; align-items: center; gap: 6px;
+}
+.wx-advice-hint {
+  font-size: 10px; color: var(--text-4); font-weight: 600;
+  margin-left: 4px; text-transform: none; letter-spacing: 0;
+}
+.wx-advice-chevron {
+  transition: transform 0.2s ease; color: var(--text-3);
+  display: flex; align-items: center; justify-content: center;
+}
+.wx-advice-card[open] .wx-advice-chevron { transform: rotate(180deg); }
+.wx-advice-card[open] .wx-advice-summary { border-bottom: 1px solid var(--border); }
+.wx-advice-body { padding: 10px 12px 12px; }
 
 /* Stats */
 .stats-section {
@@ -2000,18 +2438,9 @@ footer {
 
 <!-- WEATHER -->
 <div class="tab-panel" data-tab="weather">
-<section class="card" id="weatherSection">
-  <p class="card-header">
-    <span>🌤️ Időjárás motorhoz</span>
-    <span style="font-size:9px;color:var(--text-4);font-weight:600">Open-Meteo</span>
-  </p>
-  <div id="weatherList">
-    <p class="weather-empty">Adj meg legalább egy partnert az időjáráshoz.</p>
-  </div>
-  <p class="hint" id="weatherHint" style="margin-bottom:0">
-    Minden helynél a <strong>most</strong> és a <strong>becsült érkezéskor</strong> (~60 km/h-val számolva) is látszik az adat.
-  </p>
-</section>
+<div id="weatherList">
+  <p class="weather-empty">Adatok betöltése az Útvonal fülről…</p>
+</div>
 </div>
 
 <!-- ÚTNYILVÁNTARTÁS -->
@@ -3328,318 +3757,1351 @@ function updateStopCount() {
 }
 
 // =============================================================
-// WEATHER (Open-Meteo)
+// WEATHER FORECAST (Open-Meteo + OSRM) — full motorcycle planner
 // =============================================================
-const WEATHER_CACHE_KEY = 'kmszamolo:weather_cache:v1';
-const WEATHER_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
-const AVG_SPEED_KMH = 60; // for arrival time estimation
-let weatherMode = 'now'; // 'now' | 'arrival'
-let weatherCache = {};
 
-function loadWeatherCache() {
-  try {
-    weatherCache = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || '{}');
-  } catch (e) { weatherCache = {}; }
+/* WMO weather codes → Hungarian labels + icons */
+const WX_CODES = {
+  0:  { label:'Tiszta',                  icon:'sun' },
+  1:  { label:'Túlnyomóan tiszta',       icon:'sun' },
+  2:  { label:'Részben felhős',          icon:'cloud' },
+  3:  { label:'Borult',                  icon:'cloud' },
+  45: { label:'Köd',                     icon:'fog' },
+  48: { label:'Zúzmarás köd',            icon:'fog' },
+  51: { label:'Gyenge szitálás',         icon:'drizzle' },
+  53: { label:'Mérsékelt szitálás',      icon:'drizzle' },
+  55: { label:'Erős szitálás',           icon:'drizzle' },
+  56: { label:'Fagyos szitálás',         icon:'drizzle' },
+  57: { label:'Erős fagyos szitálás',    icon:'drizzle' },
+  61: { label:'Gyenge eső',              icon:'rain' },
+  63: { label:'Mérsékelt eső',           icon:'rain' },
+  65: { label:'Erős eső',                icon:'rain' },
+  66: { label:'Fagyos eső',              icon:'rain' },
+  67: { label:'Erős fagyos eső',         icon:'rain' },
+  71: { label:'Gyenge havazás',          icon:'snow' },
+  73: { label:'Mérsékelt havazás',       icon:'snow' },
+  75: { label:'Erős havazás',            icon:'snow' },
+  77: { label:'Hódara',                  icon:'snow' },
+  80: { label:'Gyenge zápor',            icon:'rain' },
+  81: { label:'Mérsékelt zápor',         icon:'rain' },
+  82: { label:'Heves zápor',             icon:'rain' },
+  85: { label:'Gyenge hózápor',          icon:'snow' },
+  86: { label:'Erős hózápor',            icon:'snow' },
+  95: { label:'Zivatar',                 icon:'storm' },
+  96: { label:'Zivatar jéggel',          icon:'storm' },
+  99: { label:'Erős zivatar jéggel',     icon:'storm' },
+};
+const wx = (c) => WX_CODES[c] || { label:'Ismeretlen', icon:'cloud' };
+
+/* SVG icons (currentColor inherits from CSS) */
+const WX_ICON = {
+  sun:    `<svg width="SZ" height="SZ" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+  cloud:  `<svg width="SZ" height="SZ" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0 0-9h-1.8A7 7 0 1 0 4 14.9"/></svg>`,
+  fog:    `<svg width="SZ" height="SZ" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 17H7"/><path d="M17 21H9"/><path d="M17.5 13a4.5 4.5 0 1 0 0-9h-1.8A7 7 0 1 0 4 9.6"/></svg>`,
+  drizzle:`<svg width="SZ" height="SZ" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 19v1"/><path d="M8 14v1"/><path d="M16 19v1"/><path d="M16 14v1"/><path d="M12 21v1"/><path d="M12 16v1"/></svg>`,
+  rain:   `<svg width="SZ" height="SZ" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>`,
+  snow:   `<svg width="SZ" height="SZ" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M8 15h.01"/><path d="M8 19h.01"/><path d="M12 17h.01"/><path d="M12 21h.01"/><path d="M16 15h.01"/><path d="M16 19h.01"/></svg>`,
+  storm:  `<svg width="SZ" height="SZ" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/><path d="m13 12-3 5h4l-3 5"/></svg>`,
+  pin:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>`,
+  drop:   `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5s-3 3.5-3 5.5a7 7 0 0 0 7 7z"/></svg>`,
+  wind:   `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>`,
+  gauge:  `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>`,
+  sunrise:`<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/></svg>`,
+  sunset: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/></svg>`,
+  loader: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`,
+  alert:  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>`,
+  bike:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>`,
+  road:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22 7 2"/><path d="m22 22-5-20"/><path d="M12 6v2"/><path d="M12 12v2"/><path d="M12 18v2"/></svg>`,
+};
+const wxIcon = (name, sz=18) => (WX_ICON[name]||WX_ICON.cloud).replaceAll('SZ', sz);
+
+/* Forecast confidence model */
+const wxConfidence = (d) => {
+  const t = [96,93,89,84,78,72,65,58,51,45,40,36,32,29,26,23];
+  if (d < t.length) return t[d];
+  return Math.max(8, 22 - (d - 16));
+};
+const wxConfLabel = (c) => c>=80?'Nagyon megbízható':c>=60?'Megbízható':c>=40?'Mérsékelt':c>=25?'Bizonytalan':'Klimatológiai';
+const wxConfColor = (c) => c>=80?'#34d399':c>=60?'#86efac':c>=40?'#fbbf24':c>=25?'#fb923c':'#f87171';
+
+/* Hungarian formatting */
+const WX_DAYS = ['Vas','Hét','Ked','Sze','Csü','Pén','Szo'];
+const WX_DAYS_LONG = ['Vasárnap','Hétfő','Kedd','Szerda','Csütörtök','Péntek','Szombat'];
+const WX_MONTHS = ['január','február','március','április','május','június','július','augusztus','szeptember','október','november','december'];
+
+const wxPad2 = (n) => String(n).padStart(2,'0');
+const wxFmtDate = (d) => `${d.getFullYear()}-${wxPad2(d.getMonth()+1)}-${wxPad2(d.getDate())}`;
+const wxFmtTime = (iso) => { try { const d=new Date(iso); return `${wxPad2(d.getHours())}:${wxPad2(d.getMinutes())}`; } catch { return '—'; } };
+const wxRound = (v) => v == null || isNaN(v) ? '—' : Math.round(v);
+const wxWindDir = (deg) => {
+  if (deg == null) return '—';
+  const dirs = ['É','ÉÉK','ÉK','KÉK','K','KDK','DK','DDK','D','DDNy','DNy','NyDNy','Ny','NyÉNy','ÉNy','ÉÉNy'];
+  return dirs[Math.round(deg / 22.5) % 16];
+};
+
+/* ───── Motorcycle / road / warning helpers ───── */
+function wxWindChill(T, V) {
+  if (T == null || V == null) return null;
+  if (V < 4.8) return T;
+  const Vp = Math.pow(V, 0.16);
+  return 13.12 + 0.6215*T - 11.37*Vp + 0.3965*T*Vp;
+}
+function wxMotoEffWind(ambientWind, ridingSpeed=90) {
+  return (ambientWind || 0) + ridingSpeed;
 }
 
-function saveWeatherCache() {
-  // Prune old entries
-  const now = Date.now();
-  for (const k of Object.keys(weatherCache)) {
-    if (now - weatherCache[k].ts > WEATHER_CACHE_TTL_MS) delete weatherCache[k];
+/* Layered-clothing recommendation. Speed-aware via wind chill. */
+function wxMotoAdvice({ T, precipMm, precipProb, code, gust, wind, ridingSpeed=90 }) {
+  const wxd = wx(code);
+  const isRain = ['rain','storm'].includes(wxd.icon === 'storm' ? 'storm' : (['rain','drizzle'].includes(wxd.icon) ? 'rain' : null)) ||
+                 (precipMm != null && precipMm >= 0.2) || (precipProb != null && precipProb >= 60);
+  const isSnow = wxd.icon === 'snow';
+  const isStorm = wxd.icon === 'storm';
+  const isFreezing = [56,57,66,67].includes(code);
+
+  const Vrel = wxMotoEffWind(wind || 0, ridingSpeed);
+  const Twc = T != null ? wxWindChill(T, Vrel) : null;
+
+  let gear, level, color, label, points = [];
+
+  if (isStorm) {
+    gear = 'cancel'; level = 'danger'; color = '#f87171';
+    label = 'Indulás nem javasolt';
+    points.push('Zivatar várható — villámlás, heves széllökések, hirtelen vízréteg az úton.');
+  } else if (isSnow) {
+    gear = 'cancel'; level = 'danger'; color = '#f87171';
+    label = 'Havazás — motoron nem javasolt';
+    points.push('Havazás — gumiabroncs nem tapad, jeges útszakaszok valószínűek.');
+  } else if (isFreezing) {
+    gear = 'cancel'; level = 'danger'; color = '#f87171';
+    label = 'Ónos eső — veszélyes';
+    points.push('Ónos eső — pillanatok alatt jégbevonat képződik.');
+  } else if (T != null && T < 0) {
+    gear = 'winter'; level = 'danger'; color = '#f87171';
+    label = 'Felszerelésed nem elegendő';
+    points.push(`${Math.round(T)}°C — termoréteggel és esőruhával is kihűlsz hosszabb úton. Téli motoros szett kellene.`);
+  } else if (T != null && T < 5) {
+    gear = ['base','thermal','rain']; level = 'warn'; color = '#fb923c';
+    label = 'Aláöltöző + termo + esőruha';
+    points.push(`${Math.round(T)}°C — termoréteg KÖTELEZŐ. Az esőruha csak a szelet fogja, nem szigetel.`);
+    points.push('Meleg kesztyű és nyakmelegítő ajánlott.');
+  } else if (Twc != null && Twc < 0) {
+    gear = ['base','thermal','rain']; level = 'warn'; color = '#fb923c';
+    label = 'Termo + esőruha (hideg menetszél)';
+    points.push(`${Math.round(T)}°C ambient, de ${ridingSpeed} km/h-nál a hőérzet ${Math.round(Twc)}°C — termoréteget tegyél fel.`);
+  } else if (T != null && T < 10) {
+    gear = ['base','thermal','rain']; level = 'warn'; color = '#fbbf24';
+    label = 'Aláöltöző + termo + esőruha';
+    points.push(`${Math.round(T)}°C — esőruha mellé termo is. Önmagában 10°C alatt 30+ percnyi vezetés után nem elég.`);
+  } else if (isRain && T != null && T < 14) {
+    gear = ['base','thermal','rain']; level = 'note'; color = '#fbbf24';
+    label = 'Esőruha + termo (hideg eső)';
+    points.push(`Eső + ${Math.round(T)}°C — hideg, nedves kombináció. Termoréteg nélkül kihűlsz.`);
+  } else if (isRain) {
+    gear = ['base','rain']; level = 'note'; color = '#fbbf24';
+    label = 'Aláöltöző + esőruha';
+    points.push(`Csapadék várható${precipMm != null ? ` (${precipMm.toFixed(1)} mm)` : ''} — esőruha kötelező.`);
+  } else if (Twc != null && Twc < 8) {
+    gear = ['base','thermal','rain']; level = 'warn'; color = '#fbbf24';
+    label = 'Termo + esőruha (menetszél)';
+    points.push(`${Math.round(T)}°C ambient, de ${ridingSpeed} km/h-nál ${Math.round(Twc)}°C-ot érzel — termoréteg ajánlott.`);
+  } else if (Twc != null && Twc < 14) {
+    gear = ['base','rain']; level = 'ok'; color = '#86efac';
+    label = 'Aláöltöző + esőruha (szélfogó)';
+    points.push(`${Math.round(T)}°C ambient, ${ridingSpeed} km/h-nál ${Math.round(Twc)}°C — esőruha szélfogóként pont elég.`);
+  } else if (Twc != null && Twc < 18) {
+    gear = ['base','rain']; level = 'ok'; color = '#34d399';
+    label = 'Aláöltöző + esőruha — kényelmes';
+    points.push(`${Math.round(T)}°C, ${ridingSpeed} km/h-nál ${Math.round(Twc)}°C — kellemes. Esőruha hosszabb úton ajánlott.`);
+  } else if (T != null && T < 25) {
+    gear = ['base']; level = 'ok'; color = '#34d399';
+    label = 'Csak aláöltöző';
+    points.push(`${Math.round(T)}°C — esőruha alatt izzadnál. Aláöltöző elegendő.`);
+  } else {
+    gear = ['base']; level = 'ok'; color = '#34d399';
+    label = 'Csak aláöltöző — meleg!';
+    points.push(`${Math.round(T)}°C — meleg idő. Sok vízzel készülj fel.`);
   }
-  localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(weatherCache));
-}
 
-function weatherCacheKey(lat, lng) {
-  // Round to 2 decimals (~1km precision) — multiple partners in same area share cache
-  return `${lat.toFixed(2)},${lng.toFixed(2)}`;
-}
-
-async function fetchWeather(lat, lng) {
-  const key = weatherCacheKey(lat, lng);
-  const now = Date.now();
-  if (weatherCache[key] && (now - weatherCache[key].ts) < WEATHER_CACHE_TTL_MS) {
-    return weatherCache[key].data;
+  if (gust != null && gust >= 70) {
+    points.push(`Erős széllökések (${Math.round(gust)} km/h) — kisodródás veszélye, óvatosan.`);
+    if (level === 'ok') { level = 'warn'; color = '#fb923c'; }
+  } else if (gust != null && gust >= 50) {
+    points.push(`Mérsékelt-erős szél (${Math.round(gust)} km/h-s lökések).`);
   }
-  try {
-    // Hourly forecast for 48 hours; current weather; daily summary
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}`
-      + `&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m`
-      + `&hourly=temperature_2m,precipitation_probability,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m`
-      + `&forecast_days=2&timezone=Europe%2FBudapest&wind_speed_unit=kmh`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    weatherCache[key] = { ts: now, data };
-    saveWeatherCache();
-    return data;
-  } catch (e) {
-    console.error('Weather fetch failed:', e);
-    return null;
-  }
+
+  return { gear, level, color, label, points, T, Twc, Vrel };
 }
 
-// WMO weather code → emoji + text (subset for common codes)
-function weatherCodeInfo(code, isDay) {
-  const dayMap = {
-    0:  { icon: '☀️', text: 'tiszta' },
-    1:  { icon: '🌤️', text: 'kis felhő' },
-    2:  { icon: '⛅', text: 'részben felhős' },
-    3:  { icon: '☁️', text: 'borult' },
-    45: { icon: '🌫️', text: 'köd' },
-    48: { icon: '🌫️', text: 'zúzmaraködös' },
-    51: { icon: '🌦️', text: 'szitálás' },
-    53: { icon: '🌦️', text: 'szitálás' },
-    55: { icon: '🌧️', text: 'szitálás (intenzív)' },
-    56: { icon: '🌧️', text: 'fagyott szitálás' },
-    57: { icon: '🌧️', text: 'fagyott szitálás' },
-    61: { icon: '🌧️', text: 'gyenge eső' },
-    63: { icon: '🌧️', text: 'eső' },
-    65: { icon: '🌧️', text: 'erős eső' },
-    66: { icon: '🌧️', text: 'fagyott eső' },
-    67: { icon: '🌧️', text: 'fagyott eső' },
-    71: { icon: '🌨️', text: 'gyenge havazás' },
-    73: { icon: '🌨️', text: 'havazás' },
-    75: { icon: '❄️', text: 'erős havazás' },
-    77: { icon: '🌨️', text: 'hószemcsés' },
-    80: { icon: '🌧️', text: 'gyenge zápor' },
-    81: { icon: '🌧️', text: 'zápor' },
-    82: { icon: '⛈️', text: 'erős zápor' },
-    85: { icon: '🌨️', text: 'hózápor' },
-    86: { icon: '❄️', text: 'erős hózápor' },
-    95: { icon: '⛈️', text: 'zivatar' },
-    96: { icon: '⛈️', text: 'zivatar jéggel' },
-    99: { icon: '⛈️', text: 'erős zivatar jéggel' },
+/* Road slipperiness */
+function wxRoadCondition({ T, recentPrecip6h, code, recentDryHours }) {
+  const wxd = wx(code);
+  if (wxd.icon === 'snow') return { level:'danger', color:'#f87171', label:'Havas / jeges útfelület', note:'Hó vagy jeges szakaszok — motoron nem javasolt.' };
+  if ([56,57,66,67].includes(code)) return { level:'danger', color:'#f87171', label:'Jeges úttest (ónos eső)', note:'Ónos eső — pillanatok alatt jégbevonat. Kerüld a motorozást.' };
+  if (T != null && T <= 1 && (recentPrecip6h > 0 || ['rain','snow'].includes(wxd.icon))) {
+    return { level:'danger', color:'#f87171', label:'Fagyveszély az úton', note:'Fagypont közeli hőmérséklet + nedvesség — jégfoltok kialakulhatnak.' };
+  }
+  if (wxd.icon === 'storm' || code === 82 || code === 65) {
+    return { level:'danger', color:'#f87171', label:'Heves csapadék — vízréteg', note:'Aquaplaning, gyenge látótávolság, oldalszél.' };
+  }
+  if (['rain','drizzle'].includes(wxd.icon)) {
+    if (recentDryHours != null && recentDryHours >= 24) {
+      return { level:'warn', color:'#fb923c', label:'Csúszós (friss eső száraz után)', note:'Az első ~30 perc különösen csúszós: olajfilm + víz. Óvatos fékezés.' };
+    }
+    return { level:'warn', color:'#fbbf24', label:'Nedves, csúszós útfelület', note:'Aktív csapadék — fékút megnő, oldalkapaszkodás csökken.' };
+  }
+  if (recentPrecip6h > 0.3) {
+    return { level:'note', color:'#fbbf24', label:'Még nedves szakaszok', note:'A közelmúltban esett — egyes pontok, hidak, fák alatt csúszós lehet.' };
+  }
+  if (wxd.icon === 'fog') return { level:'note', color:'#fbbf24', label:'Páraréteg az úton', note:'Köd — sisak bepárásodhat, az út nyirkos lehet.' };
+  return { level:'ok', color:'#34d399', label:'Száraz, biztonságos', note:'Az út várhatóan száraz, jó tapadás.' };
+}
+
+function wxDayWarnings({ code, tMax, tMin, precipSum, gustMax, windMax, uvMax }) {
+  const out = [];
+  const wxd = wx(code);
+  if ([95,96,99].includes(code)) out.push({ icon:'storm', text: code===95?'Zivatar várható':'Zivatar jéggel — jégeső kockázata' });
+  if (wxd.icon === 'snow' && precipSum >= 5) out.push({ icon:'snow', text:`Jelentős havazás (${precipSum.toFixed(1)} mm)` });
+  if (precipSum != null && precipSum >= 25) out.push({ icon:'rain', text:`Heves csapadék: ${precipSum.toFixed(1)} mm/24h` });
+  else if (precipSum != null && precipSum >= 15) out.push({ icon:'rain', text:`Sok csapadék: ${precipSum.toFixed(1)} mm` });
+  if (gustMax != null && gustMax >= 90) out.push({ icon:'wind', text:`Viharos szél: ${Math.round(gustMax)} km/h-s lökések` });
+  else if (gustMax != null && gustMax >= 70) out.push({ icon:'wind', text:`Erős szél: ${Math.round(gustMax)} km/h-s lökések` });
+  else if (windMax != null && windMax >= 50) out.push({ icon:'wind', text:`Élénk szél: ${Math.round(windMax)} km/h` });
+  if (tMax != null && tMax >= 35) out.push({ icon:'sun', text:`Hőség: ${Math.round(tMax)}°C` });
+  if (tMin != null && tMin <= -10) out.push({ icon:'snow', text:`Kemény fagy: ${Math.round(tMin)}°C` });
+  else if (tMin != null && tMin <= -5) out.push({ icon:'snow', text:`Erős fagy: ${Math.round(tMin)}°C` });
+  if (uvMax != null && uvMax >= 8) out.push({ icon:'sun', text:`Magas UV: ${Math.round(uvMax)} — naptej + szemvédelem` });
+  if ([56,57,66,67].includes(code)) out.push({ icon:'snow', text:`Ónos eső — út jegesedhet` });
+  return out;
+}
+
+function wxRecentPrecip(hourly, hoursBack=6) {
+  if (!hourly?.time || !hourly?.precipitation) return { sum:0, recentCode:null, dryHours:null };
+  const now = new Date();
+  let sum = 0, lastWetIdx = -1;
+  for (let i = 0; i < hourly.time.length; i++) {
+    const t = new Date(hourly.time[i]);
+    const diffH = (now - t) / 36e5;
+    if (diffH < 0) break;
+    if (diffH <= hoursBack && hourly.precipitation[i] != null) sum += hourly.precipitation[i];
+    if (hourly.precipitation[i] > 0.05 && diffH >= 0) lastWetIdx = i;
+  }
+  let dryHours = null, recentCode = null;
+  if (lastWetIdx >= 0) {
+    dryHours = (now - new Date(hourly.time[lastWetIdx])) / 36e5;
+    recentCode = hourly.weather_code?.[lastWetIdx] ?? null;
+  } else dryHours = 999;
+  return { sum, recentCode, dryHours };
+}
+
+function wxHourlyAt(hourly, dateStr, hour) {
+  if (!hourly?.time) return null;
+  const target = `${dateStr}T${wxPad2(hour)}:00`;
+  const idx = hourly.time.findIndex(t => t === target);
+  if (idx < 0) return null;
+  return {
+    idx, time: hourly.time[idx],
+    temp: hourly.temperature_2m?.[idx],
+    code: hourly.weather_code?.[idx],
+    pop:  hourly.precipitation_probability?.[idx],
+    precip: hourly.precipitation?.[idx],
+    wind: hourly.wind_speed_10m?.[idx],
+    gust: hourly.wind_gusts_10m?.[idx],
   };
-  const nightMap = { 0: { icon: '🌙', text: 'tiszta' }, 1: { icon: '🌙', text: 'kis felhő' }, 2: { icon: '☁️', text: 'felhős' } };
-  if (!isDay && nightMap[code]) return nightMap[code];
-  return dayMap[code] || { icon: '🌤️', text: '—' };
 }
 
-// Compass: degree → 8-direction Hungarian abbrev
-function windDirArrow(deg) {
-  const dirs = ['É', 'ÉK', 'K', 'DK', 'D', 'DNy', 'Ny', 'ÉNy'];
-  const idx = Math.round(((deg % 360) / 45)) % 8;
-  return dirs[idx];
+function wxDefaultHour(daysAhead) {
+  if (daysAhead === 0) {
+    const now = new Date();
+    let h = now.getHours();
+    if (now.getMinutes() >= 30) h = Math.min(23, h + 1);
+    return h;
+  }
+  return 9;
 }
 
-// Calculate motorcycle "rideability" score from weather (0-10)
-// Returns { level: 'ok'|'warn'|'bad', label, reasons: [] }
-function rideability(w) {
-  const reasons = [];
-  let level = 'ok';
-  // Temperature
-  if (w.temperature < 0) { reasons.push('jegesedés veszély'); level = 'bad'; }
-  else if (w.temperature < 5) { reasons.push('hideg (<5°C)'); if (level === 'ok') level = 'warn'; }
-  else if (w.temperature > 35) { reasons.push('hőség (>35°C)'); if (level === 'ok') level = 'warn'; }
-  // Wind
-  if (w.windSpeed >= 50 || w.windGusts >= 70) { reasons.push(`erős szél (${Math.round(Math.max(w.windSpeed, w.windGusts))} km/h lökés)`); level = 'bad'; }
-  else if (w.windSpeed >= 35 || w.windGusts >= 50) { reasons.push(`viharos szél (lökés ${Math.round(w.windGusts)} km/h)`); if (level === 'ok') level = 'warn'; }
-  // Precipitation
-  const code = w.weatherCode;
-  if ([95, 96, 99, 82, 65, 75, 86].includes(code)) { reasons.push('intenzív csapadék/zivatar'); level = 'bad'; }
-  else if ([61, 63, 80, 81, 71, 73, 51, 53, 55, 85].includes(code)) { reasons.push('csapadék várható'); if (level === 'ok') level = 'warn'; }
-  else if (w.precipitationProb >= 60) { reasons.push(`${w.precipitationProb}% esővalószínűség`); if (level === 'ok') level = 'warn'; }
-  // Visibility (weather codes for fog)
-  if ([45, 48].includes(code)) { reasons.push('rossz látótávolság (köd)'); if (level === 'ok') level = 'warn'; }
+/* Route helpers */
+function wxHaversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
+function wxFmtDuration(s) {
+  const h = Math.floor(s / 3600);
+  const m = Math.round((s % 3600) / 60);
+  if (h === 0) return `${m} perc`;
+  if (m === 0) return `${h} óra`;
+  return `${h} ó ${m} p`;
+}
+async function wxFetchRoute(from, to) {
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${from.longitude},${from.latitude};${to.longitude},${to.latitude}?overview=false`;
+    const r = await fetch(url);
+    if (r.ok) {
+      const j = await r.json();
+      if (j.code === 'Ok' && j.routes?.[0]) {
+        return { distance_km: j.routes[0].distance / 1000, duration_s: j.routes[0].duration, source: 'osrm' };
+      }
+    }
+  } catch { /* fall through */ }
+  const dist = wxHaversineKm(from.latitude, from.longitude, to.latitude, to.longitude);
+  return { distance_km: dist * 1.2, duration_s: (dist * 1.2 / 75) * 3600, source: 'estimate' };
+}
+function wxComputeArrival(depDateStr, depHour, depFc, arrFc, duration_s) {
+  const depFaux = new Date(`${depDateStr}T${wxPad2(depHour)}:00:00Z`);
+  const arrFaux = new Date(depFaux.getTime() + duration_s * 1000);
+  const tzDiff = (arrFc?.utc_offset_seconds ?? 0) - (depFc?.utc_offset_seconds ?? 0);
+  const arrLocal = new Date(arrFaux.getTime() + tzDiff * 1000);
+  const arrRounded = new Date(arrLocal.getTime());
+  if (arrRounded.getUTCMinutes() >= 30) arrRounded.setUTCHours(arrRounded.getUTCHours() + 1);
+  arrRounded.setUTCMinutes(0, 0, 0);
+  return {
+    dateStr: `${arrRounded.getUTCFullYear()}-${wxPad2(arrRounded.getUTCMonth()+1)}-${wxPad2(arrRounded.getUTCDate())}`,
+    hour: arrRounded.getUTCHours(),
+    displayH: arrLocal.getUTCHours(),
+    displayM: arrLocal.getUTCMinutes(),
+  };
+}
+
+function wxRouteVerdict(depAdv, arrAdv, depW, arrW) {
+  const adv = [depAdv, arrAdv];
+  const anyCancel = adv.some(a => a.gear === 'cancel');
+  const anyWinter = adv.some(a => a.gear === 'winter');
+
+  if (anyCancel) {
+    const which = depAdv.gear === 'cancel' ? 'indulási' : 'érkezési';
+    return { level:'danger', color:'#f87171', label:'Indulás nem javasolt', gear:'cancel',
+             points:[`A ${which} szakaszon veszélyes időjárás (zivatar / havazás / ónos eső). Halaszd el az utat.`] };
+  }
+  if (anyWinter) {
+    return { level:'danger', color:'#f87171', label:'Felszerelésed nem elegendő', gear:'winter',
+             points:['Az úton fagypont alatti hőmérséklet várható — a meglévő rétegekkel hosszabb úton kihűlsz.'] };
+  }
+
+  const gearSet = new Set();
+  adv.forEach(a => { if (Array.isArray(a.gear)) a.gear.forEach(g => gearSet.add(g)); });
+  const gear = ['base','thermal','rain'].filter(g => gearSet.has(g));
+
+  const order = { ok:0, note:1, warn:2, danger:3 };
+  const worst = adv.reduce((w, a) => (order[a.level]||0) > (order[w.level]||0) ? a : w, adv[0]);
 
   const labels = {
-    ok: '✓ Motorozható',
-    warn: '⚠️ Figyelem',
-    bad: '⛔ Nem javasolt',
+    ok:    'Indulás javasolt',
+    note:  'Indulás javasolt — figyelj az időjárásra',
+    warn:  'Indulj csak megfelelő felszereléssel',
+    danger:'Indulás nem javasolt',
   };
-  return { level, label: labels[level], reasons };
+
+  const points = [];
+  const tDiff = (depW.temp != null && arrW.temp != null) ? arrW.temp - depW.temp : 0;
+  if (Math.abs(tDiff) >= 5) points.push(`Hőmérséklet-változás: ${wxRound(depW.temp)}°C → ${wxRound(arrW.temp)}°C — a hidegebbre öltözz.`);
+  const totalP = (depW.precip||0) + (arrW.precip||0);
+  const popMax = Math.max(depW.pop||0, arrW.pop||0);
+  if (totalP >= 0.5 || popMax >= 60) points.push(`Csapadék várható (eshet. ${Math.round(popMax)}%) — esőruha kötelező.`);
+  else if (popMax >= 30) points.push(`Csapadék lehetséges (eshet. ${Math.round(popMax)}%) — vidd magaddal az esőruhát.`);
+  const gMax = Math.max(depW.gust||0, arrW.gust||0);
+  if (gMax >= 50) points.push(`Erős szél (lökések ${Math.round(gMax)} km/h) — figyelj a pályán tartásra.`);
+  if (points.length === 0) points.push('Az útvonalon végig kellemes, biztonságos időjárás várható.');
+
+  return { level: worst.level, color: worst.color, label: labels[worst.level] || worst.label, gear, points };
 }
 
-// Find hourly index closest to a given Date in the forecast
-function findHourlyIdx(hourly, targetDate) {
-  if (!hourly || !hourly.time) return -1;
-  const targetMs = targetDate.getTime();
-  let bestIdx = 0, bestDiff = Infinity;
-  for (let i = 0; i < hourly.time.length; i++) {
-    const t = new Date(hourly.time[i]).getTime();
-    const diff = Math.abs(t - targetMs);
-    if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+/* ───── API ───── */
+async function wxGeocode(name) {
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=8&language=hu&format=json`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('Geokódolási hiba');
+  const j = await r.json();
+  return j.results || [];
+}
+
+async function wxLoadForecast(loc) {
+  const p = new URLSearchParams({
+    latitude: loc.latitude, longitude: loc.longitude,
+    current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,pressure_msl',
+    hourly: 'temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m',
+    daily: 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,precipitation_sum,precipitation_hours,wind_speed_10m_max,wind_gusts_10m_max,sunrise,sunset,uv_index_max',
+    timezone: 'auto', forecast_days: '16', past_days: '1',
+  });
+  const r = await fetch(`https://api.open-meteo.com/v1/forecast?${p}`);
+  if (!r.ok) throw new Error('Az adatszolgáltatás jelenleg nem elérhető.');
+  return r.json();
+}
+
+async function wxLoadClimate(loc) {
+  const today = new Date();
+  const start = new Date(today.getFullYear()-5, today.getMonth(), today.getDate());
+  const end   = new Date(today.getFullYear()-1, today.getMonth(), today.getDate());
+  end.setDate(end.getDate() + 35);
+  const p = new URLSearchParams({
+    latitude: loc.latitude, longitude: loc.longitude,
+    start_date: wxFmtDate(start), end_date: wxFmtDate(end),
+    daily: 'temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code',
+    timezone: 'auto',
+  });
+  const r = await fetch(`https://archive-api.open-meteo.com/v1/archive?${p}`);
+  if (!r.ok) return null;
+  return r.json();
+}
+
+async function wxLoadArrivalForecast(loc) {
+  const p = new URLSearchParams({
+    latitude: loc.latitude, longitude: loc.longitude,
+    hourly: 'temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m',
+    timezone: 'auto', forecast_days: '16',
+  });
+  const r = await fetch(`https://api.open-meteo.com/v1/forecast?${p}`);
+  if (!r.ok) throw new Error('Az érkezési pont időjárását nem sikerült lekérdezni.');
+  return r.json();
+}
+
+/* ───── State ───── */
+const wxState = {
+  query: '', searching: false, results: [], showDropdown: false,
+  location: null, forecast: null, climate: null,
+  loading: false, error: null,
+  selectedIdx: 0, departureHour: null,
+  arrival: null, arrivalQuery: '', arrivalResults: [], arrivalSearching: false,
+  arrivalShowDropdown: false, arrivalForecast: null, arrivalLoading: false,
+  arrivalError: null, routeInfo: null,
+  initialized: false,
+  calendarOpen: false,  // collapsible 30-day calendar — closed by default
+  adviceOpen: false,    // collapsible motorcycle advice — closed by default
+};
+let wxSearchTimer, wxArrivalSearchTimer;
+
+/* Build 30-day data array from forecast + climate */
+function wxBuildDays() {
+  if (!wxState.forecast) return [];
+  const out = [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(today); date.setDate(today.getDate() + i);
+    const ds = wxFmtDate(date);
+    const base = { date, dateStr: ds, daysAhead: i, confidence: wxConfidence(i) };
+    if (i < 16 && wxState.forecast.daily) {
+      const idx = wxState.forecast.daily.time.indexOf(ds);
+      if (idx >= 0) {
+        const D = wxState.forecast.daily;
+        out.push({
+          ...base, source:'forecast',
+          tMax:D.temperature_2m_max[idx], tMin:D.temperature_2m_min[idx],
+          tMaxApp:D.apparent_temperature_max[idx], tMinApp:D.apparent_temperature_min[idx],
+          code:D.weather_code[idx],
+          precipProb:D.precipitation_probability_max[idx],
+          precipSum:D.precipitation_sum[idx],
+          precipHours:D.precipitation_hours?.[idx],
+          windMax:D.wind_speed_10m_max[idx],
+          gustMax:D.wind_gusts_10m_max?.[idx],
+          sunrise:D.sunrise[idx], sunset:D.sunset[idx],
+          uvMax:D.uv_index_max[idx],
+        });
+        continue;
+      }
+    }
+    let tMax=null,tMin=null,code=null,precipSum=null;
+    if (wxState.climate?.daily) {
+      const m=date.getMonth(), dd=date.getDate(), matches=[];
+      const T = wxState.climate.daily.time;
+      for (let j=0; j<T.length; j++) {
+        const ct = new Date(T[j]);
+        if (ct.getMonth()===m && ct.getDate()===dd) matches.push(j);
+      }
+      if (matches.length) {
+        const avg = (k) => {
+          const v = matches.map(idx=>wxState.climate.daily[k][idx]).filter(x=>x!=null);
+          return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null;
+        };
+        tMax = avg('temperature_2m_max');
+        tMin = avg('temperature_2m_min');
+        precipSum = avg('precipitation_sum');
+        const codes = matches.map(idx=>wxState.climate.daily.weather_code[idx]).filter(x=>x!=null);
+        if (codes.length) {
+          const cnt={}; codes.forEach(c=>cnt[c]=(cnt[c]||0)+1);
+          code = parseInt(Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0]);
+        }
+      }
+    }
+    out.push({ ...base, source:'climatology', tMax, tMin, code: code ?? 2, precipSum });
   }
-  return bestIdx;
+  return out;
 }
 
-// Extract weather snapshot from API data, either current or at given time
-function extractWeatherAt(data, targetDate) {
-  if (!data) return null;
-  if (!targetDate) {
-    const c = data.current;
-    if (!c) return null;
-    return {
-      temperature: c.temperature_2m,
-      apparentTemperature: c.apparent_temperature,
-      precipitation: c.precipitation,
-      precipitationProb: 0, // not available in current
-      weatherCode: c.weather_code,
-      cloudCover: c.cloud_cover,
-      windSpeed: c.wind_speed_10m,
-      windDirection: c.wind_direction_10m,
-      windGusts: c.wind_gusts_10m,
-      humidity: c.relative_humidity_2m,
-      isDay: c.is_day === 1,
-      time: new Date(c.time),
+/* ───── Renderers ───── */
+function wxRenderGearStack(gear) {
+  if (gear === 'cancel') {
+    return `<div class="wx-gear"><div class="wx-gear-pill cancel">⚠ Ne indulj</div></div>`;
+  }
+  if (gear === 'winter') {
+    return `<div class="wx-gear">
+      <span class="wx-gear-pill warn">Aláöltöző</span>
+      <span class="wx-gear-plus">+</span>
+      <span class="wx-gear-pill warn">Termo</span>
+      <span class="wx-gear-plus">+</span>
+      <span class="wx-gear-pill warn">Esőruha</span>
+      <span class="wx-gear-plus">+</span>
+      <span class="wx-gear-pill cancel">Téli felszerelés</span>
+    </div>`;
+  }
+  const labels = { base:'Aláöltöző', thermal:'Termo', rain:'Esőruha' };
+  const pills = gear.map((g,i) => {
+    const sep = i > 0 ? '<span class="wx-gear-plus">+</span>' : '';
+    return `${sep}<span class="wx-gear-pill">${labels[g]}</span>`;
+  }).join('');
+  return `<div class="wx-gear">${pills}</div>`;
+}
+
+/* Unified "Indulás → Érkezés" panel — combines top quick-view and route-planner.
+   Always at the top. Shows departure endpoint, optional arrival endpoint,
+   route distance/duration, full verdict + reasoning, plus daily stats and
+   today's road status. */
+function wxRenderTripCard(day, dep, depHour, recentInfo) {
+  if (!day) return '';
+
+  const eyebrow = day.daysAhead === 0 ? 'ma' : day.daysAhead === 1 ? 'holnap'
+                : `${day.daysAhead} nap múlva · ${WX_DAYS_LONG[day.date.getDay()]}`;
+
+  /* Climatology day — no hourly data, show simplified card */
+  if (day.source !== 'forecast' || !dep) {
+    const w = wx(day.code);
+    return `
+      <section class="card wx-trip">
+        <p class="card-header">
+          <span>📍 Indulás → Érkezés</span>
+          <span style="font-size:9px;color:var(--text-4);font-weight:600">${eyebrow}</span>
+        </p>
+        <div class="wx-trip-row">
+          <div class="wx-trip-icon">${wxIcon(w.icon, 22)}</div>
+          <div class="wx-trip-text">
+            <div class="wx-trip-label">INDULÁSI PONT</div>
+            <div class="wx-trip-name">${escapeHtml(wxState.location.name)}</div>
+            <div class="wx-trip-stats">${day.tMax!=null ? wxRound(day.tMax)+'°/'+wxRound(day.tMin)+'°' : '—'} · ${w.label}</div>
+          </div>
+        </div>
+        <div class="wx-trip-climate">
+          16 napon túl klimatológiai becslés érhető el — pontos óránkénti előrejelzés és motoros tanácsadó nincs erre a napra.
+        </div>
+      </section>`;
+  }
+
+  /* Forecast day with departure data */
+  const depTime = `${wxPad2(depHour)}:00`;
+  const depWxd = wx(dep.code);
+  const depAdv = wxMotoAdvice({ T: dep.temp, precipMm: dep.precip, precipProb: dep.pop, code: dep.code, gust: dep.gust, wind: dep.wind, ridingSpeed: 90 });
+
+  /* Try to compute arrival data */
+  let arrW = null, arrTime = null, arrAdv = null;
+  if (wxState.arrival && wxState.routeInfo && wxState.arrivalForecast) {
+    arrTime = wxComputeArrival(day.dateStr, depHour, wxState.forecast, wxState.arrivalForecast, wxState.routeInfo.duration_s);
+    arrW = wxHourlyAt(wxState.arrivalForecast.hourly, arrTime.dateStr, arrTime.hour);
+    if (arrW) {
+      arrAdv = wxMotoAdvice({ T: arrW.temp, precipMm: arrW.precip, precipProb: arrW.pop, code: arrW.code, gust: arrW.gust, wind: arrW.wind, ridingSpeed: 90 });
+    }
+  }
+
+  /* Build verdict — full trip if arrival, departure-only otherwise */
+  let verdict;
+  if (arrW && arrAdv) {
+    const depW = { temp: dep.temp, precip: dep.precip, pop: dep.pop, code: dep.code, gust: dep.gust, wind: dep.wind };
+    verdict = wxRouteVerdict(depAdv, arrAdv, depW, arrW);
+  } else {
+    /* Single-point verdict, but use trip-style labels for visual consistency */
+    const labels = {
+      ok:    'Indulás javasolt',
+      note:  'Indulás javasolt — figyelj az időjárásra',
+      warn:  'Indulj csak megfelelő felszereléssel',
+      danger:'Indulás nem javasolt',
+    };
+    verdict = {
+      level: depAdv.level,
+      color: depAdv.color,
+      label: labels[depAdv.level] || depAdv.label,
+      gear: depAdv.gear,
+      points: depAdv.points,
     };
   }
-  const idx = findHourlyIdx(data.hourly, targetDate);
-  if (idx < 0) return null;
-  const h = data.hourly;
-  // is_day approx: between 6:00 and 20:00 local
-  const localHour = new Date(h.time[idx]).getHours();
-  return {
-    temperature: h.temperature_2m[idx],
-    apparentTemperature: h.temperature_2m[idx],
-    precipitation: h.precipitation[idx],
-    precipitationProb: h.precipitation_probability[idx],
-    weatherCode: h.weather_code[idx],
-    cloudCover: h.cloud_cover[idx],
-    windSpeed: h.wind_speed_10m[idx],
-    windDirection: h.wind_direction_10m[idx],
-    windGusts: h.wind_gusts_10m[idx],
-    humidity: null,
-    isDay: localHour >= 6 && localHour < 20,
-    time: new Date(h.time[idx]),
-  };
-}
 
-function formatHHMM(date) {
-  return date.toTimeString().slice(0, 5);
-}
-
-// Render weather block for one location with multiple time sections
-function renderWeatherStat(weather) {
-  if (!weather) return '<p class="weather-empty" style="padding:6px 0;font-size:11px">Nincs adat</p>';
-  const info = weatherCodeInfo(weather.weatherCode, weather.isDay);
-  const ride = rideability(weather);
-  const precipText = weather.precipitationProb > 0
-    ? `${weather.precipitationProb}%`
-    : (weather.precipitation > 0 ? `${weather.precipitation.toFixed(1)} mm` : '—');
-  return `
-    <div class="weather-card-grid">
-      <div class="weather-stat"><span class="icon">${info.icon}</span><span class="val">${Math.round(weather.temperature)}°C</span><span class="unit">${escapeHtml(info.text)}</span></div>
-      <div class="weather-stat"><span class="icon">💨</span><span class="val">${Math.round(weather.windSpeed)}</span><span class="unit">km/h ${windDirArrow(weather.windDirection)}${weather.windGusts > weather.windSpeed * 1.3 ? ` (${Math.round(weather.windGusts)})` : ''}</span></div>
-      <div class="weather-stat"><span class="icon">🌧️</span><span class="val">${escapeHtml(precipText)}</span><span class="unit">csapadék</span></div>
-      <div class="weather-stat"><span class="icon">☁️</span><span class="val">${Math.round(weather.cloudCover)}%</span><span class="unit">felhőzet</span></div>
-    </div>
-    <div class="weather-rideability ${ride.level}">${escapeHtml(ride.label)}${ride.reasons.length ? ' — ' + escapeHtml(ride.reasons.join(', ')) : ''}</div>
-  `;
-}
-
-// Render single location card with both "now" and (for partners) "arrival" sections
-function renderWeatherCard(prefix, name, data, arrivalDate) {
-  if (!data) {
-    return `<div class="weather-card"><div class="weather-card-header"><div class="weather-card-name"><span class="label-prefix">${escapeHtml(prefix)}</span>${escapeHtml(name)}</div></div><p class="weather-empty" style="padding:8px 0">Nem sikerült lekérni</p></div>`;
-  }
-  const wNow = extractWeatherAt(data, null);
-  const wArrival = arrivalDate ? extractWeatherAt(data, arrivalDate) : null;
-
-  const nowSection = `
-    <div class="weather-time-section">
-      <div class="weather-time-label">📍 MOST <span class="time-val">${formatHHMM(new Date())}</span></div>
-      ${renderWeatherStat(wNow)}
-    </div>
-  `;
-  const arrivalSection = arrivalDate ? `
-    <div class="weather-time-section">
-      <div class="weather-time-label">⏱️ ÉRKEZÉSKOR <span class="time-val">~${formatHHMM(arrivalDate)}</span></div>
-      ${renderWeatherStat(wArrival)}
-    </div>
-  ` : '';
-
-  return `
-    <div class="weather-card">
-      <div class="weather-card-header">
-        <div class="weather-card-name"><span class="label-prefix">${escapeHtml(prefix)}</span>${escapeHtml(name)}</div>
+  /* Route meta line (only when arrival set) */
+  const routeMeta = (arrW && wxState.routeInfo) ? `
+    <div class="wx-route-info">
+      <div class="wx-route-from-to">
+        <span>${escapeHtml(wxState.location.name)}</span>
+        <span class="wx-route-arrow">→</span>
+        <span>${escapeHtml(wxState.arrival.name)}</span>
       </div>
-      ${nowSection}
-      ${arrivalSection}
-    </div>
-  `;
+      <div class="wx-route-meta">
+        <span><span class="num">${Math.round(wxState.routeInfo.distance_km)}</span> km</span>
+        <span style="color:var(--text-4)">·</span>
+        <span class="num">${wxFmtDuration(wxState.routeInfo.duration_s)}</span>
+        ${wxState.routeInfo.source === 'osrm' ? '<span class="wx-route-source-tag">útvonal</span>' : '<span class="wx-route-source-tag">becslés</span>'}
+      </div>
+    </div>` : '';
+
+  /* Departure endpoint card */
+  const departureCard = `
+    <div class="wx-route-endpoint">
+      <div class="wx-route-ep-eyebrow">Indulás · ${depTime}</div>
+      <div class="wx-route-ep-name">${escapeHtml(wxState.location.name)}</div>
+      <div class="wx-route-ep-summary">
+        <div class="wx-route-ep-icon">${wxIcon(depWxd.icon, 32)}</div>
+        <div>
+          <div class="wx-route-ep-temp">${wxRound(dep.temp)}°</div>
+          <div class="wx-route-ep-label">${depWxd.label}</div>
+        </div>
+      </div>
+      <div class="wx-route-ep-stats">
+        Csapadék <span>${dep.precip != null && dep.precip > 0 ? dep.precip.toFixed(1)+' mm' : '0 mm'}</span> ·
+        Eshet. <span>${dep.pop != null ? wxRound(dep.pop)+'%' : '—'}</span><br>
+        Szél <span>${wxRound(dep.wind)} km/h</span>${dep.gust!=null ? ` · lökés <span>${wxRound(dep.gust)} km/h</span>` : ''}
+      </div>
+    </div>`;
+
+  /* Arrival endpoint card (only if data available) */
+  const arrivalCard = arrW ? `
+    <div class="wx-route-endpoint">
+      <div class="wx-route-ep-eyebrow">Érkezés · ${wxPad2(arrTime.displayH)}:${wxPad2(arrTime.displayM)}</div>
+      <div class="wx-route-ep-name">${escapeHtml(wxState.arrival.name)}</div>
+      <div class="wx-route-ep-summary">
+        <div class="wx-route-ep-icon">${wxIcon(wx(arrW.code).icon, 32)}</div>
+        <div>
+          <div class="wx-route-ep-temp">${wxRound(arrW.temp)}°</div>
+          <div class="wx-route-ep-label">${wx(arrW.code).label}</div>
+        </div>
+      </div>
+      <div class="wx-route-ep-stats">
+        Csapadék <span>${arrW.precip != null && arrW.precip > 0 ? arrW.precip.toFixed(1)+' mm' : '0 mm'}</span> ·
+        Eshet. <span>${arrW.pop != null ? wxRound(arrW.pop)+'%' : '—'}</span><br>
+        Szél <span>${wxRound(arrW.wind)} km/h</span>${arrW.gust!=null ? ` · lökés <span>${wxRound(arrW.gust)} km/h</span>` : ''}
+      </div>
+    </div>` : '';
+
+  /* "No destination" hint when arrival missing */
+  const noDestHint = !arrW ? `
+    <div class="wx-trip-no-dest">
+      Célállomás nincs megadva — adj hozzá partnert az <strong style="color:var(--accent)">Útvonal</strong> fülön a teljes útvonal-elemzéshez.
+    </div>` : '';
+
+  /* Loading / error indicator for arrival fetch in progress */
+  const arrivalStatus = (wxState.arrival && wxState.arrivalLoading) ? `
+    <div class="wx-trip-no-dest">${WX_ICON.loader} Útvonal és érkezési időjárás betöltése…</div>
+  ` : (wxState.arrivalError ? `
+    <div class="wx-error" style="margin-top:8px">${WX_ICON.alert}<div>${escapeHtml(wxState.arrivalError)}</div></div>
+  ` : '');
+
+  /* Road status banner — only meaningful for "today" (daysAhead === 0) */
+  let roadStatusHtml = '';
+  if (day.daysAhead === 0 && recentInfo) {
+    const T = wxState.forecast?.current?.temperature_2m ?? dep.temp;
+    const code = wxState.forecast?.current?.weather_code ?? dep.code;
+    const road = wxRoadCondition({
+      T, code,
+      recentPrecip6h: recentInfo.sum,
+      recentDryHours: recentInfo.dryHours,
+    });
+    roadStatusHtml = `
+      <div class="wx-trip-road" title="${escapeHtml(road.note)}">
+        <span class="wx-trip-road-pill" style="background:${road.color}; color:${road.color}"></span>
+        <span class="wx-trip-road-eyebrow">ÚTÁLLAPOT</span>
+        <span class="wx-trip-road-text" style="color:${road.color}">${road.label}</span>
+      </div>`;
+  }
+
+  /* Daily-stats line — sunrise, sunset, UV, max wind/gust, daily total precip */
+  const dailyStats = [];
+  if (day.sunrise) dailyStats.push(`<div class="wx-trip-daily-stat"><span class="wx-trip-daily-stat-icon">🌅</span><span>${wxFmtTime(day.sunrise)}</span></div>`);
+  if (day.sunset)  dailyStats.push(`<div class="wx-trip-daily-stat"><span class="wx-trip-daily-stat-icon">🌇</span><span>${wxFmtTime(day.sunset)}</span></div>`);
+  if (day.uvMax != null) dailyStats.push(`<div class="wx-trip-daily-stat"><span class="wx-trip-daily-stat-icon">☀️</span><span class="wx-trip-daily-stat-lbl">UV</span><span>${wxRound(day.uvMax)}</span></div>`);
+  if (day.windMax != null) {
+    const gustPart = day.gustMax != null ? `/${wxRound(day.gustMax)}` : '';
+    dailyStats.push(`<div class="wx-trip-daily-stat"><span class="wx-trip-daily-stat-icon">💨</span><span class="wx-trip-daily-stat-lbl">napi</span><span>${wxRound(day.windMax)}${gustPart} km/h</span></div>`);
+  }
+  if (day.precipSum != null) {
+    const probPart = day.precipProb != null && day.precipProb > 0 ? ` · ${wxRound(day.precipProb)}%` : '';
+    dailyStats.push(`<div class="wx-trip-daily-stat"><span class="wx-trip-daily-stat-icon">💧</span><span class="wx-trip-daily-stat-lbl">napi</span><span>${day.precipSum.toFixed(1)} mm${probPart}</span></div>`);
+  }
+  const dailyStatsHtml = dailyStats.length ? `<div class="wx-trip-daily">${dailyStats.join('')}</div>` : '';
+
+  return `
+    <section class="card wx-trip">
+      <p class="card-header">
+        <span>📍 Indulás → Érkezés</span>
+        <span style="font-size:9px;color:var(--text-4);font-weight:600">${eyebrow}</span>
+      </p>
+      ${roadStatusHtml}
+      ${routeMeta}
+      <div class="wx-route-endpoints">
+        ${departureCard}
+        ${arrivalCard}
+      </div>
+      ${dailyStatsHtml}
+      ${noDestHint}
+      ${arrivalStatus}
+      <div class="wx-verdict" style="margin-top:12px">
+        <div class="wx-verdict-row">
+          <span class="wx-verdict-pill" style="background:${verdict.color}; color:${verdict.color}"></span>
+          <div class="wx-verdict-label" style="color:${verdict.color}">${escapeHtml(verdict.label)}</div>
+        </div>
+        ${wxRenderGearStack(verdict.gear)}
+        ${verdict.points && verdict.points.length ? `
+          <ul class="wx-verdict-points">
+            ${verdict.points.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+          </ul>` : ''}
+      </div>
+    </section>`;
 }
 
-let weatherUpdateId = 0;
-async function updateWeather() {
-  const myId = ++weatherUpdateId;
+function wxRenderCurrent(loc, current) {
+  if (!current) return '';
+  const w = wx(current.weather_code);
+  return `
+    <section class="card">
+      <div class="wx-current">
+        <div class="wx-current-icon">${wxIcon(w.icon, 28)}</div>
+        <div class="wx-current-info">
+          <div class="wx-current-loc">${WX_ICON.pin}<span>${escapeHtml(loc.name)}${loc.admin1 ? ', '+escapeHtml(loc.admin1) : ''}</span></div>
+          <div class="wx-current-temp">${wxRound(current.temperature_2m)}<sup>°</sup></div>
+          <div class="wx-current-label">${w.label}</div>
+          <div class="wx-current-feel">Hőérzet ${wxRound(current.apparent_temperature)}°</div>
+        </div>
+      </div>
+      <div class="wx-stat-grid">
+        <div class="wx-stat">
+          <div class="wx-stat-lbl">${WX_ICON.drop} Páratart.</div>
+          <div class="wx-stat-val">${wxRound(current.relative_humidity_2m)}%</div>
+        </div>
+        <div class="wx-stat">
+          <div class="wx-stat-lbl">${WX_ICON.wind} Szél</div>
+          <div class="wx-stat-val">${wxRound(current.wind_speed_10m)} km/h</div>
+          <div class="wx-stat-sub">${wxWindDir(current.wind_direction_10m)}${current.wind_gusts_10m != null ? ` · lökés ${wxRound(current.wind_gusts_10m)}` : ''}</div>
+        </div>
+        <div class="wx-stat">
+          <div class="wx-stat-lbl">${WX_ICON.gauge} Légnyomás</div>
+          <div class="wx-stat-val">${wxRound(current.pressure_msl)} hPa</div>
+        </div>
+        <div class="wx-stat">
+          <div class="wx-stat-lbl">${current.is_day ? '☀️' : '🌙'} ${current.is_day ? 'Nappal' : 'Éjszaka'}</div>
+          <div class="wx-stat-val">${current.is_day ? 'Világos' : 'Sötét'}</div>
+        </div>
+      </div>
+    </section>`;
+}
+
+function wxRenderCalendar(days, selectedIdx) {
+  const first = days[0]?.date;
+  if (!first) return '';
+  const startWeekday = (first.getDay() + 6) % 7;
+  const heads = ['Hét','Ked','Sze','Csü','Pén','Szo','Vas']
+    .map(d => `<div class="wx-cal-day-label">${d}</div>`).join('');
+  let pads = '';
+  for (let i=0; i<startWeekday; i++) pads += `<div></div>`;
+  const tiles = days.map((d,i) => {
+    const w = wx(d.code);
+    const cc = wxConfColor(d.confidence);
+    const tempBlock = d.tMax != null
+      ? `${wxRound(d.tMax)}°<span class="lo">/${wxRound(d.tMin)}°</span>`
+      : '—';
+    const precipBadge = d.precipSum != null && d.precipSum >= 0.5
+      ? `<div class="wx-cal-precip">${d.precipSum.toFixed(1)}mm</div>` : '';
+    return `
+      <button class="wx-cal-tile ${i===selectedIdx?'selected':''}" data-idx="${i}">
+        <div class="wx-cal-day">${WX_DAYS[d.date.getDay()]}</div>
+        <div class="wx-cal-num">${d.date.getDate()}</div>
+        <div class="wx-cal-icon">${wxIcon(w.icon, 18)}</div>
+        <div class="wx-cal-temp">${tempBlock}</div>
+        ${precipBadge}
+        <div class="wx-cal-conf" style="color:${cc}">
+          <span class="wx-conf-dot" style="background:${cc}"></span>${d.confidence}%
+        </div>
+      </button>`;
+  }).join('');
+
+  /* Show selected day name in summary so users know what day is currently active */
+  const sel = days[selectedIdx];
+  const selLabel = sel
+    ? (sel.daysAhead === 0 ? 'Ma · ' : sel.daysAhead === 1 ? 'Holnap · ' : '')
+      + `${WX_DAYS_LONG[sel.date.getDay()]} ${sel.date.getDate()}.`
+    : '';
+
+  return `
+    <details class="wx-cal-card" ${wxState.calendarOpen ? 'open' : ''}>
+      <summary class="wx-cal-summary">
+        <span class="wx-cal-summary-title">
+          🗓️ <span>30 napos kilátás</span>
+          ${selLabel ? `<span class="wx-cal-summary-hint">· ${escapeHtml(selLabel)}</span>` : ''}
+        </span>
+        <span class="wx-cal-chevron">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </summary>
+      <div class="wx-cal-body">
+        <div class="wx-calendar">
+          <div class="wx-cal-head">${heads}</div>
+          <div class="wx-cal-grid">${pads}${tiles}</div>
+        </div>
+      </div>
+    </details>`;
+}
+
+function wxRenderDayDetail(day, hourly, recentInfo, departureHour) {
+  const w = wx(day.code);
+  const cc = wxConfColor(day.confidence);
+  const eyebrow = day.daysAhead===0 ? 'Ma' : day.daysAhead===1 ? 'Holnap' : `${day.daysAhead} nap múlva`;
+
+  /* Warnings */
+  const warns = wxDayWarnings(day);
+  const warnsHtml = warns.length ? `
+    <div class="wx-warnings">
+      ${warns.map(wn => {
+        const isMajor = /zivatar|jég|hőség|fagy|ónos|viharos|heves/i.test(wn.text);
+        return `<div class="wx-warning ${isMajor?'major':''}">${wxIcon(wn.icon, 14)}<span>${escapeHtml(wn.text)}</span></div>`;
+      }).join('')}
+    </div>` : '';
+
+  /* Departure planner + 3-speed advice */
+  let planHtml = '';
+  if (day.source === 'forecast' && hourly.length > 0) {
+    let depHour = departureHour;
+    let dep = depHour != null ? wxHourlyAt(wxState.forecast.hourly, day.dateStr, depHour) : null;
+    if (!dep && hourly.length) {
+      depHour = new Date(hourly[0].time).getHours();
+      dep = wxHourlyAt(wxState.forecast.hourly, day.dateStr, depHour);
+    }
+
+    const hourCells = hourly.map(h => {
+      const hw = wx(h.code);
+      const hh = new Date(h.time).getHours();
+      const isSel = hh === depHour;
+      const popHtml = h.pop != null && h.pop >= 5 ? `<div class="wx-hour-pop">${wxRound(h.pop)}%</div>` : '';
+      return `
+        <div class="wx-hour-cell selectable ${isSel?'selected':''}" data-hour="${hh}">
+          <div class="wx-hour-time">${wxFmtTime(h.time)}</div>
+          <div class="wx-hour-icon">${wxIcon(hw.icon, 18)}</div>
+          <div class="wx-hour-temp">${wxRound(h.temp)}°</div>
+          ${popHtml}
+        </div>`;
+    }).join('');
+
+    let depSummaryHtml = '', adviceHtml = '';
+
+    if (dep) {
+      const depWxd = wx(dep.code);
+      depSummaryHtml = `
+        <div class="wx-dep-summary">
+          <div class="wx-dep-summary-row">
+            <div class="wx-dep-summary-icon">${wxIcon(depWxd.icon, 26)}</div>
+            <div class="wx-dep-summary-text">
+              <div class="wx-dep-summary-label">${depWxd.label} · ${wxRound(dep.temp)}°C</div>
+              <div class="wx-dep-summary-temp">
+                Csapadék: ${dep.precip != null && dep.precip > 0 ? dep.precip.toFixed(1)+' mm' : '0 mm'} · 
+                Eshet. ${dep.pop != null ? wxRound(dep.pop) : '0'}% · 
+                Szél ${wxRound(dep.wind)} km/h
+              </div>
+            </div>
+          </div>
+        </div>`;
+
+      const SPEEDS = [{v:50,tag:'város'},{v:90,tag:'országút'},{v:130,tag:'autópálya'}];
+      const speedAdvs = SPEEDS.map(s => ({
+        ...s,
+        adv: wxMotoAdvice({ T: dep.temp, precipMm: dep.precip, precipProb: dep.pop, code: dep.code, gust: dep.gust, wind: dep.wind, ridingSpeed: s.v })
+      }));
+      const speedCards = speedAdvs.map(({ v, tag, adv }) => `
+        <div class="wx-speed-card" style="border-left-color:${adv.color}">
+          <div class="wx-speed-head">
+            <span class="wx-speed-num" style="color:${adv.color}">${v}</span>
+            <span class="wx-speed-unit">km/h</span>
+            <span class="wx-speed-tag">${tag}</span>
+          </div>
+          <div class="wx-speed-verdict" style="color:${adv.color}">${adv.label}</div>
+          ${wxRenderGearStack(adv.gear)}
+          ${adv.Twc != null ? `
+            <div class="wx-speed-felt">
+              <span>Hőérzet csupasz bőrön</span>
+              <span class="wx-speed-felt-num" style="color:${adv.color}">${wxRound(adv.Twc)}°C</span>
+            </div>` : ''}
+        </div>`).join('');
+
+      const allPoints = [];
+      const seen = new Set();
+      speedAdvs.forEach(({adv}) => adv.points.forEach(p => { if (!seen.has(p)) { seen.add(p); allPoints.push(p); }}));
+
+      adviceHtml = `
+        <details class="wx-advice-card" data-wx-advice ${wxState.adviceOpen ? 'open' : ''}>
+          <summary class="wx-advice-summary">
+            <span class="wx-advice-title">
+              🏍️ <span>Motoros tanácsadó</span>
+              <span class="wx-advice-hint">· 50 / 90 / 130 km/h</span>
+            </span>
+            <span class="wx-advice-chevron">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="wx-advice-body">
+            <div class="wx-speed-grid">${speedCards}</div>
+            <div class="wx-gear-explain">Felszerelés: aláöltöző + esőruha. Termoréteget az aláöltöző és esőruha közé tedd, ha a tanácsadó kéri.</div>
+            <ul class="wx-verdict-points" style="margin-top:8px">
+              ${allPoints.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+            </ul>
+          </div>
+        </details>`;
+    }
+
+    planHtml = `
+      <div class="wx-departure">
+        <div class="wx-departure-head">
+          <span class="wx-departure-label">${WX_ICON.bike}<span>Indulás időpontja</span></span>
+          <span class="wx-departure-time">${wxPad2(depHour)}:00</span>
+        </div>
+        <div class="wx-hour-strip">${hourCells}</div>
+        <div class="wx-departure-hint">Kattints egy órára — a tanácsadó azt számolja</div>
+        ${depSummaryHtml}
+      </div>
+      ${adviceHtml}`;
+  }
+
+  const climateNote = day.source==='climatology' ? `
+    <div class="wx-climate-note">
+      <strong>Figyelem:</strong> 16 napon túl konkrét numerikus előrejelzés tudományosan nem megbízható. Az értékek az elmúlt 5 év azonos napjának átlagából (ERA5 reanalízis) számolt klimatológiai becslések. Indulás-tervező és motoros tanácsadó csak 16 napon belül érhető el.
+    </div>` : '';
+
+  return `
+    <section class="card" data-wx-detail>
+      <div class="wx-detail-head">
+        <div>
+          <div class="wx-detail-day-eyebrow">${escapeHtml(eyebrow)}</div>
+          <div class="wx-detail-day-name">${WX_DAYS_LONG[day.date.getDay()]}</div>
+          <div class="wx-detail-date">${day.date.getFullYear()}. ${WX_MONTHS[day.date.getMonth()]} ${day.date.getDate()}.</div>
+        </div>
+        <div class="wx-conf-card">
+          <div class="wx-conf-eyebrow">Megbízhatóság</div>
+          <div class="wx-conf-row">
+            <span class="wx-conf-num" style="color:${cc}">${day.confidence}%</span>
+            <span class="wx-conf-label">${wxConfLabel(day.confidence)}</span>
+          </div>
+          <div class="wx-conf-bar"><div class="wx-conf-fill" style="width:${day.confidence}%; background:${cc}"></div></div>
+          <div class="wx-conf-source">${day.source==='forecast' ? 'Numerikus modell' : 'Klimatológiai becslés'}</div>
+        </div>
+      </div>
+      ${warnsHtml}
+      ${planHtml}
+      ${climateNote}
+    </section>`;
+}
+
+/* ───── Main render ───── */
+function wxRender() {
   const list = document.getElementById('weatherList');
   if (!list) return;
 
-  // Build list of points to fetch: origin + each valid partner
-  const points = [];
-  if (currentLocation) {
-    const originName = currentLocation.source === 'gps'
-      ? 'Kiindulópont (GPS)'
-      : (currentLocation.name || 'Kiindulópont');
-    points.push({
-      label: 'Kiinduló',
-      name: originName,
-      lat: currentLocation.lat,
-      lng: currentLocation.lng,
-      isOrigin: true,
-    });
+  if (wxState.error) {
+    list.innerHTML = `<section class="card"><div class="wx-error">${WX_ICON.alert}<div>${escapeHtml(wxState.error)}</div></div></section>`;
+    return;
   }
-  stops.forEach((s, idx) => {
-    const data = getStopData(s);
-    if (data && data.lat != null) {
-      points.push({
-        label: `Partner ${idx + 1}`,
-        name: data.name,
-        lat: data.lat,
-        lng: data.lng,
-      });
-    }
-  });
-
-  if (points.length === 0) {
-    list.innerHTML = '<p class="weather-empty">Adj meg legalább egy partnert az időjáráshoz.</p>';
+  if (wxState.loading) {
+    list.innerHTML = `<section class="card"><div class="weather-loading">${WX_ICON.loader}<span>Adatok betöltése a hivatalos forrásokból…</span></div></section>`;
+    return;
+  }
+  if (!wxState.location || !wxState.forecast) {
+    list.innerHTML = `
+      <section class="card">
+        <p class="card-header">
+          <span>🌤️ Időjárás motorhoz</span>
+          <span style="font-size:9px;color:var(--text-4);font-weight:600">útvonal alapján</span>
+        </p>
+        <p style="font-size:13px; color:var(--text-2); line-height:1.55; margin:6px 0">
+          Az időjárás-előrejelzés az <strong style="color:var(--accent)">Útvonal</strong> fülön beállított adatokat használja:
+        </p>
+        <ul style="font-size:12px; color:var(--text-3); line-height:1.7; padding-left:18px; margin:8px 0">
+          <li><strong style="color:var(--text-2)">Indulási pont</strong>: a GPS-helyzeted vagy a kiindulópontnak választott partner</li>
+          <li><strong style="color:var(--text-2)">Célállomás</strong>: az útvonal utolsó partnere</li>
+        </ul>
+        <p style="font-size:11px; color:var(--text-4); margin:8px 0 0; line-height:1.5">
+          Lépj az "Útvonal" fülre és állítsd be ezeket — utána térj vissza ide.
+        </p>
+      </section>`;
     return;
   }
 
-  list.innerHTML = '<p class="weather-loading">⏳ Időjárás lekérése...</p>';
+  const days = wxBuildDays();
+  const selected = days[wxState.selectedIdx];
+  if (wxState.departureHour == null && selected?.source === 'forecast') {
+    wxState.departureHour = wxDefaultHour(selected.daysAhead);
+  }
 
-  // Compute arrival times for "arrival" mode
-  const now = new Date();
-  let cumulativeKm = 0;
-  const arrivalTimes = points.map((p, i) => {
-    if (i === 0) return now; // origin = now
-    // Use lastLegDistances if available
-    const legKm = (lastLegDistances && lastLegDistances[i - 1] != null)
-      ? lastLegDistances[i - 1]
-      : 30; // fallback estimate
-    cumulativeKm += legKm;
-    const minutesElapsed = (cumulativeKm / AVG_SPEED_KMH) * 60;
-    return new Date(now.getTime() + minutesElapsed * 60 * 1000);
+  let hourly = [];
+  if (wxState.forecast?.hourly && selected?.source === 'forecast') {
+    const H = wxState.forecast.hourly;
+    const now = new Date();
+    for (let i = 0; i < H.time.length; i++) {
+      if (!H.time[i].startsWith(selected.dateStr)) continue;
+      if (selected.daysAhead === 0 && new Date(H.time[i]) < now) continue;
+      hourly.push({
+        time: H.time[i], temp: H.temperature_2m[i],
+        code: H.weather_code[i], pop: H.precipitation_probability[i],
+        precip: H.precipitation[i], wind: H.wind_speed_10m[i],
+        gust: H.wind_gusts_10m[i],
+      });
+    }
+  }
+  const recentInfo = wxState.forecast?.hourly ? wxRecentPrecip(wxState.forecast.hourly, 6) : null;
+
+  /* Resolve departure-hour data for the trip summary card */
+  let depForSummary = null, depHourForSummary = wxState.departureHour;
+  if (selected?.source === 'forecast') {
+    depForSummary = depHourForSummary != null
+      ? wxHourlyAt(wxState.forecast.hourly, selected.dateStr, depHourForSummary)
+      : null;
+    if (!depForSummary && hourly.length) {
+      depHourForSummary = new Date(hourly[0].time).getHours();
+      depForSummary = wxHourlyAt(wxState.forecast.hourly, selected.dateStr, depHourForSummary);
+    }
+  }
+
+  list.innerHTML = `
+    ${wxRenderTripCard(selected, depForSummary, depHourForSummary, recentInfo)}
+    ${wxRenderDayDetail(selected, hourly, recentInfo, wxState.departureHour)}
+    ${wxRenderCalendar(days, wxState.selectedIdx)}
+    <div class="wx-footer">
+      Adatforrás: <span>Open-Meteo</span> · DWD · ECMWF · MET Norway · NOAA<br>
+      Geokódolás: GeoNames · Útvonal: OSRM · Klimatológia: ERA5
+    </div>
+  `;
+
+  /* Track collapse state for the calendar */
+  const calCard = list.querySelector('.wx-cal-card');
+  if (calCard) {
+    calCard.addEventListener('toggle', () => {
+      wxState.calendarOpen = calCard.open;
+    });
+  }
+
+  /* Track collapse state for the motorcycle-advice section */
+  const adviceCard = list.querySelector('[data-wx-advice]');
+  if (adviceCard) {
+    adviceCard.addEventListener('toggle', () => {
+      wxState.adviceOpen = adviceCard.open;
+    });
+  }
+
+  /* Wire calendar tile clicks */
+  list.querySelectorAll('.wx-cal-tile').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = parseInt(btn.dataset.idx, 10);
+      wxState.selectedIdx = i;
+      const d = wxBuildDays()[i];
+      wxState.departureHour = d?.source === 'forecast' ? wxDefaultHour(d.daysAhead) : null;
+      /* Keep calendar in its current open/closed state */
+      wxRender();
+      const detail = list.querySelector('[data-wx-detail]');
+      if (detail) detail.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   });
 
-  // Fetch all weather data in parallel
-  const weatherPromises = points.map(p => fetchWeather(p.lat, p.lng));
-  const weatherData = await Promise.all(weatherPromises);
+  /* Wire hour-cell clicks */
+  list.querySelectorAll('.wx-hour-cell.selectable').forEach(cell => {
+    cell.addEventListener('click', () => {
+      wxState.departureHour = parseInt(cell.dataset.hour, 10);
+      wxRender();
+      const sel = list.querySelector('.wx-hour-cell.selected');
+      if (sel) sel.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
+  });
+}
 
-  // Race condition: if another updateWeather started, abort this render
-  if (myId !== weatherUpdateId) return;
-
-  // Render
-  let html = '';
-  let anyFailed = false;
-  for (let i = 0; i < points.length; i++) {
-    const p = points[i];
-    const data = weatherData[i];
-    if (!data) anyFailed = true;
-    // Origin only shows "now"; partners show both "now" and "arrival"
-    const arrivalDate = !p.isOrigin ? arrivalTimes[i] : null;
-    html += renderWeatherCard(p.label, p.name, data, arrivalDate);
+/* ───── Search dropdown for main location (rendered into #wxDropdown) ───── */
+function wxRenderDropdown() {
+  const dd = document.getElementById('wxDropdown');
+  if (!dd) return;
+  if (!wxState.showDropdown || wxState.results.length === 0) {
+    dd.style.display = 'none';
+    dd.innerHTML = '';
+    return;
   }
-  list.innerHTML = html;
+  dd.style.display = 'block';
+  dd.innerHTML = wxState.results.map((r,i) => `
+    <button class="wx-dd-item" data-idx="${i}">
+      ${WX_ICON.pin}
+      <div style="min-width:0; flex:1">
+        <div class="wx-dd-name">${escapeHtml(r.name)}</div>
+        <div class="wx-dd-sub">${escapeHtml([r.admin1, r.admin2, r.country].filter(Boolean).join(' · '))}</div>
+      </div>
+    </button>
+  `).join('');
+  dd.querySelectorAll('.wx-dd-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx, 10);
+      wxPickLocation(wxState.results[idx]);
+    });
+  });
+}
 
-  if (anyFailed) {
-    list.insertAdjacentHTML('beforeend',
-      '<p class="weather-empty" style="padding:6px 0">⚠️ Nem sikerült lekérni minden helyhez. Ellenőrizd a netkapcsolatot.</p>');
+function wxHandleSearch() {
+  clearTimeout(wxSearchTimer);
+  const clearBtn = document.getElementById('wxSearchClear');
+  if (clearBtn) clearBtn.style.display = wxState.query ? 'block' : 'none';
+  if (wxState.query.trim().length < 2) {
+    wxState.results = [];
+    wxState.showDropdown = false;
+    wxRenderDropdown();
+    return;
+  }
+  wxSearchTimer = setTimeout(async () => {
+    try {
+      wxState.results = await wxGeocode(wxState.query);
+      wxState.showDropdown = true;
+    } catch {
+      wxState.results = [];
+      wxState.showDropdown = false;
+    }
+    wxRenderDropdown();
+  }, 280);
+}
+
+function wxHandleArrivalSearch() {
+  clearTimeout(wxArrivalSearchTimer);
+  if (wxState.arrivalQuery.trim().length < 2) {
+    wxState.arrivalResults = [];
+    wxState.arrivalShowDropdown = false;
+    wxRender();
+    return;
+  }
+  wxArrivalSearchTimer = setTimeout(async () => {
+    try {
+      wxState.arrivalResults = await wxGeocode(wxState.arrivalQuery);
+      wxState.arrivalShowDropdown = true;
+    } catch {
+      wxState.arrivalResults = [];
+      wxState.arrivalShowDropdown = false;
+    }
+    const prev = document.activeElement;
+    const caret = prev?.selectionStart;
+    wxRender();
+    const next = document.getElementById('wxRouteInput');
+    if (next && prev?.id === 'wxRouteInput') {
+      next.focus();
+      if (caret != null) try { next.setSelectionRange(caret, caret); } catch {}
+    }
+  }, 280);
+}
+
+async function wxPickLocation(loc) {
+  wxState.location = loc;
+  wxState.query = `${loc.name}${loc.admin1?', '+loc.admin1:''}${loc.country?' · '+loc.country:''}`;
+  const input = document.getElementById('wxSearchInput');
+  if (input) input.value = wxState.query;
+  wxState.showDropdown = false;
+  wxState.selectedIdx = 0;
+  wxState.departureHour = null;
+  wxState.arrival = null;
+  wxState.arrivalQuery = '';
+  wxState.arrivalResults = [];
+  wxState.arrivalForecast = null;
+  wxState.routeInfo = null;
+  wxState.arrivalError = null;
+  wxState.loading = true;
+  wxState.error = null;
+  wxRenderDropdown();
+  wxRender();
+  try {
+    const fc = await wxLoadForecast(loc);
+    wxState.forecast = fc;
+    wxLoadClimate(loc).then(c => { if (c) { wxState.climate = c; wxRender(); }}).catch(()=>{});
+  } catch (e) {
+    wxState.error = e.message || 'Hiba történt az adatok betöltésekor.';
+  } finally {
+    wxState.loading = false;
+    wxRender();
   }
 }
+
+async function wxPickArrival(loc) {
+  wxState.arrival = loc;
+  wxState.arrivalQuery = `${loc.name}${loc.admin1?', '+loc.admin1:''}${loc.country?' · '+loc.country:''}`;
+  wxState.arrivalShowDropdown = false;
+  wxState.arrivalResults = [];
+  wxState.arrivalLoading = true;
+  wxState.arrivalError = null;
+  wxState.arrivalForecast = null;
+  wxState.routeInfo = null;
+  wxRender();
+  try {
+    const [fc, ri] = await Promise.all([
+      wxLoadArrivalForecast(loc),
+      wxFetchRoute(wxState.location, loc),
+    ]);
+    wxState.arrivalForecast = fc;
+    wxState.routeInfo = ri;
+  } catch (e) {
+    wxState.arrivalError = e.message || 'Nem sikerült az adatokat lekérdezni.';
+  } finally {
+    wxState.arrivalLoading = false;
+    wxRender();
+  }
+}
+
+function wxClearSearch() {
+  wxState.query = '';
+  wxState.results = [];
+  wxState.showDropdown = false;
+  const input = document.getElementById('wxSearchInput');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('wxSearchClear');
+  if (clearBtn) clearBtn.style.display = 'none';
+  wxRenderDropdown();
+}
+
+function wxInit() {
+  /* Host integration: data comes from Route tab.
+     There's no search input to wire — wxRender will display whatever is in
+     currentLocation / stops at sync time. */
+}
+
+/* ───── Host integration: pull origin & destination from Route tab state ───── */
+
+/* Build a compact display name from the host's currentLocation. */
+function wxLocDisplayName(loc) {
+  if (loc.source === 'partner' && loc.name) return loc.name;
+  if (loc.address) {
+    /* Address format from host's reverseGeocode is like
+       "3300 Eger, Dobó tér 1" — extract the city name. */
+    const m = loc.address.match(/^\d{4}\s+([^,]+)/);
+    if (m) return m[1].trim();
+    return loc.address.split(',')[0].trim();
+  }
+  return 'Aktuális helyzet';
+}
+
+/* Read endpoints from host globals. Returns { origin, dest } where each may be null. */
+function wxGetRouteFromHost() {
+  let origin = null, dest = null;
+
+  if (typeof currentLocation !== 'undefined' && currentLocation && currentLocation.lat != null) {
+    origin = {
+      name: wxLocDisplayName(currentLocation),
+      latitude: currentLocation.lat,
+      longitude: currentLocation.lng,
+    };
+  }
+
+  if (typeof stops !== 'undefined' && Array.isArray(stops) && typeof getStopData === 'function') {
+    /* Walk the stops list backwards, pick the last one with valid coords
+       that's not effectively the same point as the origin. */
+    for (let i = stops.length - 1; i >= 0; i--) {
+      const d = getStopData(stops[i]);
+      if (d && d.lat != null && d.lng != null) {
+        if (origin
+            && Math.abs(d.lat - origin.latitude) < 0.001
+            && Math.abs(d.lng - origin.longitude) < 0.001) {
+          /* Same point as origin — no meaningful route. Skip. */
+          break;
+        }
+        dest = { name: d.name, latitude: d.lat, longitude: d.lng };
+        break;
+      }
+    }
+  }
+
+  return { origin, dest };
+}
+
+/* Sync wxState from host's route. Refetches forecasts only when endpoints actually change. */
+async function wxSyncFromRoute() {
+  const { origin, dest } = wxGetRouteFromHost();
+
+  /* No origin at all → empty state */
+  if (!origin) {
+    wxState.location = null;
+    wxState.forecast = null;
+    wxState.climate = null;
+    wxState.arrival = null;
+    wxState.arrivalForecast = null;
+    wxState.routeInfo = null;
+    wxState.error = null;
+    wxState.loading = false;
+    wxRender();
+    return;
+  }
+
+  /* Origin handling */
+  const originChanged = !wxState.location ||
+    Math.abs(wxState.location.latitude - origin.latitude) > 0.001 ||
+    Math.abs(wxState.location.longitude - origin.longitude) > 0.001;
+
+  if (originChanged) {
+    wxState.location = origin;
+    wxState.forecast = null;
+    wxState.climate = null;
+    wxState.selectedIdx = 0;
+    wxState.departureHour = null;
+    wxState.loading = true;
+    wxState.error = null;
+    wxRender();
+    try {
+      wxState.forecast = await wxLoadForecast(origin);
+      wxLoadClimate(origin).then(c => { if (c) { wxState.climate = c; wxRender(); }}).catch(()=>{});
+    } catch (e) {
+      wxState.error = e.message || 'Hiba történt az időjárás betöltésekor.';
+      wxState.loading = false;
+      wxRender();
+      return;
+    }
+    wxState.loading = false;
+  } else if (wxState.location.name !== origin.name) {
+    /* Same coords, fresh display name (e.g., reverse geocode just resolved) */
+    wxState.location.name = origin.name;
+  }
+
+  /* Destination handling */
+  const destChanged = !!dest && (!wxState.arrival ||
+    Math.abs(wxState.arrival.latitude - dest.latitude) > 0.001 ||
+    Math.abs(wxState.arrival.longitude - dest.longitude) > 0.001);
+  const destRemoved = !dest && !!wxState.arrival;
+
+  if (destChanged) {
+    wxState.arrival = dest;
+    wxState.arrivalLoading = true;
+    wxState.arrivalError = null;
+    wxState.arrivalForecast = null;
+    wxState.routeInfo = null;
+    wxRender();
+    try {
+      const [fc, ri] = await Promise.all([
+        wxLoadArrivalForecast(dest),
+        wxFetchRoute(origin, dest),
+      ]);
+      wxState.arrivalForecast = fc;
+      wxState.routeInfo = ri;
+    } catch (e) {
+      wxState.arrivalError = e.message || 'Nem sikerült érkezési adatokat lekérdezni.';
+    }
+    wxState.arrivalLoading = false;
+  } else if (destRemoved) {
+    wxState.arrival = null;
+    wxState.arrivalForecast = null;
+    wxState.routeInfo = null;
+  } else if (dest && wxState.arrival && wxState.arrival.name !== dest.name) {
+    wxState.arrival.name = dest.name;
+  }
+
+  wxRender();
+}
+
+/* Public API for host integration */
+async function updateWeather() {
+  if (!wxState.initialized) {
+    wxInit();
+    wxState.initialized = true;
+  }
+  await wxSyncFromRoute();
+}
+
+function loadWeatherCache() {
+  /* No-op kept for host compatibility — host's init() calls this on app start. */
+}
+
 
 // =============================================================
 // MAIN UPDATE
