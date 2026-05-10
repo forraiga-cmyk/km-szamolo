@@ -1416,6 +1416,188 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 .wx-trip-time-hint strong { color: var(--accent); font-weight: 700; }
 .wx-trip-time-hint.future { color: var(--accent); }
 
+/* =================================================================
+   Lola voice assistant — big launch button + dialog modal
+   ================================================================= */
+.lola-launch {
+  width: 100%;
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px; margin-bottom: 12px;
+  background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(96,165,250,0.10));
+  border: 1.5px solid rgba(251,191,36,0.45);
+  border-radius: 18px;
+  cursor: pointer; user-select: none;
+  transition: all 0.2s ease;
+  position: relative; overflow: hidden;
+}
+.lola-launch::before {
+  content: ''; position: absolute; top: -30%; right: -10%;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(251,191,36,0.20), transparent 70%);
+  pointer-events: none;
+}
+.lola-launch:hover, .lola-launch:active {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(251,191,36,0.18);
+  border-color: rgba(251,191,36,0.7);
+}
+.lola-launch-icon {
+  width: 56px; height: 56px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent); color: var(--bg);
+  border-radius: 50%; font-size: 28px;
+  box-shadow: 0 4px 14px rgba(251,191,36,0.4);
+  position: relative; z-index: 1;
+}
+.lola-launch-text {
+  flex: 1; min-width: 0; position: relative; z-index: 1;
+}
+.lola-launch-name {
+  font-size: 22px; font-weight: 800; color: var(--text);
+  letter-spacing: -0.02em; line-height: 1.1;
+}
+.lola-launch-tag {
+  font-size: 11px; color: var(--text-3); margin-top: 2px;
+  font-weight: 600;
+}
+.lola-launch-cta {
+  font-size: 18px; flex-shrink: 0; color: var(--accent);
+  position: relative; z-index: 1;
+}
+
+/* Dialog modal — overlay shown while Lola is in conversation */
+.lola-modal {
+  position: fixed; inset: 0;
+  background: rgba(9,9,11,0.92);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  padding: 20px; animation: lolaFadeIn 0.25s ease;
+}
+.lola-modal.active { display: flex; }
+@keyframes lolaFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.lola-modal-orb {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #f59e0b);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 56px;
+  box-shadow: 0 0 60px rgba(251,191,36,0.4);
+  margin-bottom: 30px;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+.lola-modal-orb::before, .lola-modal-orb::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0; pointer-events: none;
+}
+.lola-modal.listening .lola-modal-orb {
+  animation: lolaPulse 1.4s ease-in-out infinite;
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  box-shadow: 0 0 60px rgba(239,68,68,0.5);
+}
+.lola-modal.listening .lola-modal-orb::before {
+  animation: lolaRing 1.6s ease-out infinite;
+  border-color: #ef4444;
+}
+.lola-modal.listening .lola-modal-orb::after {
+  animation: lolaRing 1.6s ease-out infinite 0.5s;
+  border-color: #ef4444;
+}
+.lola-modal.speaking .lola-modal-orb {
+  animation: lolaPulse 1.6s ease-in-out infinite;
+}
+@keyframes lolaPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+@keyframes lolaRing {
+  0%   { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+.lola-modal-status {
+  font-size: 13px; color: var(--text-3); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  margin-bottom: 12px;
+}
+.lola-modal-said {
+  font-size: 17px; color: var(--text);
+  line-height: 1.4; text-align: center;
+  max-width: 480px; margin-bottom: 14px;
+  font-weight: 600;
+}
+.lola-modal-userSaid {
+  font-size: 14px; color: var(--text-3); font-style: italic;
+  text-align: center; min-height: 22px;
+  max-width: 480px; padding: 0 16px;
+}
+.lola-modal-userSaid::before {
+  content: '" '; opacity: 0.5;
+}
+.lola-modal-userSaid::after {
+  content: ' "'; opacity: 0.5;
+}
+.lola-modal-userSaid:empty::before, .lola-modal-userSaid:empty::after { content: ''; }
+.lola-modal-actions {
+  margin-top: 30px;
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+}
+.lola-action-btn {
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-size: 15px; font-weight: 700;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  min-width: 110px;
+  transition: all 0.15s ease;
+}
+.lola-action-btn.primary {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.lola-action-btn:hover, .lola-action-btn:active {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+.lola-action-btn.cancel {
+  background: transparent;
+  color: var(--text-3);
+  border-color: rgba(239,68,68,0.4);
+  font-size: 13px;
+  padding: 10px 22px;
+  min-width: 90px;
+  margin-top: 8px;
+}
+.lola-action-btn.cancel:hover { color: #f87171; border-color: #f87171; }
+.lola-progress {
+  position: absolute; top: 24px; left: 0; right: 0;
+  display: flex; justify-content: center; gap: 8px;
+}
+.lola-progress-step {
+  width: 24px; height: 4px; border-radius: 2px;
+  background: var(--surface-2);
+  transition: background 0.3s ease;
+}
+.lola-progress-step.done   { background: var(--success); }
+.lola-progress-step.active { background: var(--accent); }
+.lola-error-banner {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 10px;
+  font-size: 12px; color: #fecaca;
+  text-align: center; max-width: 460px;
+}
+
 /* Stats */
 .stats-section {
   margin-bottom: 16px;
@@ -2492,6 +2674,13 @@ footer {
 
 <!-- ÚTVONAL (összevont: GPS + Autópálya + Partnerek) -->
 <div class="tab-panel active" data-tab="route">
+<button class="lola-launch" id="lolaLaunch" type="button" aria-label="Honda hangasszisztens indítása">
+  <span class="lola-launch-icon">🎤</span>
+  <span class="lola-launch-text">
+    <span class="lola-launch-name">Honda</span>
+  </span>
+  <span class="lola-launch-cta">▶</span>
+</button>
 <section class="card gps-card">
   <p class="card-header">
     <span>Kiindulópont</span>
@@ -2677,6 +2866,13 @@ footer {
 
 <!-- TANKOLÁS -->
 <div class="tab-panel" data-tab="fuel">
+<button class="lola-launch" id="lolaFuelLaunch" type="button" aria-label="Honda hangasszisztens — tankolás">
+  <span class="lola-launch-icon">🎤</span>
+  <span class="lola-launch-text">
+    <span class="lola-launch-name">Honda</span>
+  </span>
+  <span class="lola-launch-cta">▶</span>
+</button>
 <section class="card">
   <p class="card-header">
     <span>⛽ Tankolás <span class="badge" id="fuelBadge">0</span></span>
@@ -4000,14 +4196,25 @@ function wxMotoEffWind(ambientWind, ridingSpeed=90) {
   return (ambientWind || 0) + ridingSpeed;
 }
 
-/* Layered-clothing recommendation. Speed-aware via wind chill. */
-function wxMotoAdvice({ T, precipMm, precipProb, code, gust, wind, ridingSpeed=90 }) {
+/* Layered-clothing recommendation. Speed-aware via wind chill.
+   Esőruha (rain gear) is recommended ONLY when it's actually raining or
+   when humidity is very high (≥85%) — never as pure wind protection. */
+function wxMotoAdvice({ T, precipMm, precipProb, code, gust, wind, humidity, ridingSpeed=90 }) {
   const wxd = wx(code);
   const isRain = ['rain','storm'].includes(wxd.icon === 'storm' ? 'storm' : (['rain','drizzle'].includes(wxd.icon) ? 'rain' : null)) ||
                  (precipMm != null && precipMm >= 0.2) || (precipProb != null && precipProb >= 60);
   const isSnow = wxd.icon === 'snow';
   const isStorm = wxd.icon === 'storm';
   const isFreezing = [56,57,66,67].includes(code);
+  const isHumid = humidity != null && humidity >= 85;
+  const needRainGear = isRain || isHumid;
+  /* Helper: build gear list with rain gear conditionally included */
+  const layered = (base, withThermal) => {
+    const out = [base];
+    if (withThermal) out.push('thermal');
+    if (needRainGear) out.push('rain');
+    return out;
+  };
 
   const Vrel = wxMotoEffWind(wind || 0, ridingSpeed);
   const Twc = T != null ? wxWindChill(T, Vrel) : null;
@@ -4031,18 +4238,18 @@ function wxMotoAdvice({ T, precipMm, precipProb, code, gust, wind, ridingSpeed=9
     label = 'Felszerelésed nem elegendő';
     points.push(`${Math.round(T)}°C — termoréteggel és esőruhával is kihűlsz hosszabb úton. Téli motoros szett kellene.`);
   } else if (T != null && T < 5) {
-    gear = ['base','thermal','rain']; level = 'warn'; color = '#fb923c';
-    label = 'Aláöltöző + termo + esőruha';
-    points.push(`${Math.round(T)}°C — termoréteg KÖTELEZŐ. Az esőruha csak a szelet fogja, nem szigetel.`);
+    gear = layered('base', true); level = 'warn'; color = '#fb923c';
+    label = needRainGear ? 'Aláöltöző + termo + esőruha' : 'Aláöltöző + termo';
+    points.push(`${Math.round(T)}°C — termoréteg KÖTELEZŐ.`);
     points.push('Meleg kesztyű és nyakmelegítő ajánlott.');
   } else if (Twc != null && Twc < 0) {
-    gear = ['base','thermal','rain']; level = 'warn'; color = '#fb923c';
-    label = 'Termo + esőruha (hideg menetszél)';
+    gear = layered('base', true); level = 'warn'; color = '#fb923c';
+    label = needRainGear ? 'Termo + esőruha (hideg menetszél)' : 'Termoréteg (hideg menetszél)';
     points.push(`${Math.round(T)}°C ambient, de ${ridingSpeed} km/h-nál a hőérzet ${Math.round(Twc)}°C — termoréteget tegyél fel.`);
   } else if (T != null && T < 10) {
-    gear = ['base','thermal','rain']; level = 'warn'; color = '#fbbf24';
-    label = 'Aláöltöző + termo + esőruha';
-    points.push(`${Math.round(T)}°C — esőruha mellé termo is. Önmagában 10°C alatt 30+ percnyi vezetés után nem elég.`);
+    gear = layered('base', true); level = 'warn'; color = '#fbbf24';
+    label = needRainGear ? 'Aláöltöző + termo + esőruha' : 'Aláöltöző + termo';
+    points.push(`${Math.round(T)}°C — termoréteg ajánlott. Önmagában 10°C alatt 30+ percnyi vezetés után nem elég.`);
   } else if (isRain && T != null && T < 14) {
     gear = ['base','thermal','rain']; level = 'note'; color = '#fbbf24';
     label = 'Esőruha + termo (hideg eső)';
@@ -4052,25 +4259,29 @@ function wxMotoAdvice({ T, precipMm, precipProb, code, gust, wind, ridingSpeed=9
     label = 'Aláöltöző + esőruha';
     points.push(`Csapadék várható${precipMm != null ? ` (${precipMm.toFixed(1)} mm)` : ''} — esőruha kötelező.`);
   } else if (Twc != null && Twc < 8) {
-    gear = ['base','thermal','rain']; level = 'warn'; color = '#fbbf24';
-    label = 'Termo + esőruha (menetszél)';
+    gear = layered('base', true); level = 'warn'; color = '#fbbf24';
+    label = needRainGear ? 'Termo + esőruha (menetszél)' : 'Termoréteg (menetszél)';
     points.push(`${Math.round(T)}°C ambient, de ${ridingSpeed} km/h-nál ${Math.round(Twc)}°C-ot érzel — termoréteg ajánlott.`);
   } else if (Twc != null && Twc < 14) {
-    gear = ['base','rain']; level = 'ok'; color = '#86efac';
-    label = 'Aláöltöző + esőruha (szélfogó)';
-    points.push(`${Math.round(T)}°C ambient, ${ridingSpeed} km/h-nál ${Math.round(Twc)}°C — esőruha szélfogóként pont elég.`);
+    gear = layered('base', false); level = 'ok'; color = '#86efac';
+    label = needRainGear ? 'Aláöltöző + esőruha' : 'Csak aláöltöző';
+    points.push(`${Math.round(T)}°C ambient, ${ridingSpeed} km/h-nál ${Math.round(Twc)}°C — kellemes hőérzet.`);
   } else if (Twc != null && Twc < 18) {
-    gear = ['base','rain']; level = 'ok'; color = '#34d399';
-    label = 'Aláöltöző + esőruha — kényelmes';
-    points.push(`${Math.round(T)}°C, ${ridingSpeed} km/h-nál ${Math.round(Twc)}°C — kellemes. Esőruha hosszabb úton ajánlott.`);
+    gear = layered('base', false); level = 'ok'; color = '#34d399';
+    label = needRainGear ? 'Aláöltöző + esőruha' : 'Csak aláöltöző';
+    points.push(`${Math.round(T)}°C, ${ridingSpeed} km/h-nál ${Math.round(Twc)}°C — kellemes.`);
   } else if (T != null && T < 25) {
-    gear = ['base']; level = 'ok'; color = '#34d399';
-    label = 'Csak aláöltöző';
+    gear = layered('base', false); level = 'ok'; color = '#34d399';
+    label = needRainGear ? 'Aláöltöző + esőruha' : 'Csak aláöltöző';
     points.push(`${Math.round(T)}°C — esőruha alatt izzadnál. Aláöltöző elegendő.`);
   } else {
-    gear = ['base']; level = 'ok'; color = '#34d399';
-    label = 'Csak aláöltöző — meleg!';
+    gear = layered('base', false); level = 'ok'; color = '#34d399';
+    label = needRainGear ? 'Aláöltöző + esőruha — meleg!' : 'Csak aláöltöző — meleg!';
     points.push(`${Math.round(T)}°C — meleg idő. Sok vízzel készülj fel.`);
+  }
+
+  if (isHumid && !isRain && level !== 'danger') {
+    points.push(`Magas páratartalom (${Math.round(humidity)}%) — esőruha jól jön.`);
   }
 
   if (gust != null && gust >= 70) {
@@ -4353,6 +4564,7 @@ function wxHourlyAt(hourly, dateStr, hour) {
   return {
     idx, time: hourly.time[idx],
     temp: hourly.temperature_2m?.[idx],
+    humidity: hourly.relative_humidity_2m?.[idx],
     code: hourly.weather_code?.[idx],
     pop:  hourly.precipitation_probability?.[idx],
     precip: hourly.precipitation?.[idx],
@@ -4475,7 +4687,7 @@ async function wxLoadForecast(loc) {
   const p = new URLSearchParams({
     latitude: loc.latitude, longitude: loc.longitude,
     current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,pressure_msl',
-    hourly: 'temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,cloud_cover,is_day',
+    hourly: 'temperature_2m,relative_humidity_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,cloud_cover,is_day',
     daily: 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,precipitation_probability_max,precipitation_sum,precipitation_hours,wind_speed_10m_max,wind_gusts_10m_max,sunrise,sunset,uv_index_max',
     timezone: 'auto', forecast_days: '16', past_days: '1',
   });
@@ -4503,7 +4715,7 @@ async function wxLoadClimate(loc) {
 async function wxLoadArrivalForecast(loc) {
   const p = new URLSearchParams({
     latitude: loc.latitude, longitude: loc.longitude,
-    hourly: 'temperature_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m',
+    hourly: 'temperature_2m,relative_humidity_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m',
     timezone: 'auto', forecast_days: '16',
   });
   const r = await fetch(`https://api.open-meteo.com/v1/forecast?${p}`);
@@ -4754,7 +4966,7 @@ function wxRenderTripCard(day, dep, depHour, recentInfo) {
   /* Forecast day with departure data */
   const depTime = `${wxPad2(depHour)}:00`;
   const depWxd = wx(dep.code);
-  const depAdv = wxMotoAdvice({ T: dep.temp, precipMm: dep.precip, precipProb: dep.pop, code: dep.code, gust: dep.gust, wind: dep.wind, ridingSpeed: 90 });
+  const depAdv = wxMotoAdvice({ T: dep.temp, precipMm: dep.precip, precipProb: dep.pop, code: dep.code, gust: dep.gust, wind: dep.wind, humidity: dep.humidity, ridingSpeed: 90 });
 
   /* Try to compute arrival data */
   let arrW = null, arrTime = null, arrAdv = null;
@@ -4762,7 +4974,7 @@ function wxRenderTripCard(day, dep, depHour, recentInfo) {
     arrTime = wxComputeArrival(day.dateStr, depHour, wxState.forecast, wxState.arrivalForecast, wxState.routeInfo.duration_s);
     arrW = wxHourlyAt(wxState.arrivalForecast.hourly, arrTime.dateStr, arrTime.hour);
     if (arrW) {
-      arrAdv = wxMotoAdvice({ T: arrW.temp, precipMm: arrW.precip, precipProb: arrW.pop, code: arrW.code, gust: arrW.gust, wind: arrW.wind, ridingSpeed: 90 });
+      arrAdv = wxMotoAdvice({ T: arrW.temp, precipMm: arrW.precip, precipProb: arrW.pop, code: arrW.code, gust: arrW.gust, wind: arrW.wind, humidity: arrW.humidity, ridingSpeed: 90 });
     }
   }
 
@@ -5287,7 +5499,7 @@ function wxRenderDayDetail(day, hourly, recentInfo, departureHour) {
       const SPEEDS = [{v:50,tag:'város'},{v:90,tag:'országút'},{v:130,tag:'autópálya'}];
       const speedAdvs = SPEEDS.map(s => ({
         ...s,
-        adv: wxMotoAdvice({ T: dep.temp, precipMm: dep.precip, precipProb: dep.pop, code: dep.code, gust: dep.gust, wind: dep.wind, ridingSpeed: s.v })
+        adv: wxMotoAdvice({ T: dep.temp, precipMm: dep.precip, precipProb: dep.pop, code: dep.code, gust: dep.gust, wind: dep.wind, humidity: dep.humidity, ridingSpeed: s.v })
       }));
       const speedCards = speedAdvs.map(({ v, tag, adv }) => `
         <div class="wx-speed-card" style="border-left-color:${adv.color}">
@@ -9177,6 +9389,765 @@ function initSos() {
 // END SOS MODULE
 // =============================================================
 
+// =============================================================
+// LOLA — Hungarian voice assistant for trip logging
+// =============================================================
+const Lola = (function() {
+
+  /* Hungarian word→number map (0-100) for parsing spoken numbers */
+  const HU_NUM = {
+    'nulla':0,'egy':1,'két':2,'kettő':2,'három':3,'négy':4,'öt':5,'hat':6,
+    'hét':7,'nyolc':8,'kilenc':9,'tíz':10,'tizenegy':11,'tizenkettő':12,'tizenkét':12,
+    'tizenhárom':13,'tizennégy':14,'tizenöt':15,'tizenhat':16,'tizenhét':17,
+    'tizennyolc':18,'tizenkilenc':19,'húsz':20,'huszonegy':21,'huszonkettő':22,'huszonkét':22,
+    'huszonhárom':23,'huszonnégy':24,'huszonöt':25,'huszonhat':26,'huszonhét':27,
+    'huszonnyolc':28,'huszonkilenc':29,'harminc':30,'negyven':40,'ötven':50,
+    'hatvan':60,'hetven':70,'nyolcvan':80,'kilencven':90,'száz':100
+  };
+
+  let elModal, elOrb, elStatus, elSaid, elUserSaid, elActions, elError, elProgress;
+  let chosenVoice = null;
+  let aborted = false;
+
+  /* Voice priority: female Hungarian, then any Hungarian, then any female. */
+  function pickVoice() {
+    if (!('speechSynthesis' in window)) return null;
+    const all = speechSynthesis.getVoices();
+    if (!all.length) return null;
+    const hu = all.filter(v => /^hu/i.test(v.lang));
+    const huFem = hu.find(v => /female|woman|n[őo]i|mária|magda|kati|szandi|eszter|anna|google.*magyar|microsoft.*mária|microsoft.*magdolna/i.test(v.name));
+    if (huFem) return huFem;
+    const huGoogle = hu.find(v => /google/i.test(v.name));
+    if (huGoogle) return huGoogle;
+    if (hu[0]) return hu[0];
+    return all.find(v => /female/i.test(v.name)) || null;
+  }
+
+  /* Speak a Hungarian sentence with the chosen female voice. */
+  function speak(text) {
+    return new Promise(resolve => {
+      try {
+        if (!('speechSynthesis' in window)) { resolve(); return; }
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'hu-HU'; u.rate = 1.0; u.pitch = 1.05; u.volume = 1.0;
+        if (!chosenVoice) chosenVoice = pickVoice();
+        if (chosenVoice) u.voice = chosenVoice;
+        u.onend = () => resolve();
+        u.onerror = () => resolve();
+        setStatus('speaking');
+        if (elSaid) elSaid.textContent = text;
+        speechSynthesis.speak(u);
+      } catch { resolve(); }
+    });
+  }
+
+  /* Listen once: returns recognized text (lowercase) or null on timeout/error. */
+  function listen(opts) {
+    opts = opts || {};
+    return new Promise(resolve => {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { resolve(null); return; }
+      const r = new SR();
+      r.lang = 'hu-HU'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 3;
+      let finalText = '', interim = '';
+      const t = setTimeout(() => { try { r.stop(); } catch {} }, opts.timeoutMs || 10000);
+      r.onresult = (e) => {
+        interim = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const res = e.results[i];
+          if (res.isFinal) finalText += res[0].transcript + ' ';
+          else interim += res[0].transcript;
+        }
+        if (elUserSaid) elUserSaid.textContent = (finalText || interim).trim();
+      };
+      r.onerror = (e) => {
+        clearTimeout(t);
+        if (e.error === 'no-speech' || e.error === 'aborted') resolve('');
+        else resolve(null);
+      };
+      r.onend = () => {
+        clearTimeout(t);
+        const text = (finalText || interim).trim().toLowerCase();
+        resolve(text || null);
+      };
+      try { setStatus('listening'); r.start(); }
+      catch (err) { resolve(null); }
+    });
+  }
+
+  async function listenYesNo() {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const t = await listen({ timeoutMs: 7000 });
+      if (aborted) return null;
+      if (!t) {
+        if (attempt === 0) await speak('Nem hallottam, mondd újra.');
+        continue;
+      }
+      if (/\b(igen|jó|jól|persze|aha|úgy|úgy van|ok|oké|tovább|rendben|helyes)\b/.test(t)) return 'yes';
+      if (/\b(nem|nincs|mégse|mégsem|rossz|hibás|újra|nemjó)\b/.test(t)) return 'no';
+      if (attempt === 0) await speak('Igen vagy nem?');
+    }
+    return null;
+  }
+
+  /* Parse a spoken Hungarian time expression to a Date object. */
+  function parseTime(text) {
+    if (!text) return null;
+    const lower = text.toLowerCase();
+
+    if (/\b(most|azonnal|rögtön|indulunk most|most indul)\b/.test(lower)) {
+      return { date: wxNowRounded(), label: 'most azonnal', mode: 'now' };
+    }
+
+    let dayOffset = 0;
+    if (/\bholnapután\b/.test(lower)) dayOffset = 2;
+    else if (/\bholnap\b/.test(lower)) dayOffset = 1;
+    else if (/\b(ma|aznap)\b/.test(lower)) dayOffset = 0;
+    else {
+      const m = lower.match(/(\d+)\s*nap\s*múlva/);
+      if (m) dayOffset = parseInt(m[1], 10);
+    }
+
+    let hour = null;
+    const numH = lower.match(/(\d{1,2})\s*(?:óra|h|kor)?/);
+    if (numH) hour = parseInt(numH[1], 10);
+
+    if (hour === null) {
+      for (const [w, n] of Object.entries(HU_NUM)) {
+        if (n > 24) continue;
+        if (new RegExp(`\\b${w}\\b\\s*(?:óra|kor|órakor)`).test(lower)) { hour = n; break; }
+      }
+      if (hour === null) {
+        for (const [w, n] of Object.entries(HU_NUM)) {
+          if (n > 24) continue;
+          if (new RegExp(`\\b${w}\\b`).test(lower)) { hour = n; break; }
+        }
+      }
+    }
+
+    const isPM = /\b(délután|du|este)\b/.test(lower);
+    const isMorning = /\b(reggel|hajnal)\b/.test(lower);
+    if (hour !== null && hour > 0 && hour < 12 && isPM) hour += 12;
+
+    if (hour === null) {
+      if (/\bdélben\b/.test(lower)) hour = 12;
+      else if (isPM) hour = 14;
+      else if (isMorning) hour = 8;
+      else if (/\beste\b/.test(lower)) hour = 18;
+      else return null;
+    }
+
+    if (hour < 0 || hour > 23) return null;
+
+    const d = new Date();
+    d.setDate(d.getDate() + dayOffset);
+    d.setHours(hour, 0, 0, 0);
+
+    if (dayOffset === 0 && d.getTime() < Date.now() - 30*60*1000 && !/\b(ma|aznap)\b/.test(lower)) {
+      d.setDate(d.getDate() + 1); dayOffset = 1;
+    }
+
+    const dayLbl = dayOffset === 0 ? 'ma' : dayOffset === 1 ? 'holnap' : dayOffset === 2 ? 'holnapután' : `${dayOffset} nap múlva`;
+    const partLbl = hour < 6 ? 'hajnal' : hour < 12 ? 'reggel' : hour < 17 ? 'délután' : hour < 21 ? 'este' : 'éjszaka';
+    return { date: d, label: `${dayLbl} ${partLbl} ${hour} órakor`, mode: 'specific', hour, dayOffset };
+  }
+
+  /* Parse spoken number — digits or Hungarian compound words. */
+  function parseNumber(text) {
+    if (!text) return null;
+    const lower = text.toLowerCase().replace(/[.,]/g, '').trim();
+    /* Plain digits (possibly with "ezer" multiplier) */
+    const digitMatch = lower.match(/\b(\d{1,7})\b/);
+    if (digitMatch) {
+      const v = parseInt(digitMatch[1], 10);
+      if (/ezer/.test(lower) && v < 1000) {
+        const second = lower.replace(digitMatch[0], '').match(/\b(\d{1,4})\b/);
+        return v * 1000 + (second ? parseInt(second[1], 10) : 0);
+      }
+      return v;
+    }
+    /* Hungarian compound — "harminckét ezer háromszáz" */
+    let total = 0, current = 0;
+    const parts = lower.split(/\s+/);
+    for (const p of parts) {
+      if (p === 'ezer') { total += (current || 1) * 1000; current = 0; continue; }
+      if (p === 'száz' || p === 'száza') { current = (current || 1) * 100; continue; }
+      const direct = HU_NUM[p];
+      if (direct != null) { current += direct; continue; }
+      for (const tens of ['harminc','negyven','ötven','hatvan','hetven','nyolcvan','kilencven','húsz','tíz']) {
+        if (p.startsWith(tens)) {
+          current += HU_NUM[tens];
+          const rest = p.slice(tens.length);
+          if (HU_NUM[rest] != null) current += HU_NUM[rest];
+          break;
+        }
+      }
+    }
+    total += current;
+    return total > 0 ? total : null;
+  }
+
+  function norm(s) {
+    return (s || '').toString().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9 ]/g, '').trim();
+  }
+
+  function stripDirSuffix(s) {
+    return s.replace(/(?:tol|tel|bol|bel|rol|rel|ig|ba|be|ra|re|hoz|hez|ban|ben|nal|nel)$/i, '').trim();
+  }
+
+  /* Find a partner by spoken name with fuzzy matching. */
+  function matchPartner(spoken) {
+    if (!spoken) return null;
+    const all = (typeof PARTNERS !== 'undefined' ? PARTNERS : []).concat(
+                 typeof savedCustomPartners !== 'undefined' ? savedCustomPartners : []);
+    if (!all.length) return null;
+    const target = stripDirSuffix(norm(spoken));
+    if (target.length < 2) return null;
+    let m = all.find(p => norm(p.name) === target); if (m) return m;
+    m = all.find(p => norm(p.name).startsWith(target)); if (m) return m;
+    m = all.find(p => norm(p.name).split(/\s+/).some(w => w.startsWith(target) || target.startsWith(w))); if (m) return m;
+    m = all.find(p => norm(p.name).includes(target) || target.includes(norm(p.name)));
+    return m || null;
+  }
+
+  /* Match purpose against the dropdown. */
+  function matchPurpose(spoken) {
+    const sel = document.getElementById('tripPurpose');
+    if (!sel) return null;
+    const target = norm(spoken);
+    if (!target) return null;
+    const opts = Array.from(sel.options);
+    let m = opts.find(o => norm(o.value) === target || norm(o.text) === target);
+    if (m) return m.value;
+    m = opts.find(o => norm(o.value).startsWith(target) || norm(o.text).startsWith(target));
+    if (m) return m.value;
+    if (/\b(munka|üzleti|hivatalos|főépítész|főépítészi)\b/.test(target)) {
+      m = opts.find(o => /főépítész/i.test(o.value)); if (m) return m.value;
+    }
+    if (/\b(juhhé|partneri|megbeszélés|megbeszelés)\b/.test(target)) {
+      m = opts.find(o => /juhhé/i.test(o.value)); if (m) return m.value;
+    }
+    if (/\b(építész|epitesz|egyeztet)\b/.test(target)) {
+      m = opts.find(o => /építészeti/i.test(o.value)); if (m) return m.value;
+    }
+    if (/\b(honda|szerviz|márkaszerviz)\b/.test(target)) {
+      m = opts.find(o => /honda/i.test(o.value)); if (m) return m.value;
+    }
+    if (/\b(otthon|magán|magan|haza|ingázás|iroda)\b/.test(target)) {
+      m = opts.find(o => /otthon/i.test(o.value)); if (m) return m.value;
+    }
+    m = opts.find(o => norm(o.value).includes(target) || target.includes(norm(o.value)));
+    return m ? m.value : null;
+  }
+
+  /* ───────── UI ───────── */
+  function setStatus(state) {
+    if (!elModal) return;
+    elModal.classList.remove('listening','speaking','thinking');
+    if (state) elModal.classList.add(state);
+    const labels = { listening:'HALLGATLAK', speaking:'BESZÉLEK', thinking:'GONDOLKODOM' };
+    if (elStatus) elStatus.textContent = labels[state] || '';
+  }
+  function showError(msg) {
+    if (elError) {
+      elError.style.display = 'block';
+      elError.textContent = msg;
+      setTimeout(() => { if (elError) elError.style.display = 'none'; }, 5000);
+    }
+  }
+  function clearUser() { if (elUserSaid) elUserSaid.textContent = ''; }
+  function setProgress(stepIdx, total) {
+    if (!elProgress) return;
+    elProgress.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement('div');
+      d.className = 'lola-progress-step' + (i < stepIdx ? ' done' : i === stepIdx ? ' active' : '');
+      elProgress.appendChild(d);
+    }
+  }
+  function open() { if (elModal) elModal.classList.add('active'); }
+  function close() {
+    if (elModal) elModal.classList.remove('active');
+    try { speechSynthesis.cancel(); } catch {}
+    setStatus(null);
+    if (elProgress) elProgress.innerHTML = '';
+    if (elActions) elActions.innerHTML = '';
+    if (elSaid) elSaid.textContent = '';
+    clearUser();
+    if (elError) elError.style.display = 'none';
+  }
+
+  /* Parse spoken decimal number — for liters etc. (e.g. "7,8" / "hét egész nyolc" / "7 pont 5") */
+  function parseDecimal(text) {
+    if (!text) return null;
+    const lower = text.toLowerCase().trim();
+    /* "7,8" / "7.8" / "7 pont 8" / "7 egész 8" */
+    let m = lower.match(/(\d+)\s*(?:[,.]|pont|egész)\s*(\d+)/);
+    if (m) return parseFloat(`${m[1]}.${m[2]}`);
+    /* Plain integer */
+    m = lower.match(/(\d+(?:[.,]\d+)?)/);
+    if (m) return parseFloat(m[1].replace(',', '.'));
+    /* Hungarian word-form: "hét pont nyolc" / "hét egész nyolc" */
+    const tokens = lower.split(/\s+/);
+    let intPart = null, decPart = null, foundSep = false;
+    for (const tok of tokens) {
+      if (tok === 'pont' || tok === 'egész') { foundSep = true; continue; }
+      if (HU_NUM[tok] != null) {
+        if (!foundSep) intPart = (intPart ?? 0) + HU_NUM[tok];
+        else { decPart = HU_NUM[tok]; break; }
+      }
+    }
+    if (intPart != null) return decPart != null ? parseFloat(`${intPart}.${decPart}`) : intPart;
+    return null;
+  }
+
+  /* Octane parser: 95 vs 100 */
+  function parseOctane(text) {
+    if (!text) return null;
+    const t = text.toLowerCase();
+    if (/\b(95|kilencvenöt|kilencven\s*öt|95-ös|kilencvenötös)\b/.test(t)) return '95';
+    if (/\b(100|száz|100-as|százas)\b/.test(t)) return '100';
+    return null;
+  }
+
+  /* ───────── Fuel flow questions ───────── */
+  async function askOctane() {
+    while (!aborted) {
+      clearUser();
+      await speak('Milyen üzemanyagot tankoltál? Kilencvenötös vagy százas?');
+      const t = await listen({ timeoutMs: 9000 });
+      if (aborted) return null;
+      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
+      const oct = parseOctane(t);
+      if (!oct) { await speak('Nem értettem. Mondd, hogy kilencvenöt vagy száz.'); continue; }
+      clearUser();
+      const octWord = oct === '95' ? 'kilencvenötös' : 'százas';
+      await speak(`Megjegyeztem, ${octWord} üzemanyag.`);
+      return oct;
+    }
+    return null;
+  }
+
+  async function askFuelKm() {
+    while (!aborted) {
+      clearUser();
+      await speak('Mennyi a kilométeróra állása?');
+      const t = await listen({ timeoutMs: 9000 });
+      if (aborted) return null;
+      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
+      const n = parseNumber(t);
+      if (n == null || n < 0 || n > 999999) { await speak('Nem értettem a számot. Mondd lassan a kilométereket.'); continue; }
+      clearUser();
+      await speak(`Megjegyeztem, ${n} kilométer.`);
+      return n;
+    }
+    return null;
+  }
+
+  async function askLiters() {
+    while (!aborted) {
+      clearUser();
+      await speak('Hány liter benzint tankoltál?');
+      const t = await listen({ timeoutMs: 9000 });
+      if (aborted) return null;
+      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
+      const n = parseDecimal(t);
+      if (n == null || n <= 0 || n > 100) { await speak('Nem értettem. Mondd például, hogy hét egész nyolc liter.'); continue; }
+      clearUser();
+      const display = Number.isInteger(n) ? n : n.toFixed(2).replace(/\.?0+$/, '');
+      await speak(`Megjegyeztem, ${display} liter.`);
+      return n;
+    }
+    return null;
+  }
+
+  async function askCost() {
+    while (!aborted) {
+      clearUser();
+      await speak('Mennyibe került összesen?');
+      const t = await listen({ timeoutMs: 9000 });
+      if (aborted) return null;
+      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
+      const n = parseNumber(t);
+      if (n == null || n < 100 || n > 1000000) { await speak('Nem értettem. Mondd a forint összeget.'); continue; }
+      clearUser();
+      await speak(`Megjegyeztem, ${n.toLocaleString('hu')} forint.`);
+      return n;
+    }
+    return null;
+  }
+
+  /* Apply the fuel entry: fill all form fields and trigger save. */
+  function applyFuelEntry({ octane, km, liters, cost }) {
+    /* 1. Set today's date if empty */
+    const fuelDateEl = document.getElementById('fuelDate');
+    if (fuelDateEl && !fuelDateEl.value) {
+      const d = new Date();
+      fuelDateEl.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    /* 2. Set octane via the host's button (so internal fuelOctane var updates too) */
+    const octaneBtn = document.querySelector(`#fuelOctane button[data-octane="${octane}"]`);
+    if (octaneBtn) octaneBtn.click();
+    /* 3. Fill numeric fields */
+    const setVal = (id, value) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = value;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    };
+    setVal('fuelKm', km);
+    setVal('fuelLiters', liters);
+    setVal('fuelCost', cost);
+    /* 4. Auto-save by clicking the host's button */
+    const saveBtn = document.getElementById('saveFuel');
+    if (saveBtn) saveBtn.click();
+  }
+
+  /* ───────── Fuel flow entry point ───────── */
+  async function startFuel() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR || !('speechSynthesis' in window)) {
+      open();
+      if (elSaid) elSaid.textContent = 'Sajnos a böngésződ nem támogatja a hangfunkciókat.';
+      showError('Próbáld Chrome-mal vagy Safari-val.');
+      return;
+    }
+
+    aborted = false;
+    open();
+    setProgress(0, 4);
+    chosenVoice = pickVoice();
+
+    /* Greet + announce detected station, if any */
+    const detected = (typeof fuelStationDetected !== 'undefined' && fuelStationDetected) ? fuelStationDetected : null;
+    if (detected) {
+      await speak(`Tankolás megkezdve. A GPS szerint itt vagyunk: ${detected.name}.`);
+    } else {
+      await speak('Tankolás megkezdve.');
+    }
+
+    const octane = await askOctane();
+    if (aborted || !octane) return finish();
+    setProgress(1, 4);
+
+    const km = await askFuelKm();
+    if (aborted || km == null) return finish();
+    setProgress(2, 4);
+
+    const liters = await askLiters();
+    if (aborted || liters == null) return finish();
+    setProgress(3, 4);
+
+    const cost = await askCost();
+    if (aborted || cost == null) return finish();
+    setProgress(4, 4);
+
+    applyFuelEntry({ octane, km, liters, cost });
+    if (!aborted) await speak('A tankolás rögzítve. Jó utat!');
+    finish();
+  }
+
+  /* ───────── Conversation flow ───────── */
+  async function start() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR || !('speechSynthesis' in window)) {
+      open();
+      if (elSaid) elSaid.textContent = 'Sajnos a böngésződ nem támogatja a hangfunkciókat.';
+      showError('Próbáld Chrome-mal vagy Safari-val.');
+      return;
+    }
+
+    aborted = false;
+    open();
+    setProgress(0, 5);
+    chosenVoice = pickVoice();
+
+    const tripTime = await askTime();
+    if (aborted || !tripTime) return finish();
+    setProgress(1, 5);
+
+    const route = await askFromTo();
+    if (aborted || !route) return finish();
+    setProgress(2, 5);
+
+    const km = await askKm();
+    if (aborted || km == null) return finish();
+    setProgress(3, 5);
+
+    const purpose = await askPurpose();
+    if (aborted || !purpose) return finish();
+    setProgress(4, 5);
+
+    applyTripPlan({ tripTime, route, km, purpose });
+    setProgress(5, 5);
+    await readSummary();
+    if (!aborted) await speak('Jó utat!');
+    finish();
+  }
+
+  function finish() { setTimeout(close, 1500); }
+
+  async function askTime() {
+    while (!aborted) {
+      clearUser();
+      await speak('Szia! Mikor indulunk?');
+      if (aborted) return null;
+      const t = await listen({ timeoutMs: 9000 });
+      if (aborted) return null;
+      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
+      const parsed = parseTime(t);
+      if (!parsed) {
+        await speak('Nem értettem az időpontot. Mondd például úgy, hogy most, vagy holnap reggel kilenc.');
+        continue;
+      }
+      clearUser();
+      await speak(`Rendben, indulás ${parsed.label}.`);
+      return parsed;
+    }
+    return null;
+  }
+
+  async function askFromTo() {
+    let origin = null, dest = null;
+    while (!aborted && !origin) {
+      clearUser();
+      await speak('Honnan indulunk?');
+      const t = await listen({ timeoutMs: 9000 });
+      if (aborted) return null;
+      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
+      if (/\b(innen|gps|itt|aktuális|jelenlegi)\b/i.test(t)) {
+        origin = { keepGPS: true };
+      } else {
+        const partner = matchPartner(t);
+        if (!partner) {
+          await speak(`A ${t} partnert nem ismerem, mondd újra légyszi.`);
+          continue;
+        }
+        origin = { keepGPS: false, partner };
+      }
+      clearUser();
+      const originLabel = origin.keepGPS ? 'a jelenlegi pozíció' : origin.partner.name;
+      await speak(`Megjegyeztem. Kiindulópont: ${originLabel}.`);
+    }
+    if (aborted) return null;
+
+    while (!aborted && !dest) {
+      clearUser();
+      await speak('Hova megyünk?');
+      const t = await listen({ timeoutMs: 9000 });
+      if (aborted) return null;
+      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
+      let target = t;
+      if (/\bhaza\b/i.test(t)) target = 'otthon';
+      const partner = matchPartner(target);
+      if (!partner) {
+        await speak(`A ${t} partnert nem ismerem. Mondd újra, vagy mondd, hogy haza.`);
+        continue;
+      }
+      dest = partner;
+      clearUser();
+      await speak(`Megjegyeztem. Úti cél: ${dest.name}.`);
+    }
+    if (aborted) return null;
+    return { origin, dest };
+  }
+
+  async function askKm() {
+    while (!aborted) {
+      clearUser();
+      await speak('Mennyi a kilométeróra állása?');
+      const t = await listen({ timeoutMs: 9000 });
+      if (aborted) return null;
+      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
+      const n = parseNumber(t);
+      if (n == null || n < 0 || n > 999999) {
+        await speak('Nem értettem a számot. Mondd például úgy, hogy harminckét ezer háromszáz.');
+        continue;
+      }
+      clearUser();
+      await speak(`Megjegyeztem, ${n} kilométer.`);
+      return n;
+    }
+    return null;
+  }
+
+  async function askPurpose() {
+    while (!aborted) {
+      clearUser();
+      await speak('Milyen célból megyünk?');
+      const t = await listen({ timeoutMs: 9000 });
+      if (aborted) return null;
+      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
+      const p = matchPurpose(t);
+      if (!p) {
+        await speak('Nem találtam ilyen célt. Mondd például úgy, hogy munka, Honda márkaszerviz, vagy otthon iroda.');
+        continue;
+      }
+      clearUser();
+      await speak(`Megjegyeztem. Az út célja: ${p}.`);
+      return p;
+    }
+    return null;
+  }
+
+  function applyTripPlan({ tripTime, route, km, purpose }) {
+    /* 1. Trip datetime */
+    if (typeof wxApplyTripDT === 'function' && tripTime) {
+      if (tripTime.mode === 'now') wxApplyTripDT(null);
+      else if (typeof wxFormatLocalDT === 'function') wxApplyTripDT(wxFormatLocalDT(tripTime.date));
+    }
+    /* 2. Origin */
+    if (route.origin && !route.origin.keepGPS && typeof setPartnerAsOrigin === 'function') {
+      try { setPartnerAsOrigin(route.origin.partner.name); } catch {}
+    }
+    /* 3. Destination */
+    if (route.dest && typeof stops !== 'undefined') {
+      stops.length = 0;
+      stops.push({ name: route.dest.name });
+      if (typeof renderIntermediates === 'function') renderIntermediates();
+      if (typeof updateStopCount === 'function') updateStopCount();
+      if (typeof updateAll === 'function') updateAll();
+    }
+    /* 4. KM start — and retroactive previous-trip kmEnd update */
+    const kmStartEl = document.getElementById('kmStart');
+    const kmEndEl = document.getElementById('kmEnd');
+    if (kmStartEl && km != null) {
+      kmStartEl.value = km;
+      kmStartEl.dispatchEvent(new Event('input', { bubbles: true }));
+
+      /* Retroactively update the previous saved trip's kmEnd to this km value
+         (since "current odometer" = arrival of last trip = start of this trip) */
+      if (typeof trips !== 'undefined' && Array.isArray(trips) && trips.length > 0) {
+        const lastTrip = trips[trips.length - 1];
+        if (lastTrip && lastTrip.kmStart != null && km > lastTrip.kmStart && km < lastTrip.kmStart + 5000) {
+          lastTrip.kmEnd = km;
+          lastTrip.distance = km - lastTrip.kmStart;
+          if (typeof saveTripsToStorage === 'function') saveTripsToStorage();
+          if (typeof renderTripList === 'function') renderTripList();
+        }
+      }
+
+      /* Pre-fill new trip's kmEnd with OSRM distance estimate so the user
+         doesn't have to enter it manually before saving */
+      if (kmEndEl && wxState?.routeInfo?.distance_km > 0) {
+        const estimatedEnd = km + Math.round(wxState.routeInfo.distance_km);
+        kmEndEl.value = estimatedEnd;
+        kmEndEl.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+    /* 5. Purpose */
+    const tripPurposeEl = document.getElementById('tripPurpose');
+    if (tripPurposeEl && purpose) {
+      tripPurposeEl.value = purpose;
+      tripPurposeEl.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    /* 6. Date */
+    const tripDateEl = document.getElementById('tripDate');
+    if (tripDateEl) {
+      const t = new Date();
+      tripDateEl.value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
+    }
+  }
+
+  async function readSummary() {
+    /* Wait briefly for forecast to refresh after route changes */
+    await new Promise(r => setTimeout(r, 1500));
+    const lines = [];
+
+    const days = (typeof wxBuildDays === 'function') ? wxBuildDays() : [];
+    const day = days[wxState?.selectedIdx || 0];
+    let dep = null;
+    if (day && day.source === 'forecast' && wxState?.forecast?.hourly && wxState.departureHour != null) {
+      dep = wxHourlyAt(wxState.forecast.hourly, day.dateStr, wxState.departureHour);
+    }
+
+    if (dep && wxState?.location) {
+      const wxd = wx(dep.code);
+      lines.push(`Indulási helyszín: ${wxState.location.name}. A hőmérséklet ${Math.round(dep.temp)} fok, ${wxd.label.toLowerCase()}.`);
+      if (dep.precip != null && dep.precip > 0.2) lines.push(`Csapadék várható, ${dep.precip.toFixed(1)} milliméter.`);
+      if (dep.gust != null && dep.gust >= 50) lines.push(`Erős széllökések, ${Math.round(dep.gust)} kilométer per órás sebességgel.`);
+    }
+
+    if (wxState?.arrival && wxState?.arrivalForecast && wxState?.routeInfo && day) {
+      const arrTime = wxComputeArrival(day.dateStr, wxState.departureHour, wxState.forecast, wxState.arrivalForecast, wxState.routeInfo.duration_s);
+      const arrW = wxHourlyAt(wxState.arrivalForecast.hourly, arrTime.dateStr, arrTime.hour);
+      if (arrW) {
+        const wxd = wx(arrW.code);
+        lines.push(`Érkezési helyszín: ${wxState.arrival.name}. Ott ${Math.round(arrW.temp)} fok lesz, ${wxd.label.toLowerCase()}.`);
+        const dist = Math.round(wxState.routeInfo.distance_km);
+        const dur = wxFmtDuration(wxState.routeInfo.duration_s);
+        lines.push(`A távolság ${dist} kilométer, és ${dur} alatt érünk oda.`);
+      }
+    }
+
+    if (dep) {
+      const adv = wxMotoAdvice({ T: dep.temp, precipMm: dep.precip, precipProb: dep.pop, code: dep.code, gust: dep.gust, wind: dep.wind, humidity: dep.humidity, ridingSpeed: 90 });
+      const verdictMap = { ok:'Az indulás javasolt.', note:'Indulhatsz, de figyelj az időjárásra.', warn:'Csak megfelelő felszereléssel induljál.', danger:'Nem javaslom az indulást.' };
+      lines.push(verdictMap[adv.level] || adv.label);
+      if (Array.isArray(adv.gear)) {
+        const labels = { base:'aláöltőzőt', thermal:'termoréteget', rain:'esőruhát' };
+        const items = adv.gear.map(g => labels[g] || g).join(', ');
+        if (items) lines.push(`Vegyél fel ${items}.`);
+      }
+      lines.push('A guminyomás: első kerék 2 egész 5, hátsó kerék 2 egész 9 bar.');
+      const hour = new Date(dep.time).getHours();
+      const asphaltT = wxAsphaltTemp({ airT: dep.temp, cloudCover: dep.cloudCover, isDay: dep.isDay, hour, weatherCode: dep.code });
+      if (asphaltT != null) lines.push(`Az aszfalt körülbelül ${Math.round(asphaltT)} fokos.`);
+      const style = wxRidingStyle({ airT: dep.temp, asphaltT, weatherCode: dep.code, gust: dep.gust, recentDryHours: null });
+      lines.push(`A javasolt vezetési stílus: ${style.label.toLowerCase()}.`);
+    }
+
+    if (lines.length === 0) lines.push('Még nincs időjárás-adat. Próbáld újra egy perc múlva.');
+
+    for (const line of lines) {
+      if (aborted) return;
+      await speak(line);
+    }
+  }
+
+  function init() {
+    elModal     = document.getElementById('lolaModal');
+    elOrb       = document.getElementById('lolaOrb');
+    elStatus    = document.getElementById('lolaStatus');
+    elSaid      = document.getElementById('lolaSaid');
+    elUserSaid  = document.getElementById('lolaUserSaid');
+    elActions   = document.getElementById('lolaActions');
+    elError     = document.getElementById('lolaError');
+    elProgress  = document.getElementById('lolaProgress');
+
+    if ('speechSynthesis' in window) {
+      speechSynthesis.getVoices();
+      speechSynthesis.onvoiceschanged = () => { chosenVoice = pickVoice(); };
+    }
+    const launch = document.getElementById('lolaLaunch');
+    if (launch) {
+      launch.addEventListener('click', () => start().catch(e => {
+        showError('Hiba történt: ' + (e.message || e));
+      }));
+    }
+    const fuelLaunch = document.getElementById('lolaFuelLaunch');
+    if (fuelLaunch) {
+      fuelLaunch.addEventListener('click', () => startFuel().catch(e => {
+        showError('Hiba történt: ' + (e.message || e));
+      }));
+    }
+    const cancel = document.getElementById('lolaCancel');
+    if (cancel) {
+      cancel.addEventListener('click', () => {
+        aborted = true;
+        try { speechSynthesis.cancel(); } catch {}
+        close();
+      });
+    }
+  }
+
+  return { init, start, startFuel };
+})();
+
 
 function init() {
   // Tab navigation
@@ -9362,9 +10333,22 @@ function init() {
 
   // Initialize SOS module
   if (typeof initSos === 'function') initSos();
+  if (typeof Lola !== 'undefined') Lola.init();
 }
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
+
+<!-- Lola voice assistant modal -->
+<div class="lola-modal" id="lolaModal" role="dialog" aria-modal="true" aria-labelledby="lolaSaid">
+  <div class="lola-progress" id="lolaProgress" aria-hidden="true"></div>
+  <div class="lola-modal-orb" id="lolaOrb">🎙️</div>
+  <div class="lola-modal-status" id="lolaStatus">…</div>
+  <div class="lola-modal-said" id="lolaSaid">Szia, Honda vagyok.</div>
+  <div class="lola-modal-userSaid" id="lolaUserSaid"></div>
+  <div class="lola-modal-actions" id="lolaActions"></div>
+  <button class="lola-action-btn cancel" id="lolaCancel" type="button">Bezár</button>
+  <div class="lola-error-banner" id="lolaError" style="display:none"></div>
+</div>
 </body>
 </html>
