@@ -1598,6 +1598,99 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   text-align: center; max-width: 460px;
 }
 
+/* Honda review card — shown when fuel data is collected, before save */
+.lola-review {
+  margin-top: 24px;
+  padding: 18px 18px 16px;
+  background: rgba(251, 191, 36, 0.06);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 16px;
+  width: 100%; max-width: 460px;
+  box-sizing: border-box;
+}
+.lola-review-title {
+  font-size: 14px; font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 14px;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+.lola-review-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.lola-review-row label {
+  font-size: 12px; font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase; letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.lola-review-row input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 18px; font-weight: 700;
+  color: var(--text); font-family: 'JetBrains Mono', monospace;
+  text-align: right; min-width: 0;
+}
+.lola-review-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(251,191,36,0.05);
+}
+.lola-review-octane {
+  display: flex; gap: 6px;
+}
+.lola-review-octane button {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 14px; font-weight: 700;
+  color: var(--text-3); cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.15s;
+}
+.lola-review-octane button.active {
+  background: var(--accent); color: #0a0a0a;
+  border-color: var(--accent);
+}
+.lola-review-actions {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-top: 16px;
+}
+.lola-review-actions button {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+.lola-review-cancel {
+  background: var(--surface-2);
+  color: var(--text-3);
+}
+.lola-review-cancel:hover {
+  color: #f87171; border-color: #f87171;
+}
+.lola-review-save {
+  background: var(--success);
+  color: #0a0a0a;
+  border-color: var(--success);
+}
+.lola-review-save:hover {
+  filter: brightness(1.1);
+}
+
+/* When review is shown, hide the chat-like elements */
+.lola-modal.review-mode .lola-modal-said,
+.lola-modal.review-mode .lola-modal-userSaid,
+.lola-modal.review-mode .lola-modal-actions,
+.lola-modal.review-mode .lola-progress { display: none; }
+
 /* Stats */
 .stats-section {
   margin-bottom: 16px;
@@ -9408,6 +9501,7 @@ const Lola = (function() {
   let elModal, elOrb, elStatus, elSaid, elUserSaid, elActions, elError, elProgress;
   let chosenVoice = null;
   let aborted = false;
+  let lastAlternatives = []; /* All STT alternatives from the most recent listen() */
 
   /* Voice picker — prefers male Hungarian voices + natural/neural variants
      (much less robotic than the basic offline ones). Scoring system:
@@ -9462,19 +9556,28 @@ const Lola = (function() {
   /* Listen once: returns recognized text (lowercase) or null on timeout/error. */
   function listen(opts) {
     opts = opts || {};
+    lastAlternatives = [];
     return new Promise(resolve => {
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) { resolve(null); return; }
       const r = new SR();
-      r.lang = 'hu-HU'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 3;
+      r.lang = 'hu-HU'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 5;
       let finalText = '', interim = '';
       const t = setTimeout(() => { try { r.stop(); } catch {} }, opts.timeoutMs || 10000);
       r.onresult = (e) => {
         interim = '';
         for (let i = e.resultIndex; i < e.results.length; i++) {
           const res = e.results[i];
-          if (res.isFinal) finalText += res[0].transcript + ' ';
-          else interim += res[0].transcript;
+          if (res.isFinal) {
+            finalText += res[0].transcript + ' ';
+            /* Capture all alternatives for fallback parsing */
+            const alts = [];
+            for (let j = 0; j < res.length; j++) {
+              const a = (res[j].transcript || '').trim().toLowerCase();
+              if (a && !alts.includes(a)) alts.push(a);
+            }
+            lastAlternatives = alts;
+          } else interim += res[0].transcript;
         }
         if (elUserSaid) elUserSaid.textContent = (finalText || interim).trim();
       };
@@ -9491,6 +9594,18 @@ const Lola = (function() {
       try { setStatus('listening'); r.start(); }
       catch (err) { resolve(null); }
     });
+  }
+
+  /* Try parseFn on the primary text; if it fails, try the other STT alternatives. */
+  function parseWithAlternatives(text, parseFn) {
+    let v = parseFn(text);
+    if (v != null) return v;
+    for (const alt of lastAlternatives) {
+      if (alt === text) continue;
+      v = parseFn(alt);
+      if (v != null) return v;
+    }
+    return null;
   }
 
   async function listenYesNo() {
@@ -9579,36 +9694,133 @@ const Lola = (function() {
     return { date: d, label: `${dayLbl} ${partLbl} ${hour} órakor`, mode: 'specific', hour, dayOffset };
   }
 
-  /* Parse spoken number — digits or Hungarian compound words. */
+  /* Hungarian digit-by-digit map (for "kettő három öt négy nyolc" → 23548) */
+  const HU_DIGIT = {
+    'nulla':'0','zéró':'0','zero':'0',
+    'egy':'1','egyet':'1','egyes':'1',
+    'két':'2','kettő':'2','kettőt':'2','kettős':'2',
+    'három':'3','hármat':'3','hármas':'3',
+    'négy':'4','négyet':'4','négyes':'4',
+    'öt':'5','ötöt':'5','ötös':'5',
+    'hat':'6','hatot':'6','hatos':'6',
+    'hét':'7','hetet':'7','hetes':'7',
+    'nyolc':'8','nyolcat':'8','nyolcas':'8',
+    'kilenc':'9','kilencet':'9','kilences':'9'
+  };
+  const HU_TENS_PREFIX = ['kilencven','nyolcvan','hetven','hatvan','ötven','negyven','harminc'];
+  const HU_MULTIPLIERS = ['millió', 'ezer'];
+
+  /* Recursively split a possibly-compound Hungarian number word into atomic parts.
+     Handles things like "huszonháromezerötszáznegyvennyolc" → ["huszonhárom","ezer","öt","száz","negyven","nyolc"]. */
+  function expandHuNumWord(tok) {
+    if (!tok) return null;
+    if (HU_NUM[tok] != null) return [tok];
+
+    /* Try multiplier as suffix or in the middle */
+    for (const mul of HU_MULTIPLIERS) {
+      if (tok === mul) return [mul];
+      if (tok.endsWith(mul) && tok.length > mul.length) {
+        const sub = expandHuNumWord(tok.slice(0, -mul.length));
+        if (sub) return [...sub, mul];
+      }
+      const idx = tok.indexOf(mul);
+      if (idx > 0 && idx + mul.length < tok.length) {
+        const left = expandHuNumWord(tok.slice(0, idx));
+        const right = expandHuNumWord(tok.slice(idx + mul.length));
+        if (left && right) return [...left, mul, ...right];
+      }
+    }
+
+    /* "száz" as suffix or middle (special: it's in HU_NUM but acts as multiplier) */
+    if (tok === 'száz') return ['száz'];
+    if (tok.endsWith('száz') && tok.length > 4) {
+      const sub = expandHuNumWord(tok.slice(0, -4));
+      if (sub) return [...sub, 'száz'];
+    }
+    {
+      const idx = tok.indexOf('száz');
+      if (idx > 0 && idx + 4 < tok.length) {
+        const left = expandHuNumWord(tok.slice(0, idx));
+        const right = expandHuNumWord(tok.slice(idx + 4));
+        if (left && right) return [...left, 'száz', ...right];
+      }
+    }
+
+    /* Tens prefix: "negyvennyolc" → ["negyven","nyolc"] */
+    for (const tens of HU_TENS_PREFIX) {
+      if (tok === tens) return [tens];
+      if (tok.startsWith(tens) && tok.length > tens.length) {
+        const sub = expandHuNumWord(tok.slice(tens.length));
+        if (sub) return [tens, ...sub];
+      }
+    }
+    return null;
+  }
+
+  /* Try parsing as digit-by-digit speech (e.g. "kettő három öt négy nyolc" → 23548).
+     Only succeeds if EVERY token is a single digit-word (no compound numbers). */
+  function tryDigitByDigit(text) {
+    const tokens = text.toLowerCase().split(/[\s-]+/).filter(t => t);
+    if (tokens.length < 2) return null;
+    const digits = [];
+    for (const t of tokens) {
+      if (HU_DIGIT[t]) digits.push(HU_DIGIT[t]);
+      else if (/^\d$/.test(t)) digits.push(t);
+      else return null;
+    }
+    const n = parseInt(digits.join(''), 10);
+    return isNaN(n) ? null : n;
+  }
+
+  /* Robust spoken-number parser. Tries multiple strategies in order:
+     1. Digit-by-digit ("kettő három öt" → 235)
+     2. Pure digits ("23548")
+     3. Mixed digit + word ("23 ezer 540" → 23540)
+     4. Full Hungarian word form ("huszonháromezer ötszáznegyvennyolc" → 23548) */
   function parseNumber(text) {
     if (!text) return null;
-    const lower = text.toLowerCase().replace(/[.,]/g, '').trim();
-    /* Plain digits (possibly with "ezer" multiplier) */
-    const digitMatch = lower.match(/\b(\d{1,7})\b/);
+    const lower = text.toLowerCase().replace(/[,.]/g, '').replace(/-/g, ' ').trim();
+    if (!lower) return null;
+
+    /* 1. Digit-by-digit */
+    const dbd = tryDigitByDigit(lower);
+    if (dbd != null && dbd >= 10) return dbd; /* require ≥10 to avoid mis-parsing single words */
+
+    /* 2. Plain digits (no multipliers in the rest) */
+    const digitMatch = lower.match(/(\d+)/);
     if (digitMatch) {
       const v = parseInt(digitMatch[1], 10);
-      if (/ezer/.test(lower) && v < 1000) {
-        const second = lower.replace(digitMatch[0], '').match(/\b(\d{1,4})\b/);
-        return v * 1000 + (second ? parseInt(second[1], 10) : 0);
+      const rest = lower.replace(digitMatch[0], '').trim();
+      if (!/(ezer|millió|száz)/.test(rest)) return v;
+
+      /* 3. Mixed digit + word: "23 ezer 540" or "23 ezer ötszáznegyven" */
+      if (/ezer/.test(rest) && v < 1000) {
+        const restNoEzer = rest.replace(/ezer/, ' ').trim();
+        const restN = restNoEzer ? parseNumber(restNoEzer) : 0;
+        return v * 1000 + (restN || 0);
       }
-      return v;
     }
-    /* Hungarian compound — "harminckét ezer háromszáz" */
-    let total = 0, current = 0;
-    const parts = lower.split(/\s+/);
-    for (const p of parts) {
-      if (p === 'ezer') { total += (current || 1) * 1000; current = 0; continue; }
-      if (p === 'száz' || p === 'száza') { current = (current || 1) * 100; continue; }
-      const direct = HU_NUM[p];
-      if (direct != null) { current += direct; continue; }
-      for (const tens of ['harminc','negyven','ötven','hatvan','hetven','nyolcvan','kilencven','húsz','tíz']) {
-        if (p.startsWith(tens)) {
-          current += HU_NUM[tens];
-          const rest = p.slice(tens.length);
-          if (HU_NUM[rest] != null) current += HU_NUM[rest];
-          break;
-        }
+
+    /* 4. Full Hungarian word form */
+    const tokens = lower.split(/\s+/).filter(t => t);
+    const allParts = [];
+    for (const tok of tokens) {
+      if (/^\d+$/.test(tok)) {
+        allParts.push({ type: 'digit', value: parseInt(tok, 10) });
+        continue;
       }
+      const expanded = expandHuNumWord(tok);
+      if (expanded) allParts.push(...expanded);
+      /* Unknown tokens are silently ignored — extract what we can */
+    }
+
+    let total = 0, current = 0;
+    for (const p of allParts) {
+      if (typeof p === 'object' && p.type === 'digit') { current += p.value; }
+      else if (p === 'millió') { total += (current || 1) * 1000000; current = 0; }
+      else if (p === 'ezer')   { total += (current || 1) * 1000;    current = 0; }
+      else if (p === 'száz')   { current = (current || 1) * 100; }
+      else if (HU_NUM[p] != null) { current += HU_NUM[p]; }
     }
     total += current;
     return total > 0 ? total : null;
@@ -9696,7 +9908,9 @@ const Lola = (function() {
   }
   function open() { if (elModal) elModal.classList.add('active'); }
   function close() {
-    if (elModal) elModal.classList.remove('active');
+    if (elModal) { elModal.classList.remove('active'); elModal.classList.remove('review-mode'); }
+    const review = document.getElementById('lolaReview');
+    if (review) review.style.display = 'none';
     try { speechSynthesis.cancel(); } catch {}
     setStatus(null);
     if (elProgress) elProgress.innerHTML = '';
@@ -9761,11 +9975,11 @@ const Lola = (function() {
   async function askFuelKm() {
     while (!aborted) {
       clearUser();
-      await speak('Mennyi a kilométeróra állása?');
+      await speak('Mondd számjegyenként a kilométer óra állását. Például kettő, három, öt, négy, nyolc.');
       const t = await listen({ timeoutMs: 9000 });
       if (aborted) return null;
       if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const n = parseNumber(t);
+      const n = parseWithAlternatives(t, parseNumber);
       if (n == null || n < 0 || n > 999999) { await speak('Nem értettem a számot. Mondd lassan a kilométereket.'); continue; }
       clearUser();
       await speak(`Megjegyeztem, ${n} kilométer.`);
@@ -9778,11 +9992,11 @@ const Lola = (function() {
   async function askLiters() {
     while (!aborted) {
       clearUser();
-      await speak('Hány liter benzint tankoltál?');
+      await speak('Hány liter benzint tankoltál? Például hét egész nyolc.');
       const t = await listen({ timeoutMs: 9000 });
       if (aborted) return null;
       if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const n = parseDecimal(t);
+      const n = parseWithAlternatives(t, parseDecimal);
       if (n == null || n <= 0 || n > 100) { await speak('Nem értettem. Mondd például, hogy hét egész nyolc liter.'); continue; }
       clearUser();
       const display = Number.isInteger(n) ? n : n.toFixed(2).replace(/\.?0+$/, '');
@@ -9796,11 +10010,11 @@ const Lola = (function() {
   async function askCost() {
     while (!aborted) {
       clearUser();
-      await speak('Mennyibe került összesen?');
+      await speak('Mondd számjegyenként, mennyibe került. Például egy, kettő, öt, nulla, nulla.');
       const t = await listen({ timeoutMs: 9000 });
       if (aborted) return null;
       if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const n = parseNumber(t);
+      const n = parseWithAlternatives(t, parseNumber);
       if (n == null || n < 100 || n > 1000000) { await speak('Nem értettem. Mondd a forint összeget.'); continue; }
       clearUser();
       await speak(`Megjegyeztem, ${n.toLocaleString('hu')} forint.`);
@@ -9810,31 +10024,88 @@ const Lola = (function() {
     return null;
   }
 
-  /* Apply the fuel entry: fill all form fields and trigger save. */
-  function applyFuelEntry({ octane, km, liters, cost }) {
-    /* 1. Set today's date if empty */
-    const fuelDateEl = document.getElementById('fuelDate');
-    if (fuelDateEl && !fuelDateEl.value) {
-      const d = new Date();
-      fuelDateEl.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    }
-    /* 2. Set octane via the host's button (so internal fuelOctane var updates too) */
-    const octaneBtn = document.querySelector(`#fuelOctane button[data-octane="${octane}"]`);
-    if (octaneBtn) octaneBtn.click();
-    /* 3. Fill numeric fields */
-    const setVal = (id, value) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.value = value;
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    };
-    setVal('fuelKm', km);
-    setVal('fuelLiters', liters);
-    setVal('fuelCost', cost);
-    /* 4. Auto-save by clicking the host's button */
-    const saveBtn = document.getElementById('saveFuel');
-    if (saveBtn) saveBtn.click();
+  /* Show the fuel review card with all collected values; user must press Save
+     to actually commit. Returns a Promise that resolves when the user
+     either saves or cancels. */
+  function showFuelReview({ octane, km, liters, cost }) {
+    return new Promise(resolve => {
+      const review   = document.getElementById('lolaReview');
+      const kmInput  = document.getElementById('lolaReviewKm');
+      const litInput = document.getElementById('lolaReviewLiters');
+      const costInput= document.getElementById('lolaReviewCost');
+      const oct95    = document.getElementById('lolaReviewOct95');
+      const oct100   = document.getElementById('lolaReviewOct100');
+      const saveBtn  = document.getElementById('lolaReviewSave');
+      const cancelBtn= document.getElementById('lolaReviewCancel');
+      if (!review) { resolve(false); return; }
+
+      /* Pre-fill */
+      let curOct = octane;
+      kmInput.value   = km != null ? km : '';
+      litInput.value  = liters != null ? liters : '';
+      costInput.value = cost != null ? cost : '';
+      const setOctActive = (o) => {
+        curOct = o;
+        oct95.classList.toggle('active', o === '95');
+        oct100.classList.toggle('active', o === '100');
+      };
+      setOctActive(octane);
+
+      /* Show review, hide chat */
+      if (elModal) elModal.classList.add('review-mode');
+      review.style.display = 'block';
+
+      /* Wire octane buttons */
+      const onOct95 = () => setOctActive('95');
+      const onOct100 = () => setOctActive('100');
+      oct95.addEventListener('click', onOct95);
+      oct100.addEventListener('click', onOct100);
+
+      /* Cleanup helper */
+      const cleanup = () => {
+        oct95.removeEventListener('click', onOct95);
+        oct100.removeEventListener('click', onOct100);
+        saveBtn.removeEventListener('click', onSave);
+        cancelBtn.removeEventListener('click', onCancel);
+        review.style.display = 'none';
+        if (elModal) elModal.classList.remove('review-mode');
+      };
+
+      const onSave = () => {
+        const kmVal    = parseInt(kmInput.value, 10);
+        const litersVal= parseFloat(litInput.value);
+        const costVal  = parseInt(costInput.value, 10);
+        if (isNaN(kmVal) || kmVal <= 0 || isNaN(litersVal) || litersVal <= 0 || isNaN(costVal) || costVal <= 0) {
+          showError('Hiányos adat — töltsd ki az összes mezőt.');
+          return;
+        }
+        /* Fill host form and trigger save */
+        const fuelDateEl = document.getElementById('fuelDate');
+        if (fuelDateEl && !fuelDateEl.value) {
+          const d = new Date();
+          fuelDateEl.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+        const octaneBtn = document.querySelector(`#fuelOctane button[data-octane="${curOct}"]`);
+        if (octaneBtn) octaneBtn.click();
+        const setVal = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) { el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); }
+        };
+        setVal('fuelKm', kmVal);
+        setVal('fuelLiters', litersVal);
+        setVal('fuelCost', costVal);
+        const hostSaveBtn = document.getElementById('saveFuel');
+        if (hostSaveBtn) hostSaveBtn.click();
+
+        cleanup();
+        resolve(true);
+      };
+
+      const onCancel = () => { cleanup(); resolve(false); };
+
+      saveBtn.addEventListener('click', onSave);
+      cancelBtn.addEventListener('click', onCancel);
+    });
   }
 
   /* ───────── Fuel flow entry point ───────── */
@@ -9877,8 +10148,10 @@ const Lola = (function() {
     if (aborted || cost == null) return finish();
     setProgress(4, 4);
 
-    applyFuelEntry({ octane, km, liters, cost });
-    if (!aborted) await speak('A tankolás rögzítve. Jó utat!');
+    /* Show review card; wait for user to press Save (or Cancel) */
+    await speak('Készen vagyok. Kérlek, ellenőrizd az adatokat, és nyomd meg a Mentés gombot.');
+    const saved = await showFuelReview({ octane, km, liters, cost });
+    if (saved && !aborted) await speak('Tankolás rögzítve. Jó utat!');
     finish();
   }
 
@@ -9999,11 +10272,11 @@ const Lola = (function() {
   async function askKm() {
     while (!aborted) {
       clearUser();
-      await speak('Mennyi a kilométeróra állása?');
+      await speak('Mondd számjegyenként a kilométer óra állását. Például kettő, három, öt, négy, nyolc.');
       const t = await listen({ timeoutMs: 9000 });
       if (aborted) return null;
       if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const n = parseNumber(t);
+      const n = parseWithAlternatives(t, parseNumber);
       if (n == null || n < 0 || n > 999999) {
         await speak('Nem értettem a számot. Mondd például úgy, hogy harminckét ezer háromszáz.');
         continue;
@@ -10389,6 +10662,33 @@ document.addEventListener('DOMContentLoaded', init);
   <div class="lola-modal-said" id="lolaSaid">Szia, Honda vagyok.</div>
   <div class="lola-modal-userSaid" id="lolaUserSaid"></div>
   <div class="lola-modal-actions" id="lolaActions"></div>
+  <!-- Fuel review card: shown after Honda collects all data, before saving -->
+  <div class="lola-review" id="lolaReview" style="display:none">
+    <div class="lola-review-title">⛽ Ellenőrizd az adatokat</div>
+    <div class="lola-review-row">
+      <label>Üzemanyag</label>
+      <div class="lola-review-octane">
+        <button type="button" data-octane="95" id="lolaReviewOct95">95</button>
+        <button type="button" data-octane="100" id="lolaReviewOct100">100</button>
+      </div>
+    </div>
+    <div class="lola-review-row">
+      <label>Km óra</label>
+      <input type="number" id="lolaReviewKm" inputmode="numeric" placeholder="—">
+    </div>
+    <div class="lola-review-row">
+      <label>Liter</label>
+      <input type="number" id="lolaReviewLiters" inputmode="decimal" step="0.01" placeholder="—">
+    </div>
+    <div class="lola-review-row">
+      <label>Összeg (Ft)</label>
+      <input type="number" id="lolaReviewCost" inputmode="numeric" placeholder="—">
+    </div>
+    <div class="lola-review-actions">
+      <button type="button" class="lola-review-cancel" id="lolaReviewCancel">Mégsem</button>
+      <button type="button" class="lola-review-save" id="lolaReviewSave">💾 Mentés</button>
+    </div>
+  </div>
   <button class="lola-action-btn cancel" id="lolaCancel" type="button">Bezár</button>
   <div class="lola-error-banner" id="lolaError" style="display:none"></div>
 </div>
