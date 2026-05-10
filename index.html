@@ -9409,18 +9409,35 @@ const Lola = (function() {
   let chosenVoice = null;
   let aborted = false;
 
-  /* Voice priority: female Hungarian, then any Hungarian, then any female. */
+  /* Voice picker — prefers male Hungarian voices + natural/neural variants
+     (much less robotic than the basic offline ones). Scoring system:
+       +40  known male Hungarian name (Szabolcs, Tamás, Attila…)
+       +30  generic "male" / "férfi" tag
+       +20  Natural / Neural / Online / WaveNet (high-quality engines)
+       +10  HiFi / Premium / Enhanced
+       –50  known female names / female / nő tags
+     The highest-scoring HU voice wins; if no HU voices exist, returns null
+     so the browser default kicks in. */
   function pickVoice() {
     if (!('speechSynthesis' in window)) return null;
     const all = speechSynthesis.getVoices();
     if (!all.length) return null;
     const hu = all.filter(v => /^hu/i.test(v.lang));
-    const huFem = hu.find(v => /female|woman|n[őo]i|mária|magda|kati|szandi|eszter|anna|google.*magyar|microsoft.*mária|microsoft.*magdolna/i.test(v.name));
-    if (huFem) return huFem;
-    const huGoogle = hu.find(v => /google/i.test(v.name));
-    if (huGoogle) return huGoogle;
-    if (hu[0]) return hu[0];
-    return all.find(v => /female/i.test(v.name)) || null;
+    if (!hu.length) return null;
+
+    const scoreVoice = (v) => {
+      const n = (v.name || '').toLowerCase();
+      let s = 0;
+      if (/szabolcs|tamás|tamas|attila|géza|geza|istván|istvan|józsef|jozsef|dávid|david|béla|bela|zoltán|zoltan/.test(n)) s += 40;
+      if (/\b(male|férfi|ferfi)\b/.test(n) && !/\b(female|nő|noi|woman)\b/.test(n)) s += 30;
+      if (/natural|neural|wavenet|online/.test(n)) s += 20;
+      if (/hifi|premium|enhanced/.test(n)) s += 10;
+      if (/mária|maria|noemi|noémi|magda|kati|eszter|anna|szandi|tünde|tunde|female|woman|nő|noi/.test(n)) s -= 50;
+      return s;
+    };
+
+    const sorted = [...hu].sort((a, b) => scoreVoice(b) - scoreVoice(a));
+    return sorted[0] || null;
   }
 
   /* Speak a Hungarian sentence with the chosen female voice. */
@@ -9430,7 +9447,7 @@ const Lola = (function() {
         if (!('speechSynthesis' in window)) { resolve(); return; }
         speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'hu-HU'; u.rate = 1.0; u.pitch = 1.05; u.volume = 1.0;
+        u.lang = 'hu-HU'; u.rate = 0.95; u.pitch = 1.0; u.volume = 1.0;
         if (!chosenVoice) chosenVoice = pickVoice();
         if (chosenVoice) u.voice = chosenVoice;
         u.onend = () => resolve();
@@ -9489,6 +9506,15 @@ const Lola = (function() {
       if (attempt === 0) await speak('Igen vagy nem?');
     }
     return null;
+  }
+
+  /* After Honda echoes a value, briefly listen for a correction command.
+     If user says "újra" / "javítás" / "rossz" / "nem jó" within ~2.5s →
+     return true (redo). Silence or anything else → return false (continue). */
+  async function listenForCorrection() {
+    const t = await listen({ timeoutMs: 2500 });
+    if (aborted || !t) return false;
+    return /\b(újra|ujra|javít|javit|rossz|hibás|hibas|mégse|mégsem|megse|megsem|ismétel|ismetel|ismétlem|ismetlem|nem\s*j[oó]|nemjó|nemjo)\b/i.test(t);
   }
 
   /* Parse a spoken Hungarian time expression to a Date object. */
@@ -9726,6 +9752,7 @@ const Lola = (function() {
       clearUser();
       const octWord = oct === '95' ? 'kilencvenötös' : 'százas';
       await speak(`Megjegyeztem, ${octWord} üzemanyag.`);
+      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
       return oct;
     }
     return null;
@@ -9742,6 +9769,7 @@ const Lola = (function() {
       if (n == null || n < 0 || n > 999999) { await speak('Nem értettem a számot. Mondd lassan a kilométereket.'); continue; }
       clearUser();
       await speak(`Megjegyeztem, ${n} kilométer.`);
+      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
       return n;
     }
     return null;
@@ -9759,6 +9787,7 @@ const Lola = (function() {
       clearUser();
       const display = Number.isInteger(n) ? n : n.toFixed(2).replace(/\.?0+$/, '');
       await speak(`Megjegyeztem, ${display} liter.`);
+      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
       return n;
     }
     return null;
@@ -9775,6 +9804,7 @@ const Lola = (function() {
       if (n == null || n < 100 || n > 1000000) { await speak('Nem értettem. Mondd a forint összeget.'); continue; }
       clearUser();
       await speak(`Megjegyeztem, ${n.toLocaleString('hu')} forint.`);
+      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
       return n;
     }
     return null;
@@ -9824,10 +9854,11 @@ const Lola = (function() {
 
     /* Greet + announce detected station, if any */
     const detected = (typeof fuelStationDetected !== 'undefined' && fuelStationDetected) ? fuelStationDetected : null;
+    const hint = ' Ha rosszul mondom vissza, mondd, hogy újra.';
     if (detected) {
-      await speak(`Tankolás megkezdve. A GPS szerint itt vagyunk: ${detected.name}.`);
+      await speak(`Tankolás megkezdve.${hint} A GPS szerint itt vagyunk: ${detected.name}.`);
     } else {
-      await speak('Tankolás megkezdve.');
+      await speak(`Tankolás megkezdve.${hint}`);
     }
 
     const octane = await askOctane();
@@ -9892,9 +9923,15 @@ const Lola = (function() {
   function finish() { setTimeout(close, 1500); }
 
   async function askTime() {
+    let firstTime = true;
     while (!aborted) {
       clearUser();
-      await speak('Szia! Mikor indulunk?');
+      if (firstTime) {
+        await speak('Szia! Ha rosszul mondom vissza, mondd, hogy újra. Mikor indulunk?');
+        firstTime = false;
+      } else {
+        await speak('Mikor indulunk?');
+      }
       if (aborted) return null;
       const t = await listen({ timeoutMs: 9000 });
       if (aborted) return null;
@@ -9906,6 +9943,7 @@ const Lola = (function() {
       }
       clearUser();
       await speak(`Rendben, indulás ${parsed.label}.`);
+      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
       return parsed;
     }
     return null;
@@ -9932,6 +9970,7 @@ const Lola = (function() {
       clearUser();
       const originLabel = origin.keepGPS ? 'a jelenlegi pozíció' : origin.partner.name;
       await speak(`Megjegyeztem. Kiindulópont: ${originLabel}.`);
+      if (await listenForCorrection()) { origin = null; await speak('Rendben, ismétlem.'); continue; }
     }
     if (aborted) return null;
 
@@ -9951,6 +9990,7 @@ const Lola = (function() {
       dest = partner;
       clearUser();
       await speak(`Megjegyeztem. Úti cél: ${dest.name}.`);
+      if (await listenForCorrection()) { dest = null; await speak('Rendben, ismétlem.'); continue; }
     }
     if (aborted) return null;
     return { origin, dest };
@@ -9970,6 +10010,7 @@ const Lola = (function() {
       }
       clearUser();
       await speak(`Megjegyeztem, ${n} kilométer.`);
+      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
       return n;
     }
     return null;
@@ -9989,6 +10030,7 @@ const Lola = (function() {
       }
       clearUser();
       await speak(`Megjegyeztem. Az út célja: ${p}.`);
+      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
       return p;
     }
     return null;
