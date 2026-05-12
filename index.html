@@ -83,64 +83,179 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 .header h1 { font-size: 26px; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
 .header p { font-size: 12px; color: var(--text-3); margin: 4px 0 0; font-weight: 500; }
 
-/* Tab navigation */
+/* ===== MENÜ (négyzetes ikon-gombok) =====
+   A .tabs nav a home panelen jelenik meg grid elrendezésben.
+   A többi panelen elrejtjük — helyette a fejlécbeli vissza gomb visz a menübe. */
 .tabs {
-  display: flex; flex-wrap: wrap; gap: 3px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: 0;
+  position: static;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.tab {
+  position: relative;
+  aspect-ratio: 1 / 1;
   background: var(--surface);
+  color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 3px;
+  padding: 10px 6px;
+  font-size: 36px;
+  font-weight: 700;
+  border-radius: 18px;
+  white-space: normal;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+  text-align: center;
+  line-height: 1.1;
+}
+.tab:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+.tab:active { transform: scale(0.97); }
+.tab.active { /* a "kijelölt" állapot a home-on nem fontos, de ne legyen rikító */
+  background: var(--surface);
+  color: var(--text);
+}
+.tab-icon {
+  font-size: 34px;
+  line-height: 1;
+}
+.tab-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-2);
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+.tab .tab-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px;
+  padding: 0 5px;
+  background: var(--accent);
+  color: #18181b;
+  border-radius: 9px;
+  font-size: 10px; font-weight: 800;
+}
+.tab .tab-badge:empty,
+.tab .tab-badge[data-empty="true"] { display: none; }
+
+/* A menü csak a home panelen látszik. Minden más panelen el van rejtve. */
+body.view-other .tabs { display: none; }
+
+/* Vissza-a-menübe gomb fejléc (minden panelen, a home-on kívül) */
+.page-header {
+  display: flex; align-items: center; gap: 10px;
   margin-bottom: 14px;
   position: sticky;
   top: 8px;
   z-index: 100;
+  padding: 6px 0;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: rgba(24,24,27,0.85);
+  background: rgba(9,9,11,0.85);
 }
-.tab {
-  flex: 1 1 calc(20% - 4px);
-  min-width: 0;
-  background: transparent;
-  color: var(--text-3);
-  border: none;
-  padding: 8px 4px;
-  font-size: 17px;
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 14px;
   font-weight: 700;
-  border-radius: 10px;
-  white-space: nowrap;
   cursor: pointer;
   transition: all 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  overflow: hidden;
 }
-.tab:hover { color: var(--text); }
-.tab.active {
-  background: var(--accent);
-  color: #18181b;
-}
-.tab .tab-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  min-width: 14px; height: 14px;
-  padding: 0 4px;
-  background: rgba(0,0,0,0.18);
-  border-radius: 7px;
-  font-size: 9px; font-weight: 800;
-}
-.tab.active .tab-badge {
-  background: rgba(0,0,0,0.25);
-}
-.tab:not(.active) .tab-badge {
-  background: var(--surface-2);
+.back-btn:hover {
+  border-color: var(--accent);
   color: var(--accent);
+}
+.back-btn:active { transform: scale(0.97); }
+.page-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Tab panels — only active visible */
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
+
+/* Home panel: csak a menü gridet mutatja, fejlécet sem kell ismételni */
+.tab-panel[data-tab="home"] .page-header { display: none; }
+
+/* ===== Kézikönyv & Szervíz közös panel alpanel kapcsoló ===== */
+.ms-subtabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 14px;
+}
+.ms-subtab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.ms-subtab:hover { color: var(--text); }
+.ms-subtab.active {
+  background: var(--accent);
+  color: #18181b;
+}
+.ms-subtab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px;
+  padding: 0 5px;
+  background: var(--danger);
+  color: #fff;
+  border-radius: 9px;
+  font-size: 10px; font-weight: 800;
+  margin-left: 2px;
+}
+.ms-subtab.active .ms-subtab-badge {
+  background: rgba(0,0,0,0.25);
+  color: #fff;
+}
+
+.ms-sub { display: none; }
+.ms-sub.active { display: block; }
 
 .card {
   background: var(--surface);
@@ -1416,280 +1531,6 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
 .wx-trip-time-hint strong { color: var(--accent); font-weight: 700; }
 .wx-trip-time-hint.future { color: var(--accent); }
 
-/* =================================================================
-   Lola voice assistant — big launch button + dialog modal
-   ================================================================= */
-.lola-launch {
-  width: 100%;
-  display: flex; align-items: center; gap: 14px;
-  padding: 16px 18px; margin-bottom: 12px;
-  background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(96,165,250,0.10));
-  border: 1.5px solid rgba(251,191,36,0.45);
-  border-radius: 18px;
-  cursor: pointer; user-select: none;
-  transition: all 0.2s ease;
-  position: relative; overflow: hidden;
-}
-.lola-launch::before {
-  content: ''; position: absolute; top: -30%; right: -10%;
-  width: 180px; height: 180px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(251,191,36,0.20), transparent 70%);
-  pointer-events: none;
-}
-.lola-launch:hover, .lola-launch:active {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(251,191,36,0.18);
-  border-color: rgba(251,191,36,0.7);
-}
-.lola-launch-icon {
-  width: 56px; height: 56px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--accent); color: var(--bg);
-  border-radius: 50%; font-size: 28px;
-  box-shadow: 0 4px 14px rgba(251,191,36,0.4);
-  position: relative; z-index: 1;
-}
-.lola-launch-text {
-  flex: 1; min-width: 0; position: relative; z-index: 1;
-}
-.lola-launch-name {
-  font-size: 22px; font-weight: 800; color: var(--text);
-  letter-spacing: -0.02em; line-height: 1.1;
-}
-.lola-launch-tag {
-  font-size: 11px; color: var(--text-3); margin-top: 2px;
-  font-weight: 600;
-}
-.lola-launch-cta {
-  font-size: 18px; flex-shrink: 0; color: var(--accent);
-  position: relative; z-index: 1;
-}
-
-/* Dialog modal — overlay shown while Lola is in conversation */
-.lola-modal {
-  position: fixed; inset: 0;
-  background: rgba(9,9,11,0.92);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: none;
-  flex-direction: column; align-items: center; justify-content: center;
-  padding: 20px; animation: lolaFadeIn 0.25s ease;
-}
-.lola-modal.active { display: flex; }
-@keyframes lolaFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.lola-modal-orb {
-  width: 140px; height: 140px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #f59e0b);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 56px;
-  box-shadow: 0 0 60px rgba(251,191,36,0.4);
-  margin-bottom: 30px;
-  position: relative;
-  transition: transform 0.3s ease;
-}
-.lola-modal-orb::before, .lola-modal-orb::after {
-  content: ''; position: absolute; inset: 0; border-radius: 50%;
-  border: 2px solid var(--accent);
-  opacity: 0; pointer-events: none;
-}
-.lola-modal.listening .lola-modal-orb {
-  animation: lolaPulse 1.4s ease-in-out infinite;
-  background: linear-gradient(135deg, #ef4444, #f87171);
-  box-shadow: 0 0 60px rgba(239,68,68,0.5);
-}
-.lola-modal.listening .lola-modal-orb::before {
-  animation: lolaRing 1.6s ease-out infinite;
-  border-color: #ef4444;
-}
-.lola-modal.listening .lola-modal-orb::after {
-  animation: lolaRing 1.6s ease-out infinite 0.5s;
-  border-color: #ef4444;
-}
-.lola-modal.speaking .lola-modal-orb {
-  animation: lolaPulse 1.6s ease-in-out infinite;
-}
-@keyframes lolaPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-}
-@keyframes lolaRing {
-  0%   { opacity: 0.6; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.6); }
-}
-.lola-modal-status {
-  font-size: 13px; color: var(--text-3); font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.12em;
-  margin-bottom: 12px;
-}
-.lola-modal-said {
-  font-size: 17px; color: var(--text);
-  line-height: 1.4; text-align: center;
-  max-width: 480px; margin-bottom: 14px;
-  font-weight: 600;
-}
-.lola-modal-userSaid {
-  font-size: 14px; color: var(--text-3); font-style: italic;
-  text-align: center; min-height: 22px;
-  max-width: 480px; padding: 0 16px;
-}
-.lola-modal-userSaid::before {
-  content: '" '; opacity: 0.5;
-}
-.lola-modal-userSaid::after {
-  content: ' "'; opacity: 0.5;
-}
-.lola-modal-userSaid:empty::before, .lola-modal-userSaid:empty::after { content: ''; }
-.lola-modal-actions {
-  margin-top: 30px;
-  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
-}
-.lola-action-btn {
-  padding: 14px 28px;
-  border-radius: 999px;
-  font-size: 15px; font-weight: 700;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-  min-width: 110px;
-  transition: all 0.15s ease;
-}
-.lola-action-btn.primary {
-  background: var(--accent);
-  color: var(--bg);
-  border-color: var(--accent);
-}
-.lola-action-btn:hover, .lola-action-btn:active {
-  transform: translateY(-1px);
-  border-color: var(--accent);
-}
-.lola-action-btn.cancel {
-  background: transparent;
-  color: var(--text-3);
-  border-color: rgba(239,68,68,0.4);
-  font-size: 13px;
-  padding: 10px 22px;
-  min-width: 90px;
-  margin-top: 8px;
-}
-.lola-action-btn.cancel:hover { color: #f87171; border-color: #f87171; }
-.lola-progress {
-  position: absolute; top: 24px; left: 0; right: 0;
-  display: flex; justify-content: center; gap: 8px;
-}
-.lola-progress-step {
-  width: 24px; height: 4px; border-radius: 2px;
-  background: var(--surface-2);
-  transition: background 0.3s ease;
-}
-.lola-progress-step.done   { background: var(--success); }
-.lola-progress-step.active { background: var(--accent); }
-.lola-error-banner {
-  margin-top: 16px;
-  padding: 10px 14px;
-  background: rgba(239,68,68,0.12);
-  border: 1px solid rgba(239,68,68,0.3);
-  border-radius: 10px;
-  font-size: 12px; color: #fecaca;
-  text-align: center; max-width: 460px;
-}
-
-/* Honda review card — shown when fuel data is collected, before save */
-.lola-review {
-  margin-top: 24px;
-  padding: 18px 18px 16px;
-  background: rgba(251, 191, 36, 0.06);
-  border: 1px solid rgba(251, 191, 36, 0.35);
-  border-radius: 16px;
-  width: 100%; max-width: 460px;
-  box-sizing: border-box;
-}
-.lola-review-title {
-  font-size: 14px; font-weight: 800;
-  color: var(--accent);
-  margin-bottom: 14px;
-  text-align: center;
-  letter-spacing: 0.02em;
-}
-.lola-review-row {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-.lola-review-row label {
-  font-size: 12px; font-weight: 600;
-  color: var(--text-3);
-  text-transform: uppercase; letter-spacing: 0.04em;
-  flex-shrink: 0;
-}
-.lola-review-row input {
-  flex: 1;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 18px; font-weight: 700;
-  color: var(--text); font-family: 'JetBrains Mono', monospace;
-  text-align: right; min-width: 0;
-}
-.lola-review-row input:focus {
-  outline: none;
-  border-color: var(--accent);
-  background: rgba(251,191,36,0.05);
-}
-.lola-review-octane {
-  display: flex; gap: 6px;
-}
-.lola-review-octane button {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 14px;
-  font-size: 14px; font-weight: 700;
-  color: var(--text-3); cursor: pointer;
-  font-family: 'JetBrains Mono', monospace;
-  transition: all 0.15s;
-}
-.lola-review-octane button.active {
-  background: var(--accent); color: #0a0a0a;
-  border-color: var(--accent);
-}
-.lola-review-actions {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 8px; margin-top: 16px;
-}
-.lola-review-actions button {
-  padding: 12px 16px;
-  border-radius: 10px;
-  font-size: 14px; font-weight: 700;
-  cursor: pointer;
-  border: 1px solid var(--border);
-}
-.lola-review-cancel {
-  background: var(--surface-2);
-  color: var(--text-3);
-}
-.lola-review-cancel:hover {
-  color: #f87171; border-color: #f87171;
-}
-.lola-review-save {
-  background: var(--success);
-  color: #0a0a0a;
-  border-color: var(--success);
-}
-.lola-review-save:hover {
-  filter: brightness(1.1);
-}
-
-/* When review is shown, hide the chat-like elements */
-.lola-modal.review-mode .lola-modal-said,
-.lola-modal.review-mode .lola-modal-userSaid,
-.lola-modal.review-mode .lola-modal-actions,
-.lola-modal.review-mode .lola-progress { display: none; }
 
 /* Stats */
 .stats-section {
@@ -2751,29 +2592,57 @@ footer {
   <p>Élő útvonaltervező · GPS-alapú km</p>
 </header>
 
-<!-- TAB NAVIGATION -->
+<!-- FŐMENÜ (home) — négyzetes ikon-gombok -->
+<div class="tab-panel active" data-tab="home">
 <nav class="tabs" id="tabsNav">
-  <button class="tab active" data-tab-btn="route" title="Útvonal">🏍️ <span class="tab-badge" id="tabBadgeRoute">0</span></button>
-  <button class="tab" data-tab-btn="map" title="Térkép">🗺️</button>
-  <button class="tab" data-tab-btn="weather" title="Időjárás">🌤️</button>
-  <button class="tab" data-tab-btn="trips" title="Útnyilvántartás">📝 <span class="tab-badge" id="tabBadgeTrips">0</span></button>
-  <button class="tab" data-tab-btn="fuel" title="Üzemanyag">⛽</button>
-  <button class="tab" data-tab-btn="stats" title="Statisztika">📈</button>
-  <button class="tab" data-tab-btn="partners" title="Partnerek">📋</button>
-  <button class="tab" data-tab-btn="manual" title="Kézikönyv">📖</button>
-  <button class="tab" data-tab-btn="service" title="Szervíz">🔧 <span class="tab-badge" id="tabBadgeService">0</span></button>
-  <button class="tab" data-tab-btn="sos" title="Vészhelyzet">🆘</button>
+  <button class="tab" data-tab-btn="route" title="Útvonal">
+    <span class="tab-icon">🏍️</span>
+    <span class="tab-label">Útvonal</span>
+    <span class="tab-badge" id="tabBadgeRoute" style="display:none"></span>
+  </button>
+  <button class="tab" data-tab-btn="map" title="Térkép">
+    <span class="tab-icon">🗺️</span>
+    <span class="tab-label">Térkép</span>
+  </button>
+  <button class="tab" data-tab-btn="weather" title="Időjárás">
+    <span class="tab-icon">🌤️</span>
+    <span class="tab-label">Időjárás</span>
+  </button>
+  <button class="tab" data-tab-btn="trips" title="Útnyilvántartás">
+    <span class="tab-icon">📝</span>
+    <span class="tab-label">Útnyilvántartás</span>
+    <span class="tab-badge" id="tabBadgeTrips" style="display:none"></span>
+  </button>
+  <button class="tab" data-tab-btn="fuel" title="Üzemanyag">
+    <span class="tab-icon">⛽</span>
+    <span class="tab-label">Üzemanyag</span>
+  </button>
+  <button class="tab" data-tab-btn="stats" title="Statisztika">
+    <span class="tab-icon">📈</span>
+    <span class="tab-label">Statisztika</span>
+  </button>
+  <button class="tab" data-tab-btn="partners" title="Partnerek">
+    <span class="tab-icon">📋</span>
+    <span class="tab-label">Partnerek</span>
+  </button>
+  <button class="tab" data-tab-btn="manualsvc" title="Kézikönyv & Szervíz">
+    <span class="tab-icon">📖</span>
+    <span class="tab-label">Kézikönyv & Szervíz</span>
+    <span class="tab-badge" id="tabBadgeService" style="display:none"></span>
+  </button>
+  <button class="tab" data-tab-btn="sos" title="Vészhelyzet">
+    <span class="tab-icon">🆘</span>
+    <span class="tab-label">Vészhelyzet</span>
+  </button>
 </nav>
+</div>
 
 <!-- ÚTVONAL (összevont: GPS + Autópálya + Partnerek) -->
-<div class="tab-panel active" data-tab="route">
-<button class="lola-launch" id="lolaLaunch" type="button" aria-label="Honda hangasszisztens indítása">
-  <span class="lola-launch-icon">🎤</span>
-  <span class="lola-launch-text">
-    <span class="lola-launch-name">Honda</span>
-  </span>
-  <span class="lola-launch-cta">▶</span>
-</button>
+<div class="tab-panel" data-tab="route">
+<div class="page-header">
+  <button class="back-btn" data-back="home" type="button">← Főmenü</button>
+  <h2 class="page-title">🏍️ Útvonal</h2>
+</div>
 <section class="card gps-card">
   <p class="card-header">
     <span>Kiindulópont</span>
@@ -2844,6 +2713,10 @@ footer {
 
 <!-- MAP -->
 <div class="tab-panel" data-tab="map">
+<div class="page-header">
+  <button class="back-btn" data-back="home" type="button">← Főmenü</button>
+  <h2 class="page-title">🗺️ Térkép</h2>
+</div>
 <section class="card">
   <p class="card-header">Útvonal és navigáció</p>
   <div class="map-container" id="mapContainer">
@@ -2870,6 +2743,10 @@ footer {
 
 <!-- WEATHER -->
 <div class="tab-panel" data-tab="weather">
+<div class="page-header">
+  <button class="back-btn" data-back="home" type="button">← Főmenü</button>
+  <h2 class="page-title">🌤️ Időjárás</h2>
+</div>
 <div id="weatherList">
   <p class="weather-empty">Adatok betöltése az Útvonal fülről…</p>
 </div>
@@ -2877,6 +2754,10 @@ footer {
 
 <!-- ÚTNYILVÁNTARTÁS -->
 <div class="tab-panel" data-tab="trips">
+<div class="page-header">
+  <button class="back-btn" data-back="home" type="button">← Főmenü</button>
+  <h2 class="page-title">📝 Útnyilvántartás</h2>
+</div>
 <section class="card">
   <p class="card-header">
     <span>Útnyilvántartás <span class="badge" id="tripBadge">0</span></span>
@@ -2959,13 +2840,10 @@ footer {
 
 <!-- TANKOLÁS -->
 <div class="tab-panel" data-tab="fuel">
-<button class="lola-launch" id="lolaFuelLaunch" type="button" aria-label="Honda hangasszisztens — tankolás">
-  <span class="lola-launch-icon">🎤</span>
-  <span class="lola-launch-text">
-    <span class="lola-launch-name">Honda</span>
-  </span>
-  <span class="lola-launch-cta">▶</span>
-</button>
+<div class="page-header">
+  <button class="back-btn" data-back="home" type="button">← Főmenü</button>
+  <h2 class="page-title">⛽ Üzemanyag</h2>
+</div>
 <section class="card">
   <p class="card-header">
     <span>⛽ Tankolás <span class="badge" id="fuelBadge">0</span></span>
@@ -3063,6 +2941,10 @@ footer {
 
 <!-- STATISZTIKA -->
 <div class="tab-panel" data-tab="stats">
+<div class="page-header">
+  <button class="back-btn" data-back="home" type="button">← Főmenü</button>
+  <h2 class="page-title">📈 Statisztika</h2>
+</div>
 <section class="card">
   <p class="card-header">
     <span>📈 Statisztikák</span>
@@ -3076,6 +2958,10 @@ footer {
 
 <!-- PARTNEREK -->
 <div class="tab-panel" data-tab="partners">
+<div class="page-header">
+  <button class="back-btn" data-back="home" type="button">← Főmenü</button>
+  <h2 class="page-title">📋 Partnerek</h2>
+</div>
 
 <!-- SAVED CUSTOM PARTNERS -->
 <details id="savedPartnersDetails" style="margin-bottom:12px" open>
@@ -3111,7 +2997,25 @@ footer {
 </div>
 
 <!-- KÉZIKÖNYV -->
-<div class="tab-panel" data-tab="manual">
+<div class="tab-panel" data-tab="manualsvc">
+<div class="page-header">
+  <button class="back-btn" data-back="home" type="button">← Főmenü</button>
+  <h2 class="page-title">📖 Kézikönyv & Szervíz</h2>
+</div>
+
+<!-- Alpanel kapcsoló: Kézikönyv ↔ Szervíz -->
+<div class="ms-subtabs">
+  <button class="ms-subtab active" data-ms-sub="manual" type="button">
+    <span>📖</span><span>Kézikönyv</span>
+  </button>
+  <button class="ms-subtab" data-ms-sub="service" type="button">
+    <span>🔧</span><span>Szervíz</span>
+    <span class="ms-subtab-badge" id="msBadgeService" style="display:none"></span>
+  </button>
+</div>
+
+<!-- ===== KÉZIKÖNYV szekció ===== -->
+<div class="ms-sub active" data-ms-sub-panel="manual">
 
 <!-- "Mit szeretnél most csinálni?" — fő nézet választó -->
 <div class="manual-mode-tabs">
@@ -3177,9 +3081,10 @@ footer {
 </details>
 
 </div>
+<!-- /ms-sub manual -->
 
-<!-- SZERVÍZ -->
-<div class="tab-panel" data-tab="service">
+<!-- ===== SZERVÍZ szekció ===== -->
+<div class="ms-sub" data-ms-sub-panel="service">
 
 <!-- KM input -->
 <div class="km-input-card">
@@ -3273,9 +3178,17 @@ footer {
 </details>
 
 </div>
+<!-- /ms-sub service -->
+
+</div>
+<!-- /tab-panel manualsvc -->
 
 <!-- SOS / VÉSZHELYZET -->
 <div class="tab-panel" data-tab="sos">
+<div class="page-header">
+  <button class="back-btn" data-back="home" type="button">← Főmenü</button>
+  <h2 class="page-title">🆘 Vészhelyzet</h2>
+</div>
 
 <!-- 112 nagy gomb -->
 <a href="tel:112" class="sos-big-call" id="sosCall112">
@@ -4192,7 +4105,10 @@ function updateStopCount() {
     return d && d.lat != null;
   }).length;
   const routeBadge = document.getElementById('tabBadgeRoute');
-  if (routeBadge) routeBadge.textContent = validCount;
+  if (routeBadge) {
+    routeBadge.textContent = validCount > 0 ? validCount : '';
+    routeBadge.style.display = validCount > 0 ? '' : 'none';
+  }
 }
 
 // =============================================================
@@ -6433,7 +6349,10 @@ function renderTripList() {
   document.getElementById('exportExcel').disabled = trips.length === 0;
   // Update tab badge
   const tripsBadge = document.getElementById('tabBadgeTrips');
-  if (tripsBadge) tripsBadge.textContent = trips.length;
+  if (tripsBadge) {
+    tripsBadge.textContent = trips.length > 0 ? trips.length : '';
+    tripsBadge.style.display = trips.length > 0 ? '' : 'none';
+  }
 
   if (trips.length === 0) {
     tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Még nincs rögzített út</td></tr>';
@@ -9256,27 +9175,30 @@ function initManualAndService() {
   const originalRenderService = renderService;
   window.renderService = function() {
     originalRenderService();
-    const badge = document.getElementById('tabBadgeService');
-    if (badge) {
-      let count = 0;
-      // Count overdue + due-soon km-based intervals
-      for (const iv of SERVICE_INTERVALS) {
-        const s = intervalStatus(iv, currentKm);
-        if (s.combined === 'overdue' || s.combined === 'due-soon') count++;
-      }
-      // Count overdue + due-soon time-based services
-      for (const svc of TIME_BASED_SERVICES) {
-        const s = timeBasedStatus(svc);
-        if (s.combined === 'overdue' || s.combined === 'due-soon') count++;
-      }
-      // Count overdue/due-soon custom items
-      for (const item of customMaint) {
-        const s = customItemStatus(item, currentKm);
-        if (s.combined === 'overdue' || s.combined === 'due-soon') count++;
-      }
-      badge.textContent = count;
-      badge.style.display = count > 0 ? '' : 'none';
+    let count = 0;
+    // Count overdue + due-soon km-based intervals
+    for (const iv of SERVICE_INTERVALS) {
+      const s = intervalStatus(iv, currentKm);
+      if (s.combined === 'overdue' || s.combined === 'due-soon') count++;
     }
+    // Count overdue + due-soon time-based services
+    for (const svc of TIME_BASED_SERVICES) {
+      const s = timeBasedStatus(svc);
+      if (s.combined === 'overdue' || s.combined === 'due-soon') count++;
+    }
+    // Count overdue/due-soon custom items
+    for (const item of customMaint) {
+      const s = customItemStatus(item, currentKm);
+      if (s.combined === 'overdue' || s.combined === 'due-soon') count++;
+    }
+    // Frissítjük mind a főmenü gomb, mind az alpanel kapcsoló badge-jét
+    ['tabBadgeService', 'msBadgeService'].forEach(id => {
+      const badge = document.getElementById(id);
+      if (badge) {
+        badge.textContent = count > 0 ? count : '';
+        badge.style.display = count > 0 ? '' : 'none';
+      }
+    });
   };
   // Run once to set initial badge
   window.renderService();
@@ -9482,987 +9404,6 @@ function initSos() {
 // END SOS MODULE
 // =============================================================
 
-// =============================================================
-// LOLA — Hungarian voice assistant for trip logging
-// =============================================================
-const Lola = (function() {
-
-  /* Hungarian word→number map (0-100) for parsing spoken numbers */
-  const HU_NUM = {
-    'nulla':0,'egy':1,'két':2,'kettő':2,'három':3,'négy':4,'öt':5,'hat':6,
-    'hét':7,'nyolc':8,'kilenc':9,'tíz':10,'tizenegy':11,'tizenkettő':12,'tizenkét':12,
-    'tizenhárom':13,'tizennégy':14,'tizenöt':15,'tizenhat':16,'tizenhét':17,
-    'tizennyolc':18,'tizenkilenc':19,'húsz':20,'huszonegy':21,'huszonkettő':22,'huszonkét':22,
-    'huszonhárom':23,'huszonnégy':24,'huszonöt':25,'huszonhat':26,'huszonhét':27,
-    'huszonnyolc':28,'huszonkilenc':29,'harminc':30,'negyven':40,'ötven':50,
-    'hatvan':60,'hetven':70,'nyolcvan':80,'kilencven':90,'száz':100
-  };
-
-  let elModal, elOrb, elStatus, elSaid, elUserSaid, elActions, elError, elProgress;
-  let chosenVoice = null;
-  let aborted = false;
-  let lastAlternatives = []; /* All STT alternatives from the most recent listen() */
-
-  /* Voice picker — prefers male Hungarian voices + natural/neural variants
-     (much less robotic than the basic offline ones). Scoring system:
-       +40  known male Hungarian name (Szabolcs, Tamás, Attila…)
-       +30  generic "male" / "férfi" tag
-       +20  Natural / Neural / Online / WaveNet (high-quality engines)
-       +10  HiFi / Premium / Enhanced
-       –50  known female names / female / nő tags
-     The highest-scoring HU voice wins; if no HU voices exist, returns null
-     so the browser default kicks in. */
-  function pickVoice() {
-    if (!('speechSynthesis' in window)) return null;
-    const all = speechSynthesis.getVoices();
-    if (!all.length) return null;
-    const hu = all.filter(v => /^hu/i.test(v.lang));
-    if (!hu.length) return null;
-
-    const scoreVoice = (v) => {
-      const n = (v.name || '').toLowerCase();
-      let s = 0;
-      if (/szabolcs|tamás|tamas|attila|géza|geza|istván|istvan|józsef|jozsef|dávid|david|béla|bela|zoltán|zoltan/.test(n)) s += 40;
-      if (/\b(male|férfi|ferfi)\b/.test(n) && !/\b(female|nő|noi|woman)\b/.test(n)) s += 30;
-      if (/natural|neural|wavenet|online/.test(n)) s += 20;
-      if (/hifi|premium|enhanced/.test(n)) s += 10;
-      if (/mária|maria|noemi|noémi|magda|kati|eszter|anna|szandi|tünde|tunde|female|woman|nő|noi/.test(n)) s -= 50;
-      return s;
-    };
-
-    const sorted = [...hu].sort((a, b) => scoreVoice(b) - scoreVoice(a));
-    return sorted[0] || null;
-  }
-
-  /* Speak a Hungarian sentence with the chosen female voice. */
-  function speak(text) {
-    return new Promise(resolve => {
-      try {
-        if (!('speechSynthesis' in window)) { resolve(); return; }
-        speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'hu-HU'; u.rate = 0.95; u.pitch = 1.0; u.volume = 1.0;
-        if (!chosenVoice) chosenVoice = pickVoice();
-        if (chosenVoice) u.voice = chosenVoice;
-        u.onend = () => resolve();
-        u.onerror = () => resolve();
-        setStatus('speaking');
-        if (elSaid) elSaid.textContent = text;
-        speechSynthesis.speak(u);
-      } catch { resolve(); }
-    });
-  }
-
-  /* Listen once: returns recognized text (lowercase) or null on timeout/error. */
-  function listen(opts) {
-    opts = opts || {};
-    lastAlternatives = [];
-    return new Promise(resolve => {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { resolve(null); return; }
-      const r = new SR();
-      r.lang = 'hu-HU'; r.continuous = false; r.interimResults = true; r.maxAlternatives = 5;
-      let finalText = '', interim = '';
-      const t = setTimeout(() => { try { r.stop(); } catch {} }, opts.timeoutMs || 10000);
-      r.onresult = (e) => {
-        interim = '';
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          const res = e.results[i];
-          if (res.isFinal) {
-            finalText += res[0].transcript + ' ';
-            /* Capture all alternatives for fallback parsing */
-            const alts = [];
-            for (let j = 0; j < res.length; j++) {
-              const a = (res[j].transcript || '').trim().toLowerCase();
-              if (a && !alts.includes(a)) alts.push(a);
-            }
-            lastAlternatives = alts;
-          } else interim += res[0].transcript;
-        }
-        if (elUserSaid) elUserSaid.textContent = (finalText || interim).trim();
-      };
-      r.onerror = (e) => {
-        clearTimeout(t);
-        if (e.error === 'no-speech' || e.error === 'aborted') resolve('');
-        else resolve(null);
-      };
-      r.onend = () => {
-        clearTimeout(t);
-        const text = (finalText || interim).trim().toLowerCase();
-        resolve(text || null);
-      };
-      try { setStatus('listening'); r.start(); }
-      catch (err) { resolve(null); }
-    });
-  }
-
-  /* Try parseFn on the primary text; if it fails, try the other STT alternatives. */
-  function parseWithAlternatives(text, parseFn) {
-    let v = parseFn(text);
-    if (v != null) return v;
-    for (const alt of lastAlternatives) {
-      if (alt === text) continue;
-      v = parseFn(alt);
-      if (v != null) return v;
-    }
-    return null;
-  }
-
-  async function listenYesNo() {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const t = await listen({ timeoutMs: 7000 });
-      if (aborted) return null;
-      if (!t) {
-        if (attempt === 0) await speak('Nem hallottam, mondd újra.');
-        continue;
-      }
-      if (/\b(igen|jó|jól|persze|aha|úgy|úgy van|ok|oké|tovább|rendben|helyes)\b/.test(t)) return 'yes';
-      if (/\b(nem|nincs|mégse|mégsem|rossz|hibás|újra|nemjó)\b/.test(t)) return 'no';
-      if (attempt === 0) await speak('Igen vagy nem?');
-    }
-    return null;
-  }
-
-  /* After Honda echoes a value, briefly listen for a correction command.
-     If user says "újra" / "javítás" / "rossz" / "nem jó" within ~2.5s →
-     return true (redo). Silence or anything else → return false (continue). */
-  async function listenForCorrection() {
-    const t = await listen({ timeoutMs: 2500 });
-    if (aborted || !t) return false;
-    return /\b(újra|ujra|javít|javit|rossz|hibás|hibas|mégse|mégsem|megse|megsem|ismétel|ismetel|ismétlem|ismetlem|nem\s*j[oó]|nemjó|nemjo)\b/i.test(t);
-  }
-
-  /* Parse a spoken Hungarian time expression to a Date object. */
-  function parseTime(text) {
-    if (!text) return null;
-    const lower = text.toLowerCase();
-
-    if (/\b(most|azonnal|rögtön|indulunk most|most indul)\b/.test(lower)) {
-      return { date: wxNowRounded(), label: 'most azonnal', mode: 'now' };
-    }
-
-    let dayOffset = 0;
-    if (/\bholnapután\b/.test(lower)) dayOffset = 2;
-    else if (/\bholnap\b/.test(lower)) dayOffset = 1;
-    else if (/\b(ma|aznap)\b/.test(lower)) dayOffset = 0;
-    else {
-      const m = lower.match(/(\d+)\s*nap\s*múlva/);
-      if (m) dayOffset = parseInt(m[1], 10);
-    }
-
-    let hour = null;
-    const numH = lower.match(/(\d{1,2})\s*(?:óra|h|kor)?/);
-    if (numH) hour = parseInt(numH[1], 10);
-
-    if (hour === null) {
-      for (const [w, n] of Object.entries(HU_NUM)) {
-        if (n > 24) continue;
-        if (new RegExp(`\\b${w}\\b\\s*(?:óra|kor|órakor)`).test(lower)) { hour = n; break; }
-      }
-      if (hour === null) {
-        for (const [w, n] of Object.entries(HU_NUM)) {
-          if (n > 24) continue;
-          if (new RegExp(`\\b${w}\\b`).test(lower)) { hour = n; break; }
-        }
-      }
-    }
-
-    const isPM = /\b(délután|du|este)\b/.test(lower);
-    const isMorning = /\b(reggel|hajnal)\b/.test(lower);
-    if (hour !== null && hour > 0 && hour < 12 && isPM) hour += 12;
-
-    if (hour === null) {
-      if (/\bdélben\b/.test(lower)) hour = 12;
-      else if (isPM) hour = 14;
-      else if (isMorning) hour = 8;
-      else if (/\beste\b/.test(lower)) hour = 18;
-      else return null;
-    }
-
-    if (hour < 0 || hour > 23) return null;
-
-    const d = new Date();
-    d.setDate(d.getDate() + dayOffset);
-    d.setHours(hour, 0, 0, 0);
-
-    if (dayOffset === 0 && d.getTime() < Date.now() - 30*60*1000 && !/\b(ma|aznap)\b/.test(lower)) {
-      d.setDate(d.getDate() + 1); dayOffset = 1;
-    }
-
-    const dayLbl = dayOffset === 0 ? 'ma' : dayOffset === 1 ? 'holnap' : dayOffset === 2 ? 'holnapután' : `${dayOffset} nap múlva`;
-    const partLbl = hour < 6 ? 'hajnal' : hour < 12 ? 'reggel' : hour < 17 ? 'délután' : hour < 21 ? 'este' : 'éjszaka';
-    return { date: d, label: `${dayLbl} ${partLbl} ${hour} órakor`, mode: 'specific', hour, dayOffset };
-  }
-
-  /* Hungarian digit-by-digit map (for "kettő három öt négy nyolc" → 23548) */
-  const HU_DIGIT = {
-    'nulla':'0','zéró':'0','zero':'0',
-    'egy':'1','egyet':'1','egyes':'1',
-    'két':'2','kettő':'2','kettőt':'2','kettős':'2',
-    'három':'3','hármat':'3','hármas':'3',
-    'négy':'4','négyet':'4','négyes':'4',
-    'öt':'5','ötöt':'5','ötös':'5',
-    'hat':'6','hatot':'6','hatos':'6',
-    'hét':'7','hetet':'7','hetes':'7',
-    'nyolc':'8','nyolcat':'8','nyolcas':'8',
-    'kilenc':'9','kilencet':'9','kilences':'9'
-  };
-  const HU_TENS_PREFIX = ['kilencven','nyolcvan','hetven','hatvan','ötven','negyven','harminc'];
-  const HU_MULTIPLIERS = ['millió', 'ezer'];
-
-  /* Recursively split a possibly-compound Hungarian number word into atomic parts.
-     Handles things like "huszonháromezerötszáznegyvennyolc" → ["huszonhárom","ezer","öt","száz","negyven","nyolc"]. */
-  function expandHuNumWord(tok) {
-    if (!tok) return null;
-    if (HU_NUM[tok] != null) return [tok];
-
-    /* Try multiplier as suffix or in the middle */
-    for (const mul of HU_MULTIPLIERS) {
-      if (tok === mul) return [mul];
-      if (tok.endsWith(mul) && tok.length > mul.length) {
-        const sub = expandHuNumWord(tok.slice(0, -mul.length));
-        if (sub) return [...sub, mul];
-      }
-      const idx = tok.indexOf(mul);
-      if (idx > 0 && idx + mul.length < tok.length) {
-        const left = expandHuNumWord(tok.slice(0, idx));
-        const right = expandHuNumWord(tok.slice(idx + mul.length));
-        if (left && right) return [...left, mul, ...right];
-      }
-    }
-
-    /* "száz" as suffix or middle (special: it's in HU_NUM but acts as multiplier) */
-    if (tok === 'száz') return ['száz'];
-    if (tok.endsWith('száz') && tok.length > 4) {
-      const sub = expandHuNumWord(tok.slice(0, -4));
-      if (sub) return [...sub, 'száz'];
-    }
-    {
-      const idx = tok.indexOf('száz');
-      if (idx > 0 && idx + 4 < tok.length) {
-        const left = expandHuNumWord(tok.slice(0, idx));
-        const right = expandHuNumWord(tok.slice(idx + 4));
-        if (left && right) return [...left, 'száz', ...right];
-      }
-    }
-
-    /* Tens prefix: "negyvennyolc" → ["negyven","nyolc"] */
-    for (const tens of HU_TENS_PREFIX) {
-      if (tok === tens) return [tens];
-      if (tok.startsWith(tens) && tok.length > tens.length) {
-        const sub = expandHuNumWord(tok.slice(tens.length));
-        if (sub) return [tens, ...sub];
-      }
-    }
-    return null;
-  }
-
-  /* Try parsing as digit-by-digit speech (e.g. "kettő három öt négy nyolc" → 23548).
-     Only succeeds if EVERY token is a single digit-word (no compound numbers). */
-  function tryDigitByDigit(text) {
-    const tokens = text.toLowerCase().split(/[\s-]+/).filter(t => t);
-    if (tokens.length < 2) return null;
-    const digits = [];
-    for (const t of tokens) {
-      if (HU_DIGIT[t]) digits.push(HU_DIGIT[t]);
-      else if (/^\d$/.test(t)) digits.push(t);
-      else return null;
-    }
-    const n = parseInt(digits.join(''), 10);
-    return isNaN(n) ? null : n;
-  }
-
-  /* Robust spoken-number parser. Tries multiple strategies in order:
-     1. Digit-by-digit ("kettő három öt" → 235)
-     2. Pure digits ("23548")
-     3. Mixed digit + word ("23 ezer 540" → 23540)
-     4. Full Hungarian word form ("huszonháromezer ötszáznegyvennyolc" → 23548) */
-  function parseNumber(text) {
-    if (!text) return null;
-    const lower = text.toLowerCase().replace(/[,.]/g, '').replace(/-/g, ' ').trim();
-    if (!lower) return null;
-
-    /* 1. Digit-by-digit */
-    const dbd = tryDigitByDigit(lower);
-    if (dbd != null && dbd >= 10) return dbd; /* require ≥10 to avoid mis-parsing single words */
-
-    /* 2. Plain digits (no multipliers in the rest) */
-    const digitMatch = lower.match(/(\d+)/);
-    if (digitMatch) {
-      const v = parseInt(digitMatch[1], 10);
-      const rest = lower.replace(digitMatch[0], '').trim();
-      if (!/(ezer|millió|száz)/.test(rest)) return v;
-
-      /* 3. Mixed digit + word: "23 ezer 540" or "23 ezer ötszáznegyven" */
-      if (/ezer/.test(rest) && v < 1000) {
-        const restNoEzer = rest.replace(/ezer/, ' ').trim();
-        const restN = restNoEzer ? parseNumber(restNoEzer) : 0;
-        return v * 1000 + (restN || 0);
-      }
-    }
-
-    /* 4. Full Hungarian word form */
-    const tokens = lower.split(/\s+/).filter(t => t);
-    const allParts = [];
-    for (const tok of tokens) {
-      if (/^\d+$/.test(tok)) {
-        allParts.push({ type: 'digit', value: parseInt(tok, 10) });
-        continue;
-      }
-      const expanded = expandHuNumWord(tok);
-      if (expanded) allParts.push(...expanded);
-      /* Unknown tokens are silently ignored — extract what we can */
-    }
-
-    let total = 0, current = 0;
-    for (const p of allParts) {
-      if (typeof p === 'object' && p.type === 'digit') { current += p.value; }
-      else if (p === 'millió') { total += (current || 1) * 1000000; current = 0; }
-      else if (p === 'ezer')   { total += (current || 1) * 1000;    current = 0; }
-      else if (p === 'száz')   { current = (current || 1) * 100; }
-      else if (HU_NUM[p] != null) { current += HU_NUM[p]; }
-    }
-    total += current;
-    return total > 0 ? total : null;
-  }
-
-  function norm(s) {
-    return (s || '').toString().toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9 ]/g, '').trim();
-  }
-
-  function stripDirSuffix(s) {
-    return s.replace(/(?:tol|tel|bol|bel|rol|rel|ig|ba|be|ra|re|hoz|hez|ban|ben|nal|nel)$/i, '').trim();
-  }
-
-  /* Find a partner by spoken name with fuzzy matching. */
-  function matchPartner(spoken) {
-    if (!spoken) return null;
-    const all = (typeof PARTNERS !== 'undefined' ? PARTNERS : []).concat(
-                 typeof savedCustomPartners !== 'undefined' ? savedCustomPartners : []);
-    if (!all.length) return null;
-    const target = stripDirSuffix(norm(spoken));
-    if (target.length < 2) return null;
-    let m = all.find(p => norm(p.name) === target); if (m) return m;
-    m = all.find(p => norm(p.name).startsWith(target)); if (m) return m;
-    m = all.find(p => norm(p.name).split(/\s+/).some(w => w.startsWith(target) || target.startsWith(w))); if (m) return m;
-    m = all.find(p => norm(p.name).includes(target) || target.includes(norm(p.name)));
-    return m || null;
-  }
-
-  /* Match purpose against the dropdown. */
-  function matchPurpose(spoken) {
-    const sel = document.getElementById('tripPurpose');
-    if (!sel) return null;
-    const target = norm(spoken);
-    if (!target) return null;
-    const opts = Array.from(sel.options);
-    let m = opts.find(o => norm(o.value) === target || norm(o.text) === target);
-    if (m) return m.value;
-    m = opts.find(o => norm(o.value).startsWith(target) || norm(o.text).startsWith(target));
-    if (m) return m.value;
-    if (/\b(munka|üzleti|hivatalos|főépítész|főépítészi)\b/.test(target)) {
-      m = opts.find(o => /főépítész/i.test(o.value)); if (m) return m.value;
-    }
-    if (/\b(juhhé|partneri|megbeszélés|megbeszelés)\b/.test(target)) {
-      m = opts.find(o => /juhhé/i.test(o.value)); if (m) return m.value;
-    }
-    if (/\b(építész|epitesz|egyeztet)\b/.test(target)) {
-      m = opts.find(o => /építészeti/i.test(o.value)); if (m) return m.value;
-    }
-    if (/\b(honda|szerviz|márkaszerviz)\b/.test(target)) {
-      m = opts.find(o => /honda/i.test(o.value)); if (m) return m.value;
-    }
-    if (/\b(otthon|magán|magan|haza|ingázás|iroda)\b/.test(target)) {
-      m = opts.find(o => /otthon/i.test(o.value)); if (m) return m.value;
-    }
-    m = opts.find(o => norm(o.value).includes(target) || target.includes(norm(o.value)));
-    return m ? m.value : null;
-  }
-
-  /* ───────── UI ───────── */
-  function setStatus(state) {
-    if (!elModal) return;
-    elModal.classList.remove('listening','speaking','thinking');
-    if (state) elModal.classList.add(state);
-    const labels = { listening:'HALLGATLAK', speaking:'BESZÉLEK', thinking:'GONDOLKODOM' };
-    if (elStatus) elStatus.textContent = labels[state] || '';
-  }
-  function showError(msg) {
-    if (elError) {
-      elError.style.display = 'block';
-      elError.textContent = msg;
-      setTimeout(() => { if (elError) elError.style.display = 'none'; }, 5000);
-    }
-  }
-  function clearUser() { if (elUserSaid) elUserSaid.textContent = ''; }
-  function setProgress(stepIdx, total) {
-    if (!elProgress) return;
-    elProgress.innerHTML = '';
-    for (let i = 0; i < total; i++) {
-      const d = document.createElement('div');
-      d.className = 'lola-progress-step' + (i < stepIdx ? ' done' : i === stepIdx ? ' active' : '');
-      elProgress.appendChild(d);
-    }
-  }
-  function open() { if (elModal) elModal.classList.add('active'); }
-  function close() {
-    if (elModal) { elModal.classList.remove('active'); elModal.classList.remove('review-mode'); }
-    const review = document.getElementById('lolaReview');
-    if (review) review.style.display = 'none';
-    try { speechSynthesis.cancel(); } catch {}
-    setStatus(null);
-    if (elProgress) elProgress.innerHTML = '';
-    if (elActions) elActions.innerHTML = '';
-    if (elSaid) elSaid.textContent = '';
-    clearUser();
-    if (elError) elError.style.display = 'none';
-  }
-
-  /* Parse spoken decimal number — for liters etc. (e.g. "7,8" / "hét egész nyolc" / "7 pont 5") */
-  function parseDecimal(text) {
-    if (!text) return null;
-    const lower = text.toLowerCase().trim();
-    /* "7,8" / "7.8" / "7 pont 8" / "7 egész 8" */
-    let m = lower.match(/(\d+)\s*(?:[,.]|pont|egész)\s*(\d+)/);
-    if (m) return parseFloat(`${m[1]}.${m[2]}`);
-    /* Plain integer */
-    m = lower.match(/(\d+(?:[.,]\d+)?)/);
-    if (m) return parseFloat(m[1].replace(',', '.'));
-    /* Hungarian word-form: "hét pont nyolc" / "hét egész nyolc" */
-    const tokens = lower.split(/\s+/);
-    let intPart = null, decPart = null, foundSep = false;
-    for (const tok of tokens) {
-      if (tok === 'pont' || tok === 'egész') { foundSep = true; continue; }
-      if (HU_NUM[tok] != null) {
-        if (!foundSep) intPart = (intPart ?? 0) + HU_NUM[tok];
-        else { decPart = HU_NUM[tok]; break; }
-      }
-    }
-    if (intPart != null) return decPart != null ? parseFloat(`${intPart}.${decPart}`) : intPart;
-    return null;
-  }
-
-  /* Octane parser: 95 vs 100 */
-  function parseOctane(text) {
-    if (!text) return null;
-    const t = text.toLowerCase();
-    if (/\b(95|kilencvenöt|kilencven\s*öt|95-ös|kilencvenötös)\b/.test(t)) return '95';
-    if (/\b(100|száz|100-as|százas)\b/.test(t)) return '100';
-    return null;
-  }
-
-  /* ───────── Fuel flow questions ───────── */
-  async function askOctane() {
-    while (!aborted) {
-      clearUser();
-      await speak('Milyen üzemanyagot tankoltál? Kilencvenötös vagy százas?');
-      const t = await listen({ timeoutMs: 9000 });
-      if (aborted) return null;
-      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const oct = parseOctane(t);
-      if (!oct) { await speak('Nem értettem. Mondd, hogy kilencvenöt vagy száz.'); continue; }
-      clearUser();
-      const octWord = oct === '95' ? 'kilencvenötös' : 'százas';
-      await speak(`Megjegyeztem, ${octWord} üzemanyag.`);
-      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
-      return oct;
-    }
-    return null;
-  }
-
-  async function askFuelKm() {
-    while (!aborted) {
-      clearUser();
-      await speak('Mondd számjegyenként a kilométer óra állását. Például kettő, három, öt, négy, nyolc.');
-      const t = await listen({ timeoutMs: 9000 });
-      if (aborted) return null;
-      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const n = parseWithAlternatives(t, parseNumber);
-      if (n == null || n < 0 || n > 999999) { await speak('Nem értettem a számot. Mondd lassan a kilométereket.'); continue; }
-      clearUser();
-      await speak(`Megjegyeztem, ${n} kilométer.`);
-      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
-      return n;
-    }
-    return null;
-  }
-
-  async function askLiters() {
-    while (!aborted) {
-      clearUser();
-      await speak('Hány liter benzint tankoltál? Például hét egész nyolc.');
-      const t = await listen({ timeoutMs: 9000 });
-      if (aborted) return null;
-      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const n = parseWithAlternatives(t, parseDecimal);
-      if (n == null || n <= 0 || n > 100) { await speak('Nem értettem. Mondd például, hogy hét egész nyolc liter.'); continue; }
-      clearUser();
-      const display = Number.isInteger(n) ? n : n.toFixed(2).replace(/\.?0+$/, '');
-      await speak(`Megjegyeztem, ${display} liter.`);
-      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
-      return n;
-    }
-    return null;
-  }
-
-  async function askCost() {
-    while (!aborted) {
-      clearUser();
-      await speak('Mondd számjegyenként, mennyibe került. Például egy, kettő, öt, nulla, nulla.');
-      const t = await listen({ timeoutMs: 9000 });
-      if (aborted) return null;
-      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const n = parseWithAlternatives(t, parseNumber);
-      if (n == null || n < 100 || n > 1000000) { await speak('Nem értettem. Mondd a forint összeget.'); continue; }
-      clearUser();
-      await speak(`Megjegyeztem, ${n.toLocaleString('hu')} forint.`);
-      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
-      return n;
-    }
-    return null;
-  }
-
-  /* Show the fuel review card with all collected values; user must press Save
-     to actually commit. Returns a Promise that resolves when the user
-     either saves or cancels. */
-  function showFuelReview({ octane, km, liters, cost }) {
-    return new Promise(resolve => {
-      const review   = document.getElementById('lolaReview');
-      const kmInput  = document.getElementById('lolaReviewKm');
-      const litInput = document.getElementById('lolaReviewLiters');
-      const costInput= document.getElementById('lolaReviewCost');
-      const oct95    = document.getElementById('lolaReviewOct95');
-      const oct100   = document.getElementById('lolaReviewOct100');
-      const saveBtn  = document.getElementById('lolaReviewSave');
-      const cancelBtn= document.getElementById('lolaReviewCancel');
-      if (!review) { resolve(false); return; }
-
-      /* Pre-fill */
-      let curOct = octane;
-      kmInput.value   = km != null ? km : '';
-      litInput.value  = liters != null ? liters : '';
-      costInput.value = cost != null ? cost : '';
-      const setOctActive = (o) => {
-        curOct = o;
-        oct95.classList.toggle('active', o === '95');
-        oct100.classList.toggle('active', o === '100');
-      };
-      setOctActive(octane);
-
-      /* Show review, hide chat */
-      if (elModal) elModal.classList.add('review-mode');
-      review.style.display = 'block';
-
-      /* Wire octane buttons */
-      const onOct95 = () => setOctActive('95');
-      const onOct100 = () => setOctActive('100');
-      oct95.addEventListener('click', onOct95);
-      oct100.addEventListener('click', onOct100);
-
-      /* Cleanup helper */
-      const cleanup = () => {
-        oct95.removeEventListener('click', onOct95);
-        oct100.removeEventListener('click', onOct100);
-        saveBtn.removeEventListener('click', onSave);
-        cancelBtn.removeEventListener('click', onCancel);
-        review.style.display = 'none';
-        if (elModal) elModal.classList.remove('review-mode');
-      };
-
-      const onSave = () => {
-        const kmVal    = parseInt(kmInput.value, 10);
-        const litersVal= parseFloat(litInput.value);
-        const costVal  = parseInt(costInput.value, 10);
-        if (isNaN(kmVal) || kmVal <= 0 || isNaN(litersVal) || litersVal <= 0 || isNaN(costVal) || costVal <= 0) {
-          showError('Hiányos adat — töltsd ki az összes mezőt.');
-          return;
-        }
-        /* Fill host form and trigger save */
-        const fuelDateEl = document.getElementById('fuelDate');
-        if (fuelDateEl && !fuelDateEl.value) {
-          const d = new Date();
-          fuelDateEl.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        }
-        const octaneBtn = document.querySelector(`#fuelOctane button[data-octane="${curOct}"]`);
-        if (octaneBtn) octaneBtn.click();
-        const setVal = (id, value) => {
-          const el = document.getElementById(id);
-          if (el) { el.value = value; el.dispatchEvent(new Event('input', { bubbles: true })); }
-        };
-        setVal('fuelKm', kmVal);
-        setVal('fuelLiters', litersVal);
-        setVal('fuelCost', costVal);
-        const hostSaveBtn = document.getElementById('saveFuel');
-        if (hostSaveBtn) hostSaveBtn.click();
-
-        cleanup();
-        resolve(true);
-      };
-
-      const onCancel = () => { cleanup(); resolve(false); };
-
-      saveBtn.addEventListener('click', onSave);
-      cancelBtn.addEventListener('click', onCancel);
-    });
-  }
-
-  /* ───────── Fuel flow entry point ───────── */
-  async function startFuel() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR || !('speechSynthesis' in window)) {
-      open();
-      if (elSaid) elSaid.textContent = 'Sajnos a böngésződ nem támogatja a hangfunkciókat.';
-      showError('Próbáld Chrome-mal vagy Safari-val.');
-      return;
-    }
-
-    aborted = false;
-    open();
-    setProgress(0, 4);
-    chosenVoice = pickVoice();
-
-    /* Greet + announce detected station, if any */
-    const detected = (typeof fuelStationDetected !== 'undefined' && fuelStationDetected) ? fuelStationDetected : null;
-    const hint = ' Ha rosszul mondom vissza, mondd, hogy újra.';
-    if (detected) {
-      await speak(`Tankolás megkezdve.${hint} A GPS szerint itt vagyunk: ${detected.name}.`);
-    } else {
-      await speak(`Tankolás megkezdve.${hint}`);
-    }
-
-    const octane = await askOctane();
-    if (aborted || !octane) return finish();
-    setProgress(1, 4);
-
-    const km = await askFuelKm();
-    if (aborted || km == null) return finish();
-    setProgress(2, 4);
-
-    const liters = await askLiters();
-    if (aborted || liters == null) return finish();
-    setProgress(3, 4);
-
-    const cost = await askCost();
-    if (aborted || cost == null) return finish();
-    setProgress(4, 4);
-
-    /* Show review card; wait for user to press Save (or Cancel) */
-    await speak('Készen vagyok. Kérlek, ellenőrizd az adatokat, és nyomd meg a Mentés gombot.');
-    const saved = await showFuelReview({ octane, km, liters, cost });
-    if (saved && !aborted) await speak('Tankolás rögzítve. Jó utat!');
-    finish();
-  }
-
-  /* ───────── Conversation flow ───────── */
-  async function start() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR || !('speechSynthesis' in window)) {
-      open();
-      if (elSaid) elSaid.textContent = 'Sajnos a böngésződ nem támogatja a hangfunkciókat.';
-      showError('Próbáld Chrome-mal vagy Safari-val.');
-      return;
-    }
-
-    aborted = false;
-    open();
-    setProgress(0, 5);
-    chosenVoice = pickVoice();
-
-    const tripTime = await askTime();
-    if (aborted || !tripTime) return finish();
-    setProgress(1, 5);
-
-    const route = await askFromTo();
-    if (aborted || !route) return finish();
-    setProgress(2, 5);
-
-    const km = await askKm();
-    if (aborted || km == null) return finish();
-    setProgress(3, 5);
-
-    const purpose = await askPurpose();
-    if (aborted || !purpose) return finish();
-    setProgress(4, 5);
-
-    applyTripPlan({ tripTime, route, km, purpose });
-    setProgress(5, 5);
-    await readSummary();
-    if (!aborted) await speak('Jó utat!');
-    finish();
-  }
-
-  function finish() { setTimeout(close, 1500); }
-
-  async function askTime() {
-    let firstTime = true;
-    while (!aborted) {
-      clearUser();
-      if (firstTime) {
-        await speak('Szia! Ha rosszul mondom vissza, mondd, hogy újra. Mikor indulunk?');
-        firstTime = false;
-      } else {
-        await speak('Mikor indulunk?');
-      }
-      if (aborted) return null;
-      const t = await listen({ timeoutMs: 9000 });
-      if (aborted) return null;
-      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const parsed = parseTime(t);
-      if (!parsed) {
-        await speak('Nem értettem az időpontot. Mondd például úgy, hogy most, vagy holnap reggel kilenc.');
-        continue;
-      }
-      clearUser();
-      await speak(`Rendben, indulás ${parsed.label}.`);
-      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
-      return parsed;
-    }
-    return null;
-  }
-
-  async function askFromTo() {
-    let origin = null, dest = null;
-    while (!aborted && !origin) {
-      clearUser();
-      await speak('Honnan indulunk?');
-      const t = await listen({ timeoutMs: 9000 });
-      if (aborted) return null;
-      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      if (/\b(innen|gps|itt|aktuális|jelenlegi)\b/i.test(t)) {
-        origin = { keepGPS: true };
-      } else {
-        const partner = matchPartner(t);
-        if (!partner) {
-          await speak(`A ${t} partnert nem ismerem, mondd újra légyszi.`);
-          continue;
-        }
-        origin = { keepGPS: false, partner };
-      }
-      clearUser();
-      const originLabel = origin.keepGPS ? 'a jelenlegi pozíció' : origin.partner.name;
-      await speak(`Megjegyeztem. Kiindulópont: ${originLabel}.`);
-      if (await listenForCorrection()) { origin = null; await speak('Rendben, ismétlem.'); continue; }
-    }
-    if (aborted) return null;
-
-    while (!aborted && !dest) {
-      clearUser();
-      await speak('Hova megyünk?');
-      const t = await listen({ timeoutMs: 9000 });
-      if (aborted) return null;
-      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      let target = t;
-      if (/\bhaza\b/i.test(t)) target = 'otthon';
-      const partner = matchPartner(target);
-      if (!partner) {
-        await speak(`A ${t} partnert nem ismerem. Mondd újra, vagy mondd, hogy haza.`);
-        continue;
-      }
-      dest = partner;
-      clearUser();
-      await speak(`Megjegyeztem. Úti cél: ${dest.name}.`);
-      if (await listenForCorrection()) { dest = null; await speak('Rendben, ismétlem.'); continue; }
-    }
-    if (aborted) return null;
-    return { origin, dest };
-  }
-
-  async function askKm() {
-    while (!aborted) {
-      clearUser();
-      await speak('Mondd számjegyenként a kilométer óra állását. Például kettő, három, öt, négy, nyolc.');
-      const t = await listen({ timeoutMs: 9000 });
-      if (aborted) return null;
-      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const n = parseWithAlternatives(t, parseNumber);
-      if (n == null || n < 0 || n > 999999) {
-        await speak('Nem értettem a számot. Mondd például úgy, hogy harminckét ezer háromszáz.');
-        continue;
-      }
-      clearUser();
-      await speak(`Megjegyeztem, ${n} kilométer.`);
-      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
-      return n;
-    }
-    return null;
-  }
-
-  async function askPurpose() {
-    while (!aborted) {
-      clearUser();
-      await speak('Milyen célból megyünk?');
-      const t = await listen({ timeoutMs: 9000 });
-      if (aborted) return null;
-      if (!t) { await speak('Nem hallottam, mondd újra légyszi.'); continue; }
-      const p = matchPurpose(t);
-      if (!p) {
-        await speak('Nem találtam ilyen célt. Mondd például úgy, hogy munka, Honda márkaszerviz, vagy otthon iroda.');
-        continue;
-      }
-      clearUser();
-      await speak(`Megjegyeztem. Az út célja: ${p}.`);
-      if (await listenForCorrection()) { await speak('Rendben, ismétlem.'); continue; }
-      return p;
-    }
-    return null;
-  }
-
-  function applyTripPlan({ tripTime, route, km, purpose }) {
-    /* 1. Trip datetime */
-    if (typeof wxApplyTripDT === 'function' && tripTime) {
-      if (tripTime.mode === 'now') wxApplyTripDT(null);
-      else if (typeof wxFormatLocalDT === 'function') wxApplyTripDT(wxFormatLocalDT(tripTime.date));
-    }
-    /* 2. Origin */
-    if (route.origin && !route.origin.keepGPS && typeof setPartnerAsOrigin === 'function') {
-      try { setPartnerAsOrigin(route.origin.partner.name); } catch {}
-    }
-    /* 3. Destination */
-    if (route.dest && typeof stops !== 'undefined') {
-      stops.length = 0;
-      stops.push({ name: route.dest.name });
-      if (typeof renderIntermediates === 'function') renderIntermediates();
-      if (typeof updateStopCount === 'function') updateStopCount();
-      if (typeof updateAll === 'function') updateAll();
-    }
-    /* 4. KM start — and retroactive previous-trip kmEnd update */
-    const kmStartEl = document.getElementById('kmStart');
-    const kmEndEl = document.getElementById('kmEnd');
-    if (kmStartEl && km != null) {
-      kmStartEl.value = km;
-      kmStartEl.dispatchEvent(new Event('input', { bubbles: true }));
-
-      /* Retroactively update the previous saved trip's kmEnd to this km value
-         (since "current odometer" = arrival of last trip = start of this trip) */
-      if (typeof trips !== 'undefined' && Array.isArray(trips) && trips.length > 0) {
-        const lastTrip = trips[trips.length - 1];
-        if (lastTrip && lastTrip.kmStart != null && km > lastTrip.kmStart && km < lastTrip.kmStart + 5000) {
-          lastTrip.kmEnd = km;
-          lastTrip.distance = km - lastTrip.kmStart;
-          if (typeof saveTripsToStorage === 'function') saveTripsToStorage();
-          if (typeof renderTripList === 'function') renderTripList();
-        }
-      }
-
-      /* Pre-fill new trip's kmEnd with OSRM distance estimate so the user
-         doesn't have to enter it manually before saving */
-      if (kmEndEl && wxState?.routeInfo?.distance_km > 0) {
-        const estimatedEnd = km + Math.round(wxState.routeInfo.distance_km);
-        kmEndEl.value = estimatedEnd;
-        kmEndEl.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    }
-    /* 5. Purpose */
-    const tripPurposeEl = document.getElementById('tripPurpose');
-    if (tripPurposeEl && purpose) {
-      tripPurposeEl.value = purpose;
-      tripPurposeEl.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-    /* 6. Date */
-    const tripDateEl = document.getElementById('tripDate');
-    if (tripDateEl) {
-      const t = new Date();
-      tripDateEl.value = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`;
-    }
-  }
-
-  async function readSummary() {
-    /* Wait briefly for forecast to refresh after route changes */
-    await new Promise(r => setTimeout(r, 1500));
-    const lines = [];
-
-    const days = (typeof wxBuildDays === 'function') ? wxBuildDays() : [];
-    const day = days[wxState?.selectedIdx || 0];
-    let dep = null;
-    if (day && day.source === 'forecast' && wxState?.forecast?.hourly && wxState.departureHour != null) {
-      dep = wxHourlyAt(wxState.forecast.hourly, day.dateStr, wxState.departureHour);
-    }
-
-    if (dep && wxState?.location) {
-      const wxd = wx(dep.code);
-      lines.push(`Indulási helyszín: ${wxState.location.name}. A hőmérséklet ${Math.round(dep.temp)} fok, ${wxd.label.toLowerCase()}.`);
-      if (dep.precip != null && dep.precip > 0.2) lines.push(`Csapadék várható, ${dep.precip.toFixed(1)} milliméter.`);
-      if (dep.gust != null && dep.gust >= 50) lines.push(`Erős széllökések, ${Math.round(dep.gust)} kilométer per órás sebességgel.`);
-    }
-
-    if (wxState?.arrival && wxState?.arrivalForecast && wxState?.routeInfo && day) {
-      const arrTime = wxComputeArrival(day.dateStr, wxState.departureHour, wxState.forecast, wxState.arrivalForecast, wxState.routeInfo.duration_s);
-      const arrW = wxHourlyAt(wxState.arrivalForecast.hourly, arrTime.dateStr, arrTime.hour);
-      if (arrW) {
-        const wxd = wx(arrW.code);
-        lines.push(`Érkezési helyszín: ${wxState.arrival.name}. Ott ${Math.round(arrW.temp)} fok lesz, ${wxd.label.toLowerCase()}.`);
-        const dist = Math.round(wxState.routeInfo.distance_km);
-        const dur = wxFmtDuration(wxState.routeInfo.duration_s);
-        lines.push(`A távolság ${dist} kilométer, és ${dur} alatt érünk oda.`);
-      }
-    }
-
-    if (dep) {
-      const adv = wxMotoAdvice({ T: dep.temp, precipMm: dep.precip, precipProb: dep.pop, code: dep.code, gust: dep.gust, wind: dep.wind, humidity: dep.humidity, ridingSpeed: 90 });
-      const verdictMap = { ok:'Az indulás javasolt.', note:'Indulhatsz, de figyelj az időjárásra.', warn:'Csak megfelelő felszereléssel induljál.', danger:'Nem javaslom az indulást.' };
-      lines.push(verdictMap[adv.level] || adv.label);
-      if (Array.isArray(adv.gear)) {
-        const labels = { base:'aláöltőzőt', thermal:'termoréteget', rain:'esőruhát' };
-        const items = adv.gear.map(g => labels[g] || g).join(', ');
-        if (items) lines.push(`Vegyél fel ${items}.`);
-      }
-      lines.push('A guminyomás: első kerék 2 egész 5, hátsó kerék 2 egész 9 bar.');
-      const hour = new Date(dep.time).getHours();
-      const asphaltT = wxAsphaltTemp({ airT: dep.temp, cloudCover: dep.cloudCover, isDay: dep.isDay, hour, weatherCode: dep.code });
-      if (asphaltT != null) lines.push(`Az aszfalt körülbelül ${Math.round(asphaltT)} fokos.`);
-      const style = wxRidingStyle({ airT: dep.temp, asphaltT, weatherCode: dep.code, gust: dep.gust, recentDryHours: null });
-      lines.push(`A javasolt vezetési stílus: ${style.label.toLowerCase()}.`);
-    }
-
-    if (lines.length === 0) lines.push('Még nincs időjárás-adat. Próbáld újra egy perc múlva.');
-
-    for (const line of lines) {
-      if (aborted) return;
-      await speak(line);
-    }
-  }
-
-  function init() {
-    elModal     = document.getElementById('lolaModal');
-    elOrb       = document.getElementById('lolaOrb');
-    elStatus    = document.getElementById('lolaStatus');
-    elSaid      = document.getElementById('lolaSaid');
-    elUserSaid  = document.getElementById('lolaUserSaid');
-    elActions   = document.getElementById('lolaActions');
-    elError     = document.getElementById('lolaError');
-    elProgress  = document.getElementById('lolaProgress');
-
-    if ('speechSynthesis' in window) {
-      speechSynthesis.getVoices();
-      speechSynthesis.onvoiceschanged = () => { chosenVoice = pickVoice(); };
-    }
-    const launch = document.getElementById('lolaLaunch');
-    if (launch) {
-      launch.addEventListener('click', () => start().catch(e => {
-        showError('Hiba történt: ' + (e.message || e));
-      }));
-    }
-    const fuelLaunch = document.getElementById('lolaFuelLaunch');
-    if (fuelLaunch) {
-      fuelLaunch.addEventListener('click', () => startFuel().catch(e => {
-        showError('Hiba történt: ' + (e.message || e));
-      }));
-    }
-    const cancel = document.getElementById('lolaCancel');
-    if (cancel) {
-      cancel.addEventListener('click', () => {
-        aborted = true;
-        try { speechSynthesis.cancel(); } catch {}
-        close();
-      });
-    }
-  }
-
-  return { init, start, startFuel };
-})();
-
 
 function init() {
   // Tab navigation
@@ -10475,6 +9416,8 @@ function init() {
     document.querySelectorAll('.tab-panel').forEach(p => {
       p.classList.toggle('active', p.dataset.tab === tabName);
     });
+    // Toggle body class: a menü csak a home-on látszik
+    document.body.classList.toggle('view-other', tabName !== 'home');
     // Scroll to top of content (above the sticky tab bar)
     window.scrollTo({ top: 0, behavior: 'instant' });
     // Refresh data when switching to a tab that needs it
@@ -10501,22 +9444,56 @@ function init() {
       // Refresh statistics whenever opened
       if (typeof renderStats === 'function') renderStats();
     }
-    if (tabName === 'manual') {
-      // Re-render the active mode panel
+    if (tabName === 'manualsvc') {
+      // Kézikönyv: aktív mód-panel újrarenderelése
       if (typeof switchManualMode === 'function') {
         switchManualMode(currentManualMode || 'warning');
       }
-    }
-    if (tabName === 'service') {
+      // Szervíz adatok frissítése
       if (typeof renderService === 'function') renderService();
     }
     if (tabName === 'sos') {
       // No re-render needed — form values persist between tab switches
     }
   }
+  // Make switchTab available outside this scope (for back buttons etc.)
+  window.switchTab = switchTab;
+
+  // Kézikönyv ↔ Szervíz alpanel kapcsoló
+  function switchMsSub(sub) {
+    document.querySelectorAll('.ms-subtab').forEach(b => {
+      b.classList.toggle('active', b.dataset.msSub === sub);
+    });
+    document.querySelectorAll('.ms-sub').forEach(p => {
+      p.classList.toggle('active', p.dataset.msSubPanel === sub);
+    });
+    // Tetejére görgetés, hogy ne maradjunk a hosszú szervíz oldal alján
+    const headerEl = document.querySelector('[data-tab="manualsvc"] .page-header');
+    if (headerEl) headerEl.scrollIntoView({ behavior: 'instant', block: 'start' });
+    // Adott szekció lazy-render
+    if (sub === 'manual' && typeof switchManualMode === 'function') {
+      switchManualMode(currentManualMode || 'warning');
+    }
+    if (sub === 'service' && typeof renderService === 'function') {
+      renderService();
+    }
+  }
+  window.switchMsSub = switchMsSub;
+  document.querySelectorAll('.ms-subtab').forEach(btn => {
+    btn.addEventListener('click', () => switchMsSub(btn.dataset.msSub));
+  });
+
   document.querySelectorAll('.tab').forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.dataset.tabBtn));
   });
+
+  // Vissza-a-főmenübe gombok bekötése (minden aloldalon)
+  document.querySelectorAll('.back-btn[data-back]').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.back));
+  });
+
+  // Kezdő nézet: főmenü
+  switchTab('home');
 
   // Load custom partners FIRST so dropdowns can include them
   loadCustomPartners();
@@ -10648,49 +9625,10 @@ function init() {
 
   // Initialize SOS module
   if (typeof initSos === 'function') initSos();
-  if (typeof Lola !== 'undefined') Lola.init();
 }
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
 
-<!-- Lola voice assistant modal -->
-<div class="lola-modal" id="lolaModal" role="dialog" aria-modal="true" aria-labelledby="lolaSaid">
-  <div class="lola-progress" id="lolaProgress" aria-hidden="true"></div>
-  <div class="lola-modal-orb" id="lolaOrb">🎙️</div>
-  <div class="lola-modal-status" id="lolaStatus">…</div>
-  <div class="lola-modal-said" id="lolaSaid">Szia, Honda vagyok.</div>
-  <div class="lola-modal-userSaid" id="lolaUserSaid"></div>
-  <div class="lola-modal-actions" id="lolaActions"></div>
-  <!-- Fuel review card: shown after Honda collects all data, before saving -->
-  <div class="lola-review" id="lolaReview" style="display:none">
-    <div class="lola-review-title">⛽ Ellenőrizd az adatokat</div>
-    <div class="lola-review-row">
-      <label>Üzemanyag</label>
-      <div class="lola-review-octane">
-        <button type="button" data-octane="95" id="lolaReviewOct95">95</button>
-        <button type="button" data-octane="100" id="lolaReviewOct100">100</button>
-      </div>
-    </div>
-    <div class="lola-review-row">
-      <label>Km óra</label>
-      <input type="number" id="lolaReviewKm" inputmode="numeric" placeholder="—">
-    </div>
-    <div class="lola-review-row">
-      <label>Liter</label>
-      <input type="number" id="lolaReviewLiters" inputmode="decimal" step="0.01" placeholder="—">
-    </div>
-    <div class="lola-review-row">
-      <label>Összeg (Ft)</label>
-      <input type="number" id="lolaReviewCost" inputmode="numeric" placeholder="—">
-    </div>
-    <div class="lola-review-actions">
-      <button type="button" class="lola-review-cancel" id="lolaReviewCancel">Mégsem</button>
-      <button type="button" class="lola-review-save" id="lolaReviewSave">💾 Mentés</button>
-    </div>
-  </div>
-  <button class="lola-action-btn cancel" id="lolaCancel" type="button">Bezár</button>
-  <div class="lola-error-banner" id="lolaError" style="display:none"></div>
-</div>
 </body>
 </html>
