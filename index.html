@@ -105,7 +105,7 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
-  padding: 10px 6px;
+  padding: 8px 6px 10px;
   font-size: 36px;
   font-weight: 700;
   border-radius: 18px;
@@ -116,10 +116,10 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 14px;
   overflow: hidden;
   text-align: center;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 .tab:hover {
   border-color: var(--accent);
@@ -131,15 +131,19 @@ input:focus, select:focus { border-color: rgba(251,191,36,0.5); }
   color: var(--text);
 }
 .tab-icon {
-  font-size: 34px;
+  font-size: 60px;
   line-height: 1;
+  display: block;
 }
 .tab-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-2);
   letter-spacing: 0.01em;
   text-transform: none;
+  line-height: 1.15;
+  word-break: break-word;
+  hyphens: auto;
 }
 .tab .tab-badge {
   position: absolute;
@@ -6643,7 +6647,7 @@ async function buildExcelBuffer() {
   setLabel(5, 1, 'Cégnév:');           setPrefilled(5, 2, 5, 'Gift Energy Kft.');
   setLabel(5, 6, 'Jármű típusa:');     setPrefilled(5, 7, 11, 'Honda NC 750 XD (motorkerékpár)');
   setLabel(6, 1, 'Adószám:');          setPrefilled(6, 2, 5, '24366672-2-05');
-  setLabel(6, 6, 'Forg. rendszám:');   setInput(6, 7, 11, '', null, { horizontal: 'left', vertical: 'middle' });
+  setLabel(6, 6, 'Forg. rendszám:');   setPrefilled(6, 7, 11, 'AUBT 759');
   setLabel(7, 1, 'Székhely:');         setPrefilled(7, 2, 5, '3530 Miskolc, Mindszent tér 12.');
   setLabel(7, 6, 'Hengerűrtartalom:'); setPrefilled(7, 7, 11, '745 cm³', { horizontal: 'right', vertical: 'middle' });
   setLabel(8, 1, 'Tárgyév:');          setPrefilled(8, 2, 5, String(new Date().getFullYear()), { horizontal: 'center', vertical: 'middle' });
@@ -6666,7 +6670,7 @@ async function buildExcelBuffer() {
   // Headers (row 14)
   const headers = [
     'Sor-\nszám', 'Dátum', 'Utazás célja', 'Felkeresett partner',
-    'Partner címe\n(automatikus)', 'Honnan\n(indulási hely)', 'Hová\n(érkezési hely)',
+    'Érkezési hely\n(automatikus)', 'Indulási\n(Partner)', 'Indulási hely',
     'Km óra\nINDULÁSKOR', 'Km óra\nÉRKEZÉSKOR', 'Megtett\nüzleti km', 'Megjegyzés',
   ];
   headers.forEach((h, i) => {
@@ -6694,59 +6698,44 @@ async function buildExcelBuffer() {
       const [y,m,d] = t.date.split('-').map(Number);
       r.getCell(2).value = new Date(y, m-1, d);
       r.getCell(2).numFmt = 'yyyy.mm.dd.';
-      r.getCell(2).fill = inputFill;
     }
     r.getCell(2).alignment = { horizontal: 'center' };
     // C: utazás célja
     r.getCell(3).value = t.purpose || 'Főépítészi feladatok ellátása';
-    r.getCell(3).fill = prefillFill;
     // D: felkeresett partner
     r.getCell(4).value = t.destName;
-    r.getCell(4).fill = inputFill;
     // E: cím
     r.getCell(5).value = t.destAddr;
     r.getCell(5).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
-    r.getCell(5).fill = calcFill;
-    // F: honnan
-    r.getCell(6).value = t.fromAddr || t.fromName || '';
-    r.getCell(6).fill = prefillFill;
-    // G: hová
-    const intStr = t.intermediates && t.intermediates.length
-      ? t.intermediates.map(i => i.name).join(' → ') + ' → ' + t.destName
-      : t.destName;
-    r.getCell(7).value = intStr;
-    r.getCell(7).fill = calcFill;
+    // F: Indulási (cím)
+    r.getCell(6).value = t.fromAddr || '';
+    // G: Indulási hely (partner neve)
+    r.getCell(7).value = t.fromName || '';
     r.getCell(7).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
     // H: km induláskor
     r.getCell(8).value = t.kmStart;
     r.getCell(8).numFmt = '#,##0';
     r.getCell(8).alignment = { horizontal: 'right' };
-    r.getCell(8).fill = inputFill;
     // I: km érkezéskor
     r.getCell(9).value = t.kmEnd;
     r.getCell(9).numFmt = '#,##0';
     r.getCell(9).alignment = { horizontal: 'right' };
-    r.getCell(9).fill = inputFill;
     // J: megtett km (formula)
     r.getCell(10).value = { formula: `IF(AND(H${row}>0,I${row}>0),I${row}-H${row},"")` };
     r.getCell(10).numFmt = '#,##0" km"';
     r.getCell(10).alignment = { horizontal: 'right' };
     r.getCell(10).font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF375623' } };
-    r.getCell(10).fill = calcFill;
     // K: megjegyzés
     r.getCell(11).value = t.notes || '';
-    r.getCell(11).fill = inputFill;
 
-    // If trip is non-business (Otthon-Iroda / legacy Magán), override fills with gray + italicize
+    // Magán (Otthon-Iroda) sorok megkülönböztetése: csak dőlt betű, háttérszín nélkül
     const isPrivateRow = isCommutePurpose(t.purpose);
-    const privateFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFEFEF' } };
 
     // Borders + base font
     for (let c = 1; c <= 11; c++) {
       const cell = r.getCell(c);
       if (!cell.font) cell.font = { name: 'Arial', size: 10 };
       if (isPrivateRow) {
-        cell.fill = privateFill;
         cell.font = { ...cell.font, italic: true, color: { argb: 'FF595959' } };
       }
       cell.border = thinBorder();
@@ -6763,35 +6752,27 @@ async function buildExcelBuffer() {
     r.getCell(1).alignment = { horizontal: 'center' };
     // B: dátum (input)
     r.getCell(2).numFmt = 'yyyy.mm.dd.';
-    r.getCell(2).fill = inputFill;
     r.getCell(2).alignment = { horizontal: 'center' };
     // C: cél (default)
     r.getCell(3).value = 'Főépítészi feladatok ellátása';
-    r.getCell(3).fill = prefillFill;
     // D: partner (input)
-    r.getCell(4).fill = inputFill;
     // E: cím (formula VLOOKUP)
     r.getCell(5).value = { formula: `IFERROR(VLOOKUP(D${row},Partnerek!$A$2:$B$200,2,FALSE),"")` };
-    r.getCell(5).fill = calcFill;
     r.getCell(5).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
     // F: honnan (default)
     r.getCell(6).value = '3530 Miskolc, Mindszent tér 12.';
-    r.getCell(6).fill = prefillFill;
-    // G: hová (formula = D)
+    // G: indulási hely (formula = D)
     r.getCell(7).value = { formula: `IF(D${row}="","",D${row})` };
-    r.getCell(7).fill = calcFill;
     r.getCell(7).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
     // H, I: km óra (input)
-    r.getCell(8).fill = inputFill; r.getCell(8).numFmt = '#,##0'; r.getCell(8).alignment = { horizontal: 'right' };
-    r.getCell(9).fill = inputFill; r.getCell(9).numFmt = '#,##0'; r.getCell(9).alignment = { horizontal: 'right' };
+    r.getCell(8).numFmt = '#,##0'; r.getCell(8).alignment = { horizontal: 'right' };
+    r.getCell(9).numFmt = '#,##0'; r.getCell(9).alignment = { horizontal: 'right' };
     // J: megtett km (formula)
     r.getCell(10).value = { formula: `IF(AND(H${row}>0,I${row}>0),I${row}-H${row},"")` };
-    r.getCell(10).fill = calcFill;
     r.getCell(10).numFmt = '#,##0" km"';
     r.getCell(10).alignment = { horizontal: 'right' };
     r.getCell(10).font = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF375623' } };
     // K: megjegyzés
-    r.getCell(11).fill = inputFill;
     // Borders
     for (let c = 1; c <= 11; c++) {
       const cell = r.getCell(c);
@@ -6929,7 +6910,154 @@ async function buildExcelBuffer() {
   }
 
   // ============================================================
-  // 3. HAVI ÖSSZESÍTŐ
+  // 3. TANKOLÁS
+  // ============================================================
+  const wsF = wb.addWorksheet('Tankolás', { views: [{ state: 'frozen', ySplit: 3 }] });
+  [6, 13, 13, 11, 13, 14, 14, 17, 28, 38, 26].forEach((w, i) => wsF.getColumn(i + 1).width = w);
+
+  // Title (row 1)
+  wsF.mergeCells('A1:K1');
+  Object.assign(wsF.getCell('A1'), titleStyle, { value: 'TANKOLÁSOK' });
+  wsF.getRow(1).height = 26;
+
+  // Headers (row 3)
+  const fuelHeaders = [
+    'Sor-\nszám', 'Dátum', 'Km óra', 'Liter', 'Üzemanyag',
+    'Összeg\n(Ft)', 'Egységár\n(Ft/L)', 'Fogyasztás\n(L/100km)',
+    'Benzinkút', 'Cím', 'Megjegyzés',
+  ];
+  fuelHeaders.forEach((h, i) => {
+    const c = wsF.getCell(3, i + 1);
+    c.value = h;
+    c.font = headerStyle.font;
+    c.fill = headerStyle.fill;
+    c.alignment = headerStyle.alignment;
+    c.border = mediumBorder();
+  });
+  wsF.getRow(3).height = 38;
+
+  // Sort fuels by date asc, then km asc
+  const sortedFuels = [...fuels].sort((a,b) => {
+    const ka = (a.date || '') + String(a.km || 0).padStart(10, '0');
+    const kb = (b.date || '') + String(b.km || 0).padStart(10, '0');
+    return ka.localeCompare(kb);
+  });
+
+  // Helper: render one fuel data row (értékek és/vagy képletek, háttérszín NÉLKÜL)
+  function renderFuelRow(fRow, f) {
+    const r = wsF.getRow(fRow);
+    // A: sorszám
+    if (f) {
+      r.getCell(1).value = fRow - 3;
+    } else {
+      r.getCell(1).value = { formula: `IF(B${fRow}="","",ROW()-3)` };
+    }
+    r.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+    // B: dátum
+    if (f && f.date) {
+      const [y,m,d] = f.date.split('-').map(Number);
+      r.getCell(2).value = new Date(y, m-1, d);
+    }
+    r.getCell(2).numFmt = 'yyyy.mm.dd.';
+    r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
+    // C: km óra
+    if (f) r.getCell(3).value = f.km;
+    r.getCell(3).numFmt = '#,##0" km"';
+    r.getCell(3).alignment = { horizontal: 'right', vertical: 'middle' };
+    // D: liter
+    if (f) r.getCell(4).value = f.liters;
+    r.getCell(4).numFmt = '0.00" L"';
+    r.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
+    // E: üzemanyag (oktán)
+    if (f && f.octane) r.getCell(5).value = f.octane + '-ös benzin';
+    r.getCell(5).alignment = { horizontal: 'center', vertical: 'middle' };
+    // F: összeg
+    if (f) r.getCell(6).value = f.cost;
+    r.getCell(6).numFmt = '#,##0" Ft"';
+    r.getCell(6).alignment = { horizontal: 'right', vertical: 'middle' };
+    // G: egységár (képlet)
+    r.getCell(7).value = { formula: `IF(AND(D${fRow}>0,F${fRow}>0),F${fRow}/D${fRow},"")` };
+    r.getCell(7).numFmt = '#,##0.0" Ft/L"';
+    r.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
+    r.getCell(7).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
+    // H: fogyasztás L/100km — csak a 2. tankolástól, az előző km-állásra hivatkozva
+    if (fRow > 4) {
+      r.getCell(8).value = { formula: `IF(AND(C${fRow-1}>0,C${fRow}>C${fRow-1},D${fRow}>0),D${fRow}/(C${fRow}-C${fRow-1})*100,"")` };
+      r.getCell(8).numFmt = '0.00" L/100km"';
+      r.getCell(8).alignment = { horizontal: 'right', vertical: 'middle' };
+      r.getCell(8).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
+    }
+    // I: benzinkút
+    if (f) r.getCell(9).value = f.station || '';
+    r.getCell(9).alignment = { horizontal: 'left', vertical: 'middle' };
+    // J: cím
+    if (f) r.getCell(10).value = f.stationAddress || '';
+    r.getCell(10).alignment = { horizontal: 'left', vertical: 'middle' };
+    r.getCell(10).font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF404040' } };
+    // K: megjegyzés
+    if (f) r.getCell(11).value = f.notes || '';
+    r.getCell(11).alignment = { horizontal: 'left', vertical: 'middle' };
+    // Borders + base font
+    for (let c = 1; c <= 11; c++) {
+      const cell = r.getCell(c);
+      if (!cell.font) cell.font = { name: 'Arial', size: 10 };
+      cell.border = thinBorder();
+    }
+  }
+
+  // Tényleges tankolási sorok
+  let fRow = 4;
+  for (const f of sortedFuels) {
+    renderFuelRow(fRow, f);
+    fRow++;
+  }
+  // Üres sorok (összesen min. 50 sor a kézi bevitelhez)
+  const totalFuelRows = Math.max(50, sortedFuels.length);
+  while (fRow < 4 + totalFuelRows) {
+    renderFuelRow(fRow, null);
+    fRow++;
+  }
+
+  // Összesítő sor
+  const lastFRow = fRow - 1;
+  const totalFRow = fRow + 1;
+  wsF.mergeCells(totalFRow, 1, totalFRow, 3);
+  const tcF = wsF.getCell(totalFRow, 1);
+  tcF.value = 'ÖSSZESEN:';
+  tcF.font = { name: 'Arial', size: 11, bold: true };
+  tcF.fill = labelStyle.fill;
+  tcF.alignment = { horizontal: 'right', vertical: 'middle' };
+  for (let c = 1; c <= 11; c++) {
+    const cell = wsF.getCell(totalFRow, c);
+    cell.border = mediumBorder();
+    if (!cell.fill || !cell.fill.fgColor) cell.fill = labelStyle.fill;
+  }
+  // D: összes liter
+  wsF.getCell(totalFRow, 4).value = { formula: `SUM(D4:D${lastFRow})` };
+  wsF.getCell(totalFRow, 4).numFmt = '0.00" L"';
+  wsF.getCell(totalFRow, 4).font = { name: 'Arial', size: 11, bold: true };
+  wsF.getCell(totalFRow, 4).alignment = { horizontal: 'right', vertical: 'middle' };
+  // F: összes Ft
+  wsF.getCell(totalFRow, 6).value = { formula: `SUM(F4:F${lastFRow})` };
+  wsF.getCell(totalFRow, 6).numFmt = '#,##0" Ft"';
+  wsF.getCell(totalFRow, 6).font = { name: 'Arial', size: 11, bold: true };
+  wsF.getCell(totalFRow, 6).alignment = { horizontal: 'right', vertical: 'middle' };
+  // G: átlag egységár
+  wsF.getCell(totalFRow, 7).value = { formula: `IF(AND(SUM(D4:D${lastFRow})>0,SUM(F4:F${lastFRow})>0),SUM(F4:F${lastFRow})/SUM(D4:D${lastFRow}),"")` };
+  wsF.getCell(totalFRow, 7).numFmt = '#,##0.0" Ft/L"';
+  wsF.getCell(totalFRow, 7).font = { name: 'Arial', size: 11, bold: true };
+  wsF.getCell(totalFRow, 7).alignment = { horizontal: 'right', vertical: 'middle' };
+  wsF.getRow(totalFRow).height = 24;
+
+  // E oszlop: üzemanyag-választó (95/100)
+  wsF.dataValidations.add(`E4:E${lastFRow}`, {
+    type: 'list',
+    allowBlank: true,
+    formulae: ['"95-ös benzin,100-as benzin"'],
+  });
+
+  // ============================================================
+  // 4. HAVI ÖSSZESÍTŐ
   // ============================================================
   const wsM = wb.addWorksheet('Havi összesítő');
   const year = new Date().getFullYear();
